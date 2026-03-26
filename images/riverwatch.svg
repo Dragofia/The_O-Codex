@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">Riverwatch</title>
+  <desc id="desc">A layered waterside city with lantern reflections.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#412a31"/>
+      <stop offset="100%" stop-color="#151114"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <path d="M0 314H800V500H0Z" fill="#171d24"/>
+  <path d="M0 338C58 326 122 354 184 344C248 332 304 302 370 314C438 326 474 354 544 352C630 350 684 310 800 328V500H0Z" fill="#20303a"/>
+  <path d="M90 240H174V320H90Z" fill="#59423f"/>
+  <path d="M200 196H296V320H200Z" fill="#695149"/>
+  <path d="M320 158H418V320H320Z" fill="#7a5a4e"/>
+  <path d="M442 212H530V320H442Z" fill="#634a43"/>
+  <path d="M558 178H646V320H558Z" fill="#74554a"/>
+  <path d="M672 226H746V320H672Z" fill="#57403c"/>
+  <path d="M300 110L370 56L440 110" fill="#20171b"/>
+  <rect x="354" y="74" width="32" height="84" fill="#302126"/>
+  <rect x="373" y="235" width="10" height="30" fill="#f1c978"/>
+  <rect x="470" y="250" width="10" height="28" fill="#f1c978"/>
+  <rect x="610" y="238" width="10" height="28" fill="#f1c978"/>
+  <rect x="130" y="252" width="10" height="26" fill="#f1c978"/>
+  <path d="M110 344L126 500" stroke="#d4a35c" stroke-width="4" opacity="0.5"/>
+  <path d="M378 344L394 500" stroke="#d4a35c" stroke-width="4" opacity="0.5"/>
+  <path d="M478 344L490 500" stroke="#d4a35c" stroke-width="4" opacity="0.5"/>
+  <path d="M615 344L628 500" stroke="#d4a35c" stroke-width="4" opacity="0.5"/>
+</svg>

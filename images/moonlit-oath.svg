@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">The Moonlit Oath</title>
+  <desc id="desc">A ceremonial sword laid beneath moonlight and pale branches.</desc>
+  <defs>
+    <linearGradient id="night" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#2e2430"/>
+      <stop offset="100%" stop-color="#0f0d10"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#night)"/>
+  <circle cx="615" cy="114" r="62" fill="#d8cab2" opacity="0.9"/>
+  <path d="M64 452C152 376 224 338 338 314C450 290 550 316 736 444" fill="none" stroke="#2f3a33" stroke-width="28" stroke-linecap="round"/>
+  <path d="M398 108V338" stroke="#d5d3d5" stroke-width="12" stroke-linecap="round"/>
+  <path d="M346 342L398 378L450 342" fill="none" stroke="#b88b4f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="372" y="330" width="52" height="18" rx="6" fill="#9a6b35"/>
+  <path d="M398 382V446" stroke="#d5d3d5" stroke-width="10" stroke-linecap="round"/>
+  <path d="M358 154C374 130 422 130 438 154" fill="none" stroke="#efe6d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M210 98C278 146 282 214 236 286" fill="none" stroke="#4f433f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M604 154C540 198 520 248 540 302" fill="none" stroke="#4f433f" stroke-width="10" stroke-linecap="round"/>
+</svg>

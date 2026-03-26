@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Codex</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="hero">
+      <div class="hero__content">
+        <h1 id="site-title">World Codex</h1>
+        <p id="site-subtitle" class="hero__subtitle">A lore index for characters, cities, quests, and relics.</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <nav class="codex-nav" aria-label="Codex views">
+        <div id="view-tabs" class="view-tabs"></div>
+      </nav>
+
+      <section class="controls" aria-label="Search and filters">
+        <div class="search-row">
+          <label class="search-field" for="search-input">
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Search names, summaries, tags, or aliases..."
+              autocomplete="off"
+              aria-label="Search the codex"
+            >
+          </label>
+
+          <button id="clear-filters" class="ghost-button" type="button">Clear</button>
+        </div>
+
+        <div class="filter-grid filter-grid--single">
+          <div id="tag-suggestions-block" class="filter-block hidden">
+            <h2>Suggested Tags</h2>
+            <div id="tag-filters" class="chip-row"></div>
+          </div>
+        </div>
+
+        <p id="results-summary" class="results-summary">Loading entries...</p>
+      </section>
+
+      <section id="results" class="results" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div id="entry-modal" class="modal hidden" aria-hidden="true">
+    <div id="modal-backdrop" class="modal__backdrop"></div>
+
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button id="modal-close" class="modal__close" type="button" aria-label="Close details">Close</button>
+
+      <div class="modal__header">
+        <p id="modal-category" class="modal__category"></p>
+        <h2 id="modal-title">Entry Details</h2>
+        <p id="modal-summary" class="modal__summary"></p>
+      </div>
+
+      <div class="modal__body">
+        <div id="modal-media" class="modal__media"></div>
+
+        <div class="modal__content">
+          <section class="modal__section">
+            <h3>Description</h3>
+            <p id="modal-description" class="modal__description"></p>
+          </section>
+
+          <section id="modal-tags-section" class="modal__section hidden">
+            <h3>Tags</h3>
+            <div id="modal-tags" class="chip-row"></div>
+          </section>
+
+          <section id="modal-aliases-section" class="modal__section hidden">
+            <h3>Aliases</h3>
+            <p id="modal-aliases" class="modal__description"></p>
+          </section>
+
+          <section id="modal-details-section" class="modal__section hidden">
+            <h3>Details</h3>
+            <div id="modal-details" class="details-grid"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="section-template">
+    <section class="category-section panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker"></p>
+          <h2 class="section-title"></h2>
+        </div>
+        <p class="section-note"></p>
+      </div>
+
+      <p class="section-description"></p>
+      <div class="card-grid"></div>
+      <p class="empty-state hidden"></p>
+    </section>
+  </template>
+
+  <template id="card-template">
+    <article class="entry-card">
+      <button class="entry-card__button" type="button">
+        <div class="entry-card__media"></div>
+
+        <div class="entry-card__body">
+          <div class="entry-card__topline">
+            <span class="entry-card__category"></span>
+            <h3 class="entry-card__title"></h3>
+          </div>
+
+          <p class="entry-card__summary"></p>
+          <div class="entry-card__tags chip-row"></div>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+{
+  "site": {
+    "title": "THE O-CODEX",
+    "subtitle": "A shared reference for the wandering company, gathered from rumor, memory, and hard-earned truth."
+  },
+  "categories": [
+    {
+      "id": "characters",
+      "label": "Characters",
+      "description": "Allies, rivals, patrons, and dangerous names the party keeps hearing."
+    },
+    {
+      "id": "cities",
+      "label": "Settlements",
+      "description": "Settlements, capitals, and crossroads worth remembering."
+    },
+    {
+      "id": "quests",
+      "label": "Stories",
+      "description": "Threads the party can follow, revisit, or fear they have left too long."
+    },
+    {
+      "id": "magic-items",
+      "label": "Manifests",
+      "description": "Relics, tools, and heirlooms with enough history to matter."
+    },
+    {
+      "id": "divions",
+      "label": "Divions",
+      "description": "Orders, branches, or hidden structures waiting to be filled in."
+    },
+    {
+      "id": "summaries",
+      "label": "Summaries",
+      "description": "Session recaps, overviews, and high-level records for the party."
+    }
+  ],
+  "entries": [
+    {
+      "id": "character-cooper-vale",
+      "category": "characters",
+      "name": "Cooper Vale",
+      "summary": "A soft-spoken trail guide who remembers every road that once mattered.",
+      "description": "Cooper works as a guide for caravans moving between the western marsh roads and the hill forts inland. He speaks gently, notices everything, and becomes hard to fool once someone lies to him. Locals trust him with routes they would never write down, especially when the old roads begin shifting in bad weather.",
+      "tags": ["guide", "ranger", "ally"],
+      "aliases": ["Kooper Vale", "Kewper Vale"],
+      "image": "images/cooper-vale.svg",
+      "homeland": "Fenbridge March",
+      "status": "Usually available in Riverwatch between caravan seasons",
+      "details": {
+        "Role": "Independent guide",
+        "Known For": "Remembering abandoned roads and smuggler cuts",
+        "Party Hook": "Can point the group toward hidden passes or forgotten shrines"
+      }
+    },
+    {
+      "id": "character-mirelle-thorne",
+      "category": "characters",
+      "name": "Mirelle Thorne",
+      "summary": "An exhausted noble archivist trying to keep dangerous records out of the wrong hands.",
+      "description": "Mirelle serves the Candle Bastion archive, where she catalogs disputed histories and sealed testimonies. She is precise in speech, patient with curious people, and visibly tense whenever court politics enter the room. She often hires capable outsiders when she needs something done quietly.",
+      "tags": ["scholar", "noble", "patron"],
+      "aliases": ["Archivist Thorne"],
+      "status": "Resident of Crownhaven",
+      "details": {
+        "Affiliation": "Candle Bastion",
+        "Temperament": "Measured, guarded, observant",
+        "Useful Secret": "Knows which family lines were erased from public records"
+      }
+    },
+    {
+      "id": "character-brannic-salt",
+      "category": "characters",
+      "name": "Brannic Salt",
+      "summary": "A scarred harbor broker who trades in rumors as often as cargo.",
+      "description": "Brannic controls a surprising amount of dockside traffic without ever claiming to be in charge of anything. He buys stolen maps, broken relics, and information from sailors too desperate to keep it. He smiles often, but only when he believes he already knows what someone will say next.",
+      "tags": ["broker", "smuggler", "rival"],
+      "aliases": ["Salt Brannic"],
+      "dangerLevel": "Moderate",
+      "details": {
+        "Base Of Operations": "Riverwatch lower quay",
+        "Leverage": "Debt ledgers and private shipping manifests",
+        "Likely Use": "Quest contact or recurring antagonist"
+      }
+    },
+    {
+      "id": "city-riverwatch",
+      "category": "cities",
+      "name": "Riverwatch",
+      "summary": "A trade city of flooded stairs, rope bridges, and too many secrets in the lower docks.",
+      "description": "Riverwatch sits where the blackwater channels widen enough for real trade. Its upper wards are built from reclaimed fort stone, while the lower wards lean over the water in cramped timber layers. Caravans, barges, smugglers, mercenaries, and pilgrims all cross paths here, which makes the city wealthy and consistently one bad week away from chaos.",
+      "tags": ["trade hub", "port", "starting city"],
+      "aliases": ["The Flooded Stair"],
+      "image": "images/riverwatch.svg",
+      "region": "Blackwater Reach",
+      "details": {
+        "Population Feel": "Crowded, loud, suspicious",
+        "Best Known District": "The Lantern Quay",
+        "Adventure Use": "Excellent base city for recurring NPCs and side quests"
+      }
+    },
+    {
+      "id": "city-crownhaven",
+      "category": "cities",
+      "name": "Crownhaven",
+      "summary": "The inland capital where polished ceremonies hide brittle politics.",
+      "description": "Crownhaven is the ceremonial heart of the realm, though many border folk would argue it has forgotten how the realm actually lives. The city is elegant, heavily watched, and full of old institutions that still matter because everyone fears what would happen if they stopped. Public order is strong, but influence is the true currency.",
+      "tags": ["capital", "politics", "nobility"],
+      "aliases": ["The Ivory Seat"],
+      "status": "Seat of the High Court",
+      "details": {
+        "Ruling Presence": "High Court and its attached ministries",
+        "Street Reputation": "Beautiful, expensive, and dangerous to misread",
+        "Story Use": "Court intrigue, records research, elite rivals"
+      }
+    },
+    {
+      "id": "city-hollowmere",
+      "category": "cities",
+      "name": "Hollowmere",
+      "summary": "A marsh settlement built around peat fires, old graves, and stubborn people.",
+      "description": "Hollowmere survives because the people there know the marsh better than anyone who would try to conquer it. Homes cluster on raised stone foundations, and every family seems to remember a ghost story tied to the nearby barrows. Visitors are tolerated as long as they respect the water, the dead, and local warnings.",
+      "tags": ["marsh", "frontier", "barrows"],
+      "aliases": ["The Mire Ward"],
+      "details": {
+        "Exports": "Bog salt, reed cloth, medicinal moss",
+        "Threats": "Sinkways, grave robbers, pale lights over the water",
+        "Mood": "Resilient and quietly superstitious"
+      }
+    },
+    {
+      "id": "quest-moonlit-oath",
+      "category": "quests",
+      "title": "The Moonlit Oath",
+      "summary": "Recover a missing oathblade before two feuding knightly lines start a private war.",
+      "description": "A ceremonial sword vanished on the night both houses were meant to renew a truce under moonlight. Each side insists the other staged the theft, and both are close to mobilizing retainers. The party can investigate the theft, expose the real culprit, or decide whether the truth is worth the blood it may spill anyway.",
+      "tags": ["investigation", "nobility", "timed"],
+      "aliases": ["Missing Oathblade"],
+      "image": "images/moonlit-oath.svg",
+      "urgency": "High",
+      "details": {
+        "Quest Giver": "Mirelle Thorne",
+        "Primary Location": "Crownhaven and the Moon Court estate roads",
+        "Possible Outcomes": [
+          "Restore the truce",
+          "Escalate the feud",
+          "Keep the blade hidden for a third faction"
+        ]
+      }
+    },
+    {
+      "id": "quest-bell-below-the-mire",
+      "category": "quests",
+      "title": "The Bell Below the Mire",
+      "summary": "The marsh bells have started ringing underground, and no one agrees on why.",
+      "description": "Hollowmere fishers report hearing temple bells under the peat after sundown. The sound has drawn lights over the bog, strange footprints near old graves, and a sudden burst of grave robbery in nearby barrows. The party needs to learn whether something buried is waking, calling, or simply baiting the living closer.",
+      "tags": ["mystery", "horror", "marsh"],
+      "aliases": ["Mire Bell"],
+      "status": "Unresolved",
+      "details": {
+        "Recommended Tone": "Eerie investigation that can turn into a descent",
+        "Main Clues": [
+          "Disturbed barrow seals",
+          "Wet footprints that stop mid-path",
+          "Priests arguing over a forbidden burial rite"
+        ]
+      }
+    },
+    {
+      "id": "quest-golden-tax",
+      "category": "quests",
+      "title": "The Golden Tax",
+      "summary": "A royal tax convoy has vanished, and too many people want it found for the wrong reason.",
+      "description": "A heavily guarded convoy carrying tax silver never arrived in Crownhaven. Officials want quiet recovery, dock brokers want the route, and local rebels want proof that the treasury is weaker than it appears. Following the trail means choosing who gets the truth and who gets a lie they can live with.",
+      "tags": ["heist", "politics", "moral choice"],
+      "aliases": ["Lost Tax Silver"],
+      "details": {
+        "Complications": [
+          "The guards may have staged the disappearance",
+          "Brannic Salt may already have one chest",
+          "The silver could fund relief for frontier towns"
+        ],
+        "Best Fit": "A choice-heavy mid-campaign storyline"
+      }
+    },
+    {
+      "id": "item-lantern-reliquary",
+      "category": "magic-items",
+      "name": "Lantern Reliquary",
+      "summary": "A bronze field lantern that reveals old ward lines and hidden shrine marks.",
+      "description": "This squat lantern burns with pale oil light that does not behave like ordinary flame. When opened in darkness, it traces old protective symbols across stone, roots, and thresholds. Priests claim it was once used to inspect forgotten pilgrim roads after wars left the temples in ruin.",
+      "tags": ["relic", "support", "exploration"],
+      "aliases": ["Shrine Lantern"],
+      "image": "images/lantern-reliquary.svg",
+      "rarity": "Uncommon",
+      "details": {
+        "Practical Use": "Helps locate hidden symbols, shrines, and warded passageways",
+        "Drawback": "Its light can also reveal the holder's presence to certain spirits",
+        "Current Rumor": "One was seen on sale in Riverwatch for far too little"
+      }
+    },
+    {
+      "id": "item-ashen-signet",
+      "category": "magic-items",
+      "name": "Ashen Signet",
+      "summary": "A ring of blackened silver that warms when old vows are spoken nearby.",
+      "description": "The Ashen Signet was forged for oathkeepers who needed warning when sworn promises were being twisted or broken. It does not reveal lies directly, but it reacts to binding language, compelled bargains, and hidden terms spoken within earshot. Many courts would pay well to keep such a thing private.",
+      "tags": ["court", "detective", "oath"],
+      "aliases": ["Oath Ring"],
+      "rarity": "Rare",
+      "details": {
+        "Why It Matters": "Useful in intrigue-heavy campaigns",
+        "Complication": "May react to ancient vows no one meant to disturb",
+        "Suggested Hook": "Tie it to The Moonlit Oath or a hidden succession claim"
+      }
+    },
+    {
+      "id": "item-gravesalt-flask",
+      "category": "magic-items",
+      "name": "Gravesalt Flask",
+      "summary": "A stoppered iron flask that keeps blessed salt dry even in cursed wetlands.",
+      "description": "Priests of the old road shrines used these flasks while traveling through rain, marsh, and battlefield mud. A pinch of the preserved salt can strengthen funerary rites, harden a temporary ward, or expose where the dead have been disturbed recently. It looks humble, but people who know what it is rarely ignore it.",
+      "tags": ["utility", "warding", "undead"],
+      "aliases": ["Salt Flask"],
+      "details": {
+        "Rarity": "Common among old shrine keepers, scarce elsewhere",
+        "Perfect For": "Hollowmere stories, grave sites, and haunted roads",
+        "Maintenance": "Needs to be refilled during proper rites"
+      }
+    }
+  ]
+}

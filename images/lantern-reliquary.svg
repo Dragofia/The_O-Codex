@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">Lantern Reliquary</title>
+  <desc id="desc">An old bronze lantern glowing over stone marks.</desc>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="44%">
+      <stop offset="0%" stop-color="#f7e2a7"/>
+      <stop offset="58%" stop-color="#d7a150"/>
+      <stop offset="100%" stop-color="#3a251c"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="#171114"/>
+  <circle cx="400" cy="206" r="146" fill="url(#glow)" opacity="0.92"/>
+  <rect x="328" y="120" width="144" height="222" rx="20" fill="#5e432c" stroke="#c89b57" stroke-width="10"/>
+  <rect x="352" y="150" width="96" height="136" rx="14" fill="#f6d992" opacity="0.92"/>
+  <path d="M352 108C352 78 372 54 400 54C428 54 448 78 448 108" fill="none" stroke="#c89b57" stroke-width="10" stroke-linecap="round"/>
+  <path d="M292 396C356 338 444 338 508 396" fill="none" stroke="#7e633c" stroke-width="12" stroke-linecap="round"/>
+  <path d="M232 420L308 378" stroke="#4b3a2d" stroke-width="8"/>
+  <path d="M568 420L492 378" stroke="#4b3a2d" stroke-width="8"/>
+  <path d="M224 436C274 406 322 402 356 414" fill="none" stroke="#b98c48" stroke-width="4" opacity="0.55"/>
+  <path d="M442 414C478 402 526 406 576 436" fill="none" stroke="#b98c48" stroke-width="4" opacity="0.55"/>
+</svg>

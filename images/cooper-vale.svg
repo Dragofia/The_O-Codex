@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">Cooper Vale</title>
+  <desc id="desc">A cloaked trail guide beneath a moonlit sky.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#3d2b33"/>
+      <stop offset="100%" stop-color="#161114"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <circle cx="602" cy="112" r="44" fill="#d9c7ac" opacity="0.85"/>
+  <path d="M0 382L125 322L228 356L344 280L450 320L572 238L683 278L800 226V500H0Z" fill="#241c20"/>
+  <path d="M314 372C314 314 352 246 401 246C450 246 486 316 486 372V500H314Z" fill="#5c4636"/>
+  <path d="M336 370C336 313 362 258 402 258C442 258 468 314 468 370V500H336Z" fill="#33282b"/>
+  <circle cx="402" cy="206" r="48" fill="#b3916f"/>
+  <path d="M340 250C358 214 390 194 401 194C412 194 446 216 462 250L402 278Z" fill="#846247"/>
+  <path d="M370 198C384 168 417 168 432 198" fill="none" stroke="#201517" stroke-width="11" stroke-linecap="round"/>
+  <path d="M296 392L382 336" stroke="#d4b58d" stroke-width="10" stroke-linecap="round"/>
+</svg>
