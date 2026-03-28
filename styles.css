@@ -770,27 +770,27 @@ img {
 }
 
 .modal__secondary {
-  grid-template-columns: minmax(320px, 1.35fr) minmax(220px, 1fr) minmax(220px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.72fr);
+  grid-template-areas:
+    "details details"
+    "tags aliases";
   align-items: start;
   justify-items: stretch;
 }
 
 #modal-details-section {
-  grid-column: 1;
-  grid-row: 1;
+  grid-area: details;
   width: 100%;
   max-width: none;
   justify-self: stretch;
 }
 
 #modal-tags-section {
-  grid-column: 2;
-  grid-row: 1;
+  grid-area: tags;
 }
 
 #modal-aliases-section {
-  grid-column: 3;
-  grid-row: 1;
+  grid-area: aliases;
 }
 
 .modal__section--wide {
@@ -811,6 +811,7 @@ img {
 
 .details-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 0.5rem;
   margin-top: 0.8rem;
 }
@@ -877,24 +878,10 @@ img {
 
   .modal__secondary {
     grid-template-columns: 1fr;
-  }
-
-  #modal-details-section,
-  #modal-tags-section,
-  #modal-aliases-section {
-    grid-column: auto;
-  }
-
-  #modal-details-section {
-    grid-row: 1;
-  }
-
-  #modal-tags-section {
-    grid-row: 2;
-  }
-
-  #modal-aliases-section {
-    grid-row: 3;
+    grid-template-areas:
+      "details"
+      "tags"
+      "aliases";
   }
 
   .section-heading {
