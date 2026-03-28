@@ -885,6 +885,18 @@ img {
     grid-column: auto;
   }
 
+  #modal-details-section {
+    grid-row: 1;
+  }
+
+  #modal-tags-section {
+    grid-row: 2;
+  }
+
+  #modal-aliases-section {
+    grid-row: 3;
+  }
+
   .section-heading {
     flex-direction: column;
   }
