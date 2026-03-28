@@ -22,17 +22,22 @@
     {
       "id": "magic-items",
       "label": "Manifests",
-      "description": "Relics, tools, and heirlooms with enough history to matter."
+      "description": "Relics, tools, and heirlooms with enough imbued magic to matter."
     },
     {
       "id": "divions",
       "label": "Divions",
-      "description": "Orders, branches, or hidden structures waiting to be filled in."
+      "description": "Motes of Divine power, either left for those with bravery and heart to find, or gifted to those with aspirations that reach beyond themselves."
     },
     {
       "id": "summaries",
       "label": "Summaries",
-      "description": "Session recaps, overviews, and high-level records for the party."
+      "description": "Session recaps, overviews, and high-level records for the party. The details here can be used to draw connections later..."
+    },
+    {
+      "id": "domains",
+      "label": "Domains",
+      "description": "Large areas that encompass wildly different climates and cultures. Your travels will take you between many of them."
     }
   ],
   "entries": [
@@ -226,6 +231,145 @@
         "Rarity": "Common among old shrine keepers, scarce elsewhere",
         "Perfect For": "Hollowmere stories, grave sites, and haunted roads",
         "Maintenance": "Needs to be refilled during proper rites"
+      }
+    },
+    {
+      "id": "domain-alden",
+      "category": "domains",
+      "name": "Alden",
+      "summary": "An arid land of inventors, engineering marvels, and a polished empire hiding rigid control beneath its order.",
+      "description": "Alden is packed with builders, engineers, and relentless experimenters. Though some edges are mild, most of the domain trends arid, while the southern Gialden Strip supplies a rich mountain surplus of metal shared with Giaslan. That bounty feeds Alden's obsession with construction and invention, especially in the capital of Laregola, where a powerful empire claims to keep peace among the domain's volatile creators. Beneath that orderly surface lies something colder: discipline so severe that soldiers and defenders are conditioned to suppress individuality and treat personality itself as dangerous variance. A rebel force known as the Variants resists that doctrine, with Dahlia Fausse serving as the public strategist while Kayla Fulmine remains the hidden driving force behind the movement.",
+      "tags": ["engineering", "inventors", "empire", "rebellion", "arid"],
+      "aliases": ["Laregola's Domain"],
+      "details": {
+        "Capital": "Laregola",
+        "Climate": "Mostly arid, with colder southern mountains",
+        "Known For": "Metalworking, engineering feats, and experimental creations",
+        "Key Landmark": "The Gialden Strip",
+        "Internal Conflict": "Imperial control versus the Variants"
+      }
+    },
+    {
+      "id": "domain-altasar",
+      "category": "domains",
+      "name": "Altasar",
+      "summary": "A wealthy grassland democracy of soul magic, respected across multiple domains for its rare mastery of the soul.",
+      "description": "Altasar is a broad kingdom of plains and grasslands with lush mountains and forests worked into its edges. It is famed for soul-based arts that are extraordinarily rare elsewhere: soul weaving, soulspeaking, and more flexible applications of soul that can enhance bodies, bend words, or even imitate other powers. Because so few kingdoms wield soul magic at scale, Altasar enjoys unusual prestige and has built trade and communication networks reaching several domains away. Its capital, Droland, is a democracy, and near the center of the land rises a dormant spire long believed to be a key to crossing planes of existence. Even with that mystery looming overhead, Altasar itself remains stable and strangely untouched by many disturbances that affect surrounding lands.",
+      "tags": ["soul magic", "grasslands", "democracy", "trade", "dragons"],
+      "aliases": ["The Soul Kingdom"],
+      "details": {
+        "Capital": "Droland",
+        "Climate": "Plains, grasslands, lush mountains, and forests",
+        "Known For": "Soul weaving, soulspeaking, and long-range communication",
+        "Key Landmark": "The central spire",
+        "Reputation": "Rich, respected, and unusually stable"
+      }
+    },
+    {
+      "id": "domain-caybluff",
+      "category": "domains",
+      "name": "Caybluff",
+      "summary": "A high plateau of cliffs and star-filled skies, best known for chroma sorcerers and the impossible Caybluff Fissure.",
+      "description": "Caybluff is a high-altitude domain of plateaus, sharp cliffs, and open skies. Its relative lack of industry and its exceptional elevation make it one of the best places in the world to study the stars, which has led to an unusually high concentration of Chroma sorcerers. On the lower eastern side lies the Caybluff Fissure, a ravine whose mystery defines the domain. Looking down reveals a horizon-like landscape rotated impossibly into view, as though a distant world were laid on its side beneath the earth. Those who have fallen into it seem to keep dropping toward that horizon without end, vanishing into a fate no one understands.",
+      "tags": ["plateau", "stars", "chroma", "mystery", "ravine"],
+      "aliases": ["The Star Plateau"],
+      "details": {
+        "Terrain": "Plateaus, cliffs, and elevated open land",
+        "Known For": "Star study and Chroma sorcery",
+        "Key Landmark": "The Caybluff Fissure",
+        "Threat": "Reality-warping falls into the fissure"
+      }
+    },
+    {
+      "id": "domain-cirrusia",
+      "category": "domains",
+      "name": "Cirrusia",
+      "summary": "A cloud-ocean sky domain of floating islands, wild beauty, and constant danger.",
+      "description": "Cirrusia feels less like a domain and more like a living sky. Travelers can walk on clouds, climb vast vines, and find floating islands overhead that host radically different ecologies from one another. The beauty of the place is matched by its volatility: magical beasts, unstable politics, and violent weather constantly remind visitors that Cirrusia is not a dreamland but a dangerous frontier. The floating islands are especially remarkable because they do not remain fixed. They shift individually and collectively, changing both their own wildlife and their positions in the sky as they rotate around the domain every few days.",
+      "tags": ["sky", "floating islands", "storms", "wildlife", "danger"],
+      "aliases": ["The Cloud Ocean"],
+      "details": {
+        "Terrain": "Walkable clouds, floating islands, and sky-vines",
+        "Known For": "Natural beauty, magical beasts, and violent weather",
+        "Travel Hazard": "Storms can make ordinary movement nearly impossible",
+        "Strange Feature": "The islands constantly rotate around the domain"
+      }
+    },
+    {
+      "id": "domain-dynestea",
+      "category": "domains",
+      "name": "Dynestea",
+      "summary": "A resource-rich land of mixed climates where prime magic and reverence for nature shape daily life.",
+      "description": "Dynestea sits at the crossroads of wildly different neighboring climates and seems to inherit something from all of them. Lush greenery borders Cirrusia to the south, warm deserts stretch toward Klabats in the west, the oceanic reach of Wano lies to the east, and chilly mountain country rises toward Slipway in the north. Because so many environments meet here, the domain is abundant in natural resources and exceptionally suited to prime magic. Its people hold deep respect for the earth, forests, and wildlife, and many of its practitioners specialize in bending nature itself to their will. The result is a domain that feels broad, alive, and fundamentally tied to the living world around it.",
+      "tags": ["prime magic", "nature", "mixed climates", "resources", "forests"],
+      "aliases": ["The Living Domain"],
+      "details": {
+        "Climate": "A mix of forest, desert, ocean influence, and mountain cold",
+        "Known For": "Prime magic and abundance of natural resources",
+        "Cultural Focus": "Reverence for earth, forests, and wildlife",
+        "Regional Strength": "Nearly every major element is naturally represented"
+      }
+    },
+    {
+      "id": "domain-hemwood",
+      "category": "domains",
+      "name": "Hemwood",
+      "summary": "A dim forest domain under growing heat and political strain, where tyrants argue over a hellish seal at its center.",
+      "description": "Hemwood is a shadowed forest region known for wizards who favor the fire aspect of prime and, more rarely, moon-based magic. Earth magic also appears among its more dangerous practitioners, giving the domain a reputation for crushing force hidden beneath its dark canopy. At its center stands a Hell Sigil and Summoning Circle tied to rising heat that has unsettled the entire region. The capital, Moonstead, was a democracy until recently, but a tyranny seized control and now uses the spreading heat as justification for drastic action. Some rulers argue that the sealed being at the center should be bound tighter; others believe it must be released and destroyed to end the threat at its source. Either way, Hemwood remains unstable, anxious, and primed for conflict.",
+      "tags": ["forest", "fire magic", "moon magic", "tyranny", "hell sigil"],
+      "aliases": ["Moonstead's Domain"],
+      "details": {
+        "Capital": "Moonstead",
+        "Climate": "Dim forestland growing hotter over time",
+        "Known For": "Fire prime, moon magic, and brutal earth casters",
+        "Central Threat": "The Hell Sigil and the Summoning Circle",
+        "Political State": "Recently overthrown democracy under tyranny"
+      }
+    },
+    {
+      "id": "domain-laytide",
+      "category": "domains",
+      "name": "Laytide",
+      "summary": "An almost entirely aquatic domain whose history and politics are shaped by the vanished sea lord Aquiel.",
+      "description": "Laytide is one of the strangest domains in Maladen because so much of it is simply water. Its past was permanently marked by the sudden arrival of Aquiel, Lord of Seas, a leviathan demigod who appeared without warning and remained long enough to raise sea levels across the domain for centuries. When Aquiel vanished at the turn of the year 1000, the waters dropped just as quickly, leaving behind a culture that never stopped measuring itself against that event. As the calendar edges toward 1500, public unease has returned. Historians warn that Aquiel may come again, and even members of the royal family are divided between indifference and growing dread over what that return could mean for Laytide's future.",
+      "tags": ["ocean", "leviathans", "royalty", "history", "sea dragons"],
+      "aliases": ["The Sea Domain"],
+      "details": {
+        "Terrain": "Mostly water",
+        "Known For": "Aquiel, sea-level shifts, and ocean travel",
+        "Current Anxiety": "Fear of Aquiel's return near the year 1500",
+        "Wildlife": "Sea dragons and leviathans"
+      }
+    },
+    {
+      "id": "domain-klabats",
+      "category": "domains",
+      "name": "Klabats",
+      "summary": "A rough land of flow warriors, warlike tribes, and a culture that prizes breathing, battle, and bodily mastery.",
+      "description": "Klabats is the homeland of flow warriors, fighters who use disciplined breathing and meditation to push their physical abilities far beyond ordinary limits. In rare cases, that same flow can even magnify magic with spectacular effect. The domain lacks a single formal capital, instead scattering its identity across many kingdoms and wartribes, each with its own customs and strength. Education is not what Klabats is known for, but combat, endurance, and blunt self-belief define much of the land's character. The domain is also tied to an echo plane known as the War-torn World, a reflection of what Maladen might have become had the ancient war between Order and Chaos never ended.",
+      "tags": ["flow", "warriors", "tribes", "combat", "red dragons"],
+      "aliases": ["The Wartribes"],
+      "details": {
+        "Capital": "None; many kingdoms and tribes claim local authority",
+        "Known For": "Flow techniques and physically enhanced warriors",
+        "Cultural Focus": "Combat, endurance, and meditative discipline",
+        "Echo Plane": "The War-torn World"
+      }
+    },
+    {
+      "id": "domain-giaslan",
+      "category": "domains",
+      "name": "Giaslan",
+      "summary": "A frigid mountain realm of astrologers and precise chroma magic, ruled from the heights of Chillspire.",
+      "description": "Giaslan is a harsh, chilly mountain domain where clear skies and impossible cold have shaped both the land and its magic. Its astrologers use Chroma with mathematical precision, drawing on constellations and horizon-light to call down devastating force. The capital, Chillspire, stretches across the mountain known as Viserion's Peak and stands as the domain's political and symbolic heart. Though Giaslan long seemed uneventful, its leaders have grown increasingly concerned with the possibility of restoring warmth to their frozen lands, even considering dangerous contact with Hemwood in search of answers. Beneath the domain's calm exterior lingers the presence of isolated dragons, icy peaks, and the whispered terror of Viserion himself.",
+      "tags": ["mountains", "cold", "astrologers", "chroma", "dragons"],
+      "aliases": ["Chillspire's Domain"],
+      "details": {
+        "Capital": "Chillspire",
+        "Climate": "Frigid mountains and tundra",
+        "Known For": "Astrologers wielding precise Chroma magic",
+        "Key Landmark": "Viserion's Peak",
+        "Political Concern": "Seeking ways to restore heat to the domain"
       }
     }
   ]
