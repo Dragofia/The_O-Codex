@@ -213,11 +213,12 @@ img {
 }
 
 .hero__subtitle {
-  max-width: 42rem;
+  max-width: none;
   margin: 1rem 0 0;
   color: var(--text-soft);
   line-height: 1.7;
   font-size: 1.02rem;
+  white-space: nowrap;
 }
 
 .layout {
@@ -233,6 +234,7 @@ img {
   display: flex;
   gap: 0.8rem;
   overflow-x: auto;
+  padding-top: 0.35rem;
   padding-bottom: 0.35rem;
   scrollbar-width: thin;
 }
