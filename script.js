@@ -1,5 +1,7 @@
 const DATA_URL = "world-data.json";
-const SEARCH_RESULT_LIMIT = 5;
+const COMPLETE_CODEX_PREVIEW_LIMIT = 8;
+const VIEW_TRANSITION_OUT_MS = 110;
+const VIEW_TRANSITION_IN_MS = 500;
 
 const RESERVED_ENTRY_KEYS = new Set([
   "id",
@@ -18,16 +20,22 @@ const state = {
   worldData: null,
   query: "",
   activeView: "complete-codex",
+  sortMode: "newest-first",
   activeTags: new Set(),
   selectedEntryId: null
 };
+
+let viewTransitionTimer = null;
 
 const elements = {
   siteTitle: document.getElementById("site-title"),
   siteSubtitle: document.getElementById("site-subtitle"),
   viewTabs: document.getElementById("view-tabs"),
+  controls: document.getElementById("controls"),
   searchInput: document.getElementById("search-input"),
   clearFilters: document.getElementById("clear-filters"),
+  sortControls: document.getElementById("sort-controls"),
+  sortSelect: document.getElementById("sort-select"),
   resultsSummary: document.getElementById("results-summary"),
   tagSuggestionsBlock: document.getElementById("tag-suggestions-block"),
   tagFilters: document.getElementById("tag-filters"),
@@ -88,8 +96,9 @@ function normaliseWorldData(data) {
     })),
     entries: entries
       .filter((entry) => entry && entry.id && entry.category)
-      .map((entry) => ({
+      .map((entry, index) => ({
         ...entry,
+        _createdIndex: index,
         tags: Array.isArray(entry.tags) ? entry.tags : [],
         aliases: Array.isArray(entry.aliases) ? entry.aliases : []
       }))
@@ -135,6 +144,11 @@ function bindEvents() {
     renderApp();
   });
 
+  elements.sortSelect.addEventListener("change", (event) => {
+    state.sortMode = event.target.value;
+    renderApp();
+  });
+
   elements.modalClose.addEventListener("click", closeModal);
   elements.modalBackdrop.addEventListener("click", closeModal);
 
@@ -153,6 +167,7 @@ function renderApp() {
 
   updateSiteText();
   renderViewTabs();
+  renderSortControls();
   renderTagSuggestions();
   renderResults();
 }
@@ -182,17 +197,54 @@ function renderViewTabs() {
   elements.viewTabs.replaceChildren(fragment);
 }
 
+function renderSortControls() {
+  const isCategoryView = state.activeView !== "complete-codex";
+  elements.sortControls.classList.toggle("hidden", !isCategoryView);
+  elements.sortSelect.value = state.sortMode;
+}
+
 function buildViewTabButton(label, viewId) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = `view-tab${state.activeView === viewId ? " is-active" : ""}`;
   button.textContent = label;
   button.addEventListener("click", () => {
-    state.activeView = viewId;
-    renderApp();
+    switchView(viewId);
   });
 
   return button;
+}
+
+function switchView(nextViewId) {
+  if (state.activeView === nextViewId) {
+    return;
+  }
+
+  if (viewTransitionTimer) {
+    clearTimeout(viewTransitionTimer);
+    viewTransitionTimer = null;
+  }
+
+  clearViewTransitionClasses();
+  elements.controls.classList.add("view-transition-out");
+  elements.results.classList.add("view-transition-out");
+
+  viewTransitionTimer = setTimeout(() => {
+    state.activeView = nextViewId;
+    renderApp();
+    elements.controls.classList.add("view-transition-in");
+    elements.results.classList.add("view-transition-in");
+
+    viewTransitionTimer = setTimeout(() => {
+      clearViewTransitionClasses();
+      viewTransitionTimer = null;
+    }, VIEW_TRANSITION_IN_MS);
+  }, VIEW_TRANSITION_OUT_MS);
+}
+
+function clearViewTransitionClasses() {
+  elements.controls.classList.remove("view-transition-out", "view-transition-in");
+  elements.results.classList.remove("view-transition-out", "view-transition-in");
 }
 
 function renderTagSuggestions() {
@@ -240,8 +292,12 @@ function renderResults() {
 
   visibleCategories.forEach((category) => {
     const matches = groupedResults.get(category.id) ?? [];
+    const orderedMatches = getOrderedEntries(matches);
     const entriesToShow =
-      state.activeView === "complete-codex" && hasSearchQuery ? matches.slice(0, SEARCH_RESULT_LIMIT) : matches;
+      state.activeView === "complete-codex"
+        ? orderedMatches.slice(0, COMPLETE_CODEX_PREVIEW_LIMIT)
+        : orderedMatches;
+
     fragment.append(buildCategorySection(category, entriesToShow, matches.length, hasSearchQuery));
   });
 
@@ -282,8 +338,8 @@ function renderSummary(groupedResults, hasSearchQuery, hasActiveRefinement, visi
     const tagSummary = state.activeTags.size > 0 ? ` with ${state.activeTags.size} tag filter(s)` : "";
 
     if (isCategoryView) {
-      elements.resultsSummary.textContent =
-        `Found ${totalMatches} matching entr${totalMatches === 1 ? "y" : "ies"} in ${activeCategoryLabel} for "${state.query}"${tagSummary}.`;
+    elements.resultsSummary.textContent =
+      `Found ${totalMatches} matching entr${totalMatches === 1 ? "y" : "ies"} in ${activeCategoryLabel} for "${state.query}"${tagSummary}.`;
       return;
     }
 
@@ -310,13 +366,18 @@ function buildCategorySection(category, entriesToShow, totalMatches, hasSearchQu
   const description = sectionNode.querySelector(".section-description");
   const grid = sectionNode.querySelector(".card-grid");
   const emptyState = sectionNode.querySelector(".empty-state");
+  const isCompleteCodexView = state.activeView === "complete-codex";
+  const displayedCount = entriesToShow.length;
 
   kicker.textContent = "Category";
   title.textContent = category.label;
   description.textContent = category.description;
+  grid.classList.toggle("card-grid--preview", isCompleteCodexView);
 
   if (hasSearchQuery && totalMatches > 0) {
     note.textContent = "";
+  } else if (isCompleteCodexView && totalMatches > displayedCount) {
+    note.textContent = `${displayedCount} of ${totalMatches} entries shown.`;
   } else if (totalMatches > 0) {
     note.textContent = `${totalMatches} entr${totalMatches === 1 ? "y" : "ies"} shown.`;
   } else {
@@ -427,7 +488,7 @@ function getGroupedResults() {
     groupedResults.get(entry.category)?.push(entryWithScore);
   });
 
-  if (state.query) {
+  if (state.query && state.activeView === "complete-codex") {
     groupedResults.forEach((entries) => {
       entries.sort((left, right) => {
         if (right._score !== left._score) {
@@ -440,6 +501,35 @@ function getGroupedResults() {
   }
 
   return groupedResults;
+}
+
+function getOrderedEntries(entries) {
+  const orderedEntries = [...entries];
+
+  if (state.activeView === "complete-codex") {
+    orderedEntries.sort((left, right) => right._createdIndex - left._createdIndex);
+    return orderedEntries;
+  }
+
+  orderedEntries.sort((left, right) => compareEntries(left, right, state.sortMode));
+  return orderedEntries;
+}
+
+function compareEntries(left, right, sortMode) {
+  const leftTitle = getEntryTitle(left);
+  const rightTitle = getEntryTitle(right);
+
+  switch (sortMode) {
+    case "alphabetical-asc":
+      return leftTitle.localeCompare(rightTitle);
+    case "alphabetical-desc":
+      return rightTitle.localeCompare(leftTitle);
+    case "oldest-first":
+      return left._createdIndex - right._createdIndex;
+    case "newest-first":
+    default:
+      return right._createdIndex - left._createdIndex;
+  }
 }
 
 function passesCategoryFilter(entry) {

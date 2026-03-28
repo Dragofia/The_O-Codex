@@ -20,7 +20,7 @@
         <div id="view-tabs" class="view-tabs"></div>
       </nav>
 
-      <section class="controls" aria-label="Search and filters">
+      <section id="controls" class="controls" aria-label="Search and filters">
         <div class="search-row">
           <label class="search-field" for="search-input">
             <input
@@ -33,6 +33,16 @@
           </label>
 
           <button id="clear-filters" class="ghost-button" type="button">Clear</button>
+        </div>
+
+        <div id="sort-controls" class="sort-controls hidden">
+          <label class="sort-label" for="sort-select">Sort</label>
+          <select id="sort-select" class="sort-select">
+            <option value="alphabetical-asc">Alphabetical A-Z</option>
+            <option value="alphabetical-desc">Alphabetical Z-A</option>
+            <option value="newest-first">Newest First</option>
+            <option value="oldest-first">Oldest First</option>
+          </select>
         </div>
 
         <div class="filter-grid filter-grid--single">
