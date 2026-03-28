@@ -13,7 +13,9 @@ const RESERVED_ENTRY_KEYS = new Set([
   "tags",
   "aliases",
   "image",
-  "details"
+  "imageLayout",
+  "details",
+  "_createdIndex"
 ]);
 
 const state = {
@@ -49,6 +51,7 @@ const elements = {
   modalTitle: document.getElementById("modal-title"),
   modalSummary: document.getElementById("modal-summary"),
   modalDescription: document.getElementById("modal-description"),
+  modalBody: document.getElementById("modal-body"),
   modalMedia: document.getElementById("modal-media"),
   modalTagsSection: document.getElementById("modal-tags-section"),
   modalTags: document.getElementById("modal-tags"),
@@ -777,6 +780,8 @@ function openModal(entryId) {
   elements.modalSummary.textContent = entry.summary ?? "No summary added yet.";
   elements.modalDescription.textContent = entry.description ?? "No full description has been added yet.";
   elements.modalMedia.replaceChildren(buildMediaFrame(entry, true));
+  applyModalMediaLayout("side");
+  void updateModalMediaLayout(entry);
 
   elements.modalTags.replaceChildren(...buildChips(entry.tags));
   elements.modalTagsSection.classList.toggle("hidden", entry.tags.length === 0);
@@ -795,6 +800,76 @@ function closeModal() {
   state.selectedEntryId = null;
   elements.modal.classList.add("hidden");
   elements.modal.setAttribute("aria-hidden", "true");
+}
+
+async function updateModalMediaLayout(entry) {
+  const overrideLayout = normalizeModalMediaLayout(entry.imageLayout);
+
+  if (overrideLayout) {
+    applyModalMediaLayout(overrideLayout);
+    return;
+  }
+
+  if (!entry.image) {
+    applyModalMediaLayout("side");
+    return;
+  }
+
+  try {
+    const { width, height } = await loadImageDimensions(entry.image);
+
+    if (state.selectedEntryId !== entry.id) {
+      return;
+    }
+
+    applyModalMediaLayout(getModalLayoutFromDimensions(width, height));
+  } catch {
+    if (state.selectedEntryId === entry.id) {
+      applyModalMediaLayout("side");
+    }
+  }
+}
+
+function normalizeModalMediaLayout(value) {
+  if (!value) {
+    return "";
+  }
+
+  const normalized = String(value).toLowerCase().trim();
+  if (["top", "side"].includes(normalized)) {
+    return normalized;
+  }
+
+  return "";
+}
+
+function getModalLayoutFromDimensions(width, height) {
+  if (!width || !height) {
+    return "side";
+  }
+
+  return width / height >= 1.45 ? "top" : "side";
+}
+
+function loadImageDimensions(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.addEventListener("load", () => {
+      resolve({
+        width: image.naturalWidth || image.width,
+        height: image.naturalHeight || image.height
+      });
+    });
+
+    image.addEventListener("error", reject);
+    image.src = src;
+  });
+}
+
+function applyModalMediaLayout(layout) {
+  elements.modalBody.classList.remove("modal__body--media-top", "modal__body--media-side");
+  elements.modalBody.classList.add(layout === "top" ? "modal__body--media-top" : "modal__body--media-side");
 }
 
 function collectDetailPairs(entry) {
@@ -820,6 +895,7 @@ function collectDetailPairs(entry) {
 function renderDetailPairs(detailPairs) {
   elements.modalDetails.innerHTML = "";
   elements.modalDetailsSection.classList.toggle("hidden", detailPairs.length === 0);
+  elements.modalDetailsSection.classList.toggle("modal__section--wide", hasWideDetailContent(detailPairs));
 
   if (detailPairs.length === 0) {
     return;
@@ -890,6 +966,24 @@ function renderValue(value) {
 
 function isSimpleValue(value) {
   return ["string", "number", "boolean"].includes(typeof value);
+}
+
+function hasWideDetailContent(detailPairs) {
+  return detailPairs.some(([, value]) => getValueComplexity(value) >= 110);
+}
+
+function getValueComplexity(value) {
+  if (Array.isArray(value)) {
+    return value.reduce((sum, item) => sum + getValueComplexity(item), 0);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).reduce((sum, [key, nestedValue]) => {
+      return sum + String(key).length + getValueComplexity(nestedValue);
+    }, 0);
+  }
+
+  return String(value ?? "").length;
 }
 
 // Helpers
