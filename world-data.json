@@ -10,19 +10,24 @@
       "description": "Allies, rivals, patrons, and dangerous names the party keeps hearing."
     },
     {
-      "id": "cities",
+      "id": "settlements",
       "label": "Settlements",
       "description": "Settlements, capitals, and crossroads worth remembering."
     },
     {
-      "id": "quests",
+      "id": "stories",
       "label": "Stories",
-      "description": "Threads the party can follow, revisit, or fear they have left too long."
+      "description": "Hooks and points of interest the party can follow. Rewards and newfound power await at the end of each thread."
     },
     {
-      "id": "magic-items",
+      "id": "quests",
+      "label": "Quests",
+      "description": "The Spire seems to be benevelont - It requests your help in spreading this goodwill to those who need it. Much is to be gained from your assistance."
+    },
+    {
+      "id": "manifests",
       "label": "Manifests",
-      "description": "Relics, tools, and heirlooms with enough imbued magic to matter."
+      "description": "Powerful magic has resided in these items since their inception. The Aetherwell has deigned to grant them to you - Use them well."
     },
     {
       "id": "divions",

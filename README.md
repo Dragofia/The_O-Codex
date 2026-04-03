@@ -51,11 +51,26 @@ Tips:
 
 - `id` should be unique.
 - `category` must match one of the category `id` values in the `"categories"` list.
+- Category ids now match the visible category names, such as `settlements`, `stories`, `quests`, `manifests`, `divions`, `summaries`, and `domains`.
 - Use `name` for people, places, and items.
 - Use `title` instead of `name` if that reads better for quests or events.
 - `aliases` are optional, but useful for nicknames, common misspellings, or sound-alike search terms.
 - `image` is optional. If you leave it out, the site shows a fallback card image.
 - `details` is optional. It is a good place for neat extra info.
+
+For quest entries, you can mark progress with a `questStatus` field:
+
+```json
+"questStatus": "ongoing"
+```
+
+or
+
+```json
+"questStatus": "completed"
+```
+
+If you leave `questStatus` out on a quest entry, the site treats it as ongoing by default.
 
 You can also add extra fields outside `details`, like `"status": "Missing"` or `"dangerLevel": "High"`. The site will still show them in the modal details area automatically.
 
@@ -125,6 +140,7 @@ The filtering and search logic is also in `script.js`:
 - `getGroupedResults()`: applies the current filters and search
 - `passesCategoryFilter()`: checks category filters
 - `passesTagFilter()`: checks tag filters
+- `passesQuestStatusFilter()`: checks the quest-only ongoing/completed filter
 - `getSearchScore()`: ranks matches for the search bar
 - `phoneticKey()`: helps with sound-alike matching
 - `levenshteinDistance()`: helps with typo matching

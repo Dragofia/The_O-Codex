@@ -23,6 +23,7 @@ const state = {
   query: "",
   activeView: "complete-codex",
   sortMode: "newest-first",
+  questStatusFilter: "ongoing",
   activeTags: new Set(),
   selectedEntryId: null
 };
@@ -38,6 +39,8 @@ const elements = {
   clearFilters: document.getElementById("clear-filters"),
   sortControls: document.getElementById("sort-controls"),
   sortSelect: document.getElementById("sort-select"),
+  questStatusControls: document.getElementById("quest-status-controls"),
+  questStatusSelect: document.getElementById("quest-status-select"),
   resultsSummary: document.getElementById("results-summary"),
   tagSuggestionsBlock: document.getElementById("tag-suggestions-block"),
   tagFilters: document.getElementById("tag-filters"),
@@ -152,6 +155,11 @@ function bindEvents() {
     renderApp();
   });
 
+  elements.questStatusSelect.addEventListener("change", (event) => {
+    state.questStatusFilter = event.target.value;
+    renderApp();
+  });
+
   elements.modalClose.addEventListener("click", closeModal);
   elements.modalBackdrop.addEventListener("click", closeModal);
 
@@ -202,8 +210,11 @@ function renderViewTabs() {
 
 function renderSortControls() {
   const isCategoryView = state.activeView !== "complete-codex";
+  const isQuestView = state.activeView === "quests";
   elements.sortControls.classList.toggle("hidden", !isCategoryView);
+  elements.questStatusControls.classList.toggle("hidden", !isQuestView);
   elements.sortSelect.value = state.sortMode;
+  elements.questStatusSelect.value = state.questStatusFilter;
 }
 
 function buildViewTabButton(label, viewId) {
@@ -408,12 +419,15 @@ function buildEntryCard(entry, categoryLabel) {
   const cardNode = elements.cardTemplate.content.firstElementChild.cloneNode(true);
   const button = cardNode.querySelector(".entry-card__button");
   const media = cardNode.querySelector(".entry-card__media");
+  const meta = cardNode.querySelector(".entry-card__meta");
   const category = cardNode.querySelector(".entry-card__category");
   const title = cardNode.querySelector(".entry-card__title");
   const summary = cardNode.querySelector(".entry-card__summary");
   const tags = cardNode.querySelector(".entry-card__tags");
 
   category.textContent = categoryLabel;
+  meta.replaceChildren(category);
+  appendQuestStatusBadge(meta, entry);
   title.textContent = getEntryTitle(entry);
   summary.textContent = entry.summary ?? "No summary added yet.";
   button.setAttribute("aria-label", `Open details for ${getEntryTitle(entry)}`);
@@ -477,7 +491,7 @@ function getGroupedResults() {
   const groupedResults = new Map(state.worldData.categories.map((category) => [category.id, []]));
 
   state.worldData.entries.forEach((entry) => {
-    if (!passesCategoryFilter(entry) || !passesTagFilter(entry)) {
+    if (!passesCategoryFilter(entry) || !passesTagFilter(entry) || !passesQuestStatusFilter(entry)) {
       return;
     }
 
@@ -543,6 +557,14 @@ function passesTagFilter(entry) {
   return state.activeTags.size === 0 || entry.tags.some((tag) => state.activeTags.has(tag));
 }
 
+function passesQuestStatusFilter(entry) {
+  if (state.activeView !== "quests" || entry.category !== "quests") {
+    return true;
+  }
+
+  return getQuestStatus(entry) === state.questStatusFilter;
+}
+
 function getSearchScore(entry, rawQuery) {
   if (!rawQuery) {
     return 1;
@@ -602,7 +624,7 @@ function getSuggestedTags() {
   const suggestions = new Map();
   const allTags = [...new Set(state.worldData.entries.flatMap((entry) => entry.tags))];
   const matchedEntries = state.worldData.entries
-    .filter((entry) => passesCategoryFilter(entry))
+    .filter((entry) => passesCategoryFilter(entry) && passesQuestStatusFilter(entry))
     .map((entry) => ({ entry, score: getSearchScore(entry, state.query) }))
     .filter(({ score }) => score > 0);
 
@@ -753,6 +775,30 @@ function toggleSetValue(set, value) {
   }
 
   set.add(value);
+}
+
+function appendQuestStatusBadge(container, entry) {
+  if (entry.category !== "quests") {
+    return;
+  }
+
+  const badge = document.createElement("span");
+  const questStatus = getQuestStatus(entry);
+  badge.className = `entry-status-badge entry-status-badge--${questStatus}`;
+  badge.textContent = questStatus === "completed" ? "Completed" : "Ongoing";
+  container.append(badge);
+}
+
+function getQuestStatus(entry) {
+  const normalized = String(entry.questStatus ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (["completed", "complete", "done", "finished"].includes(normalized)) {
+    return "completed";
+  }
+
+  return "ongoing";
 }
 
 function getActiveViewLabel() {
