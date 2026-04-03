@@ -22,7 +22,7 @@
     {
       "id": "quests",
       "label": "Quests",
-      "description": "The Spire seems to be benevelont - It requests your help in spreading this goodwill to those who need it. Much is to be gained from your assistance."
+      "description": "The Spire seems to be benevolent, and requests your help in spreading this goodwill to those who need it. Much is to be gained from your assistance."
     },
     {
       "id": "manifests",
@@ -32,7 +32,7 @@
     {
       "id": "divions",
       "label": "Divions",
-      "description": "Motes of Divine power - Some are strewn about the world, others are gifted to those pursuing fierce aspirations; All of them will intertwine themselves with fate."
+      "description": "Motes of Divine power. Some are strewn about the world, others are gifted to those pursuing fierce aspirations; All of them will intertwine themselves with fate."
     },
     {
       "id": "summaries",
@@ -43,6 +43,31 @@
       "id": "domains",
       "label": "Domains",
       "description": "Large areas that encompass wildly different climates and cultures. Your travels will take you between many of them."
+    },
+    {
+      "id": "locations",
+      "label": "Locations",
+      "description": "Points of mystery, curiosity, or abnormality. These locations held secrets or may yet hold some still."
+    },
+    {
+      "id": "eschatons",
+      "label": "Eschatons",
+      "description": "These orbs hold vast power from an ancient civilization. Inside them rest various beings who may offer various things - information, guidance, assistance, and more. The Spire is the key to using their power."
+    },
+    {
+      "id": "functions",
+      "label": "Functions",
+      "description": "Capabilities possessed by both the party and the Spire. No one but you has access to these, so use them well (and perhaps keep them mostly hidden)."
+    },
+    {
+      "id": "lore",
+      "label": "Lore",
+      "description": "Pertinent pieces of information that have a bearing on your past and future. What mysteries lie in the crevices of this world, I wonder?"
+    },
+    {
+      "id": "superficial-info",
+      "label": "Superficial Info",
+      "description": "Knowledge that has been sorted to the back of the party's minds. Useful for touching up on this world's version of common sense."
     }
   ],
   "entries": [
@@ -66,16 +91,17 @@
       "id": "domain-altasar",
       "category": "domains",
       "name": "Altasar",
-      "summary": "A wealthy grassland democracy of soul magic, respected across multiple domains for its rare mastery of the soul.",
-      "description": "Altasar is a broad kingdom of plains and grasslands with lush mountains and forests worked into its edges. It is famed for soul-based arts that are extraordinarily rare elsewhere: soul weaving, soulspeaking, and more flexible applications of soul that can enhance bodies, bend words, or even imitate other powers. Because so few kingdoms wield soul magic at scale, Altasar enjoys unusual prestige and has built trade and communication networks reaching several domains away. Its capital, Droland, is a democracy, and near the center of the land rises a dormant spire long believed to be a key to crossing planes of existence. Even with that mystery looming overhead, Altasar itself remains stable and strangely untouched by many disturbances that affect surrounding lands.",
-      "tags": ["soul magic", "grasslands", "democracy", "trade", "dragons"],
+      "summary": "A wealthy grassland democracy of soul magic, renowned for rare soul arts, immense trade reach, and the Spire looming over its heartland.",
+      "description": "Altasar is a broad kingdom of plains and grasslands with lush mountains and forests worked into its edges. It is famed for soul-based arts that are extraordinarily rare elsewhere: soul weaving, which leans on emotion itself; soulspeaking, which infuses words with soul to sway others; and more flexible uses of soul that can enhance bodies, mimic other powers, or carry thought across great distances. Because soul-wielding kingdoms are so uncommon, Altasar enjoys unusual prestige and has built trade and communication networks stretching several domains away, making it one of the richest and most respected lands in this part of Maladen. Its capital, Droland, is a democracy, and near the center of the domain rises the Spire, an ancient structure that has recently drawn renewed fear and fascination. Altasar is also known for its dragons, especially older and wiser breeds, with a notable concentration of ancient gold dragons compared to most other lands.",
+      "tags": ["soul magic", "grasslands", "democracy", "trade", "dragons", "spire"],
       "aliases": ["The Soul Kingdom"],
       "details": {
         "Capital": "Droland",
         "Climate": "Plains, grasslands, lush mountains, and forests",
-        "Known For": "Soul weaving, soulspeaking, and long-range communication",
-        "Key Landmark": "The central spire",
-        "Reputation": "Rich, respected, and unusually stable"
+        "Known For": "Soul weaving, soulspeaking, and long-range soul communication",
+        "Key Landmark": "The Spire near the center of the domain",
+        "Reputation": "Rich, respected, and unusually influential",
+        "Wildlife Of Note": "Many dragons, including some of the oldest gold dragons in the region"
       }
     },
     {
@@ -183,6 +209,680 @@
         "Known For": "Astrologers wielding precise Chroma magic",
         "Key Landmark": "Viserion's Peak",
         "Political Concern": "Seeking ways to restore heat to the domain"
+      }
+    },
+    {
+      "id": "character-eryndor-thalexus",
+      "category": "characters",
+      "name": "Eryndor Thalexus",
+      "summary": "An old necromancer whose pursuit of lichdom helped unleash the being now known as Bones.",
+      "description": "Eryndor Thalexus is an aged mage and necromancer whose hidden work appears to have centered on transforming himself into a lich. Valorie encountered the aftermath of that ambition while stealing his notes, only to be caught in a disaster inside the cavern where his research was kept. In the chaos, Astie saved Valorie and awakened a massive skeletal carcass embedded in the wall, later known as Bones. Bones pulled her from danger before flying into a frenzy that brought the cave down around them, until Azzie arrived, shielded both Valorie and Bones, calmed the skeletal giant, and reduced him to a humanoid form sealed within a suit of armor. Whatever Eryndor intended, his experiments left behind more than notes.",
+      "tags": ["necromancer", "old mage", "lich", "undead", "forbidden magic", "Valorie", "Bones"],
+      "aliases": ["Thalexus"],
+      "details": {
+        "Known For": "Necromancy and apparent attempts at lichdom",
+        "Connected Figures": "Valorie, Astie, Azzie, and Bones",
+        "Notable Incident": "His hidden research site collapsed during the awakening and frenzy of Bones"
+      }
+    },
+    {
+      "id": "character-astie",
+      "category": "characters",
+      "name": "Astie",
+      "summary": "A strange, impeccably dressed elder who saved all five party members and gifted each of them a Conduit.",
+      "description": "Astie is a very elderly, unusually well-dressed man whose presence in the party's story reaches back to the moment each of the five members had their life saved by him. In the process, he granted each of them something they know only as a Conduit. Since then, he has continued to appear in their dreams, offering guidance in brief and carefully chosen moments. He is plainly connected to Azzie in some deep and important way, though she cannot remember how or why; she knows only that the bond feels vital, and that her loyalty to him is absolute. Despite these interventions, Astie remains as vague as possible, helping only sparingly and revealing almost nothing of the immense power he clearly possesses. A strange number hovers over his wrist. This number has been increasing every time he meets with the party. Its ominous significance remains unclear.",
+      "tags": ["elder", "mysterious", "conduit", "dreams", "powerful", "benefactor"],
+      "details": {
+        "Known For": "Saving all five party members and granting them Conduits",
+        "Connection": "Closely tied to Azzie, though the nature of that bond remains unclear",
+        "Behavior": "Offers guidance rarely, speaks vaguely, and intervenes only when he chooses",
+        "Impression": "Far more powerful and informed than he allows others to see"
+      }
+    },
+    {
+      "id": "character-odin",
+      "category": "characters",
+      "name": "Odin",
+      "summary": "A legendary figure known across all of Maladen, despite leaving almost no trace behind beyond his name and the Spire.",
+      "description": "Odin is remembered throughout Maladen with a level of recognition that seems impossible by any ordinary measure. His name is simply known, lodged in the minds of people from birth until death, even though the world appears to preserve almost nothing else about him. Stories and beliefs surrounding Odin are immense, and many treat him as the hero who brought order to the land and cast down the rule of Chaos, though the party has so far heard only one concrete historical claim involving him. According to Caelum, Odin created the Spire. Beyond that, the world offers almost no evidence of his presence, leaving his legacy to linger more as certainty without proof than history anyone can truly grasp.",
+      "tags": ["legend", "hero", "spire", "history", "mystery"],
+      "details": {
+        "Known Across": "All of Maladen",
+        "Historical Claim": "Caelum says Odin created the Spire",
+        "Strange Truth": "His name is known to nearly everyone despite the lack of surviving records or traces",
+        "Reputation": "Widely revered as a legendary hero"
+      }
+    },
+    {
+      "id": "character-azzie",
+      "category": "characters",
+      "name": "Azzie",
+      "summary": "A cheerful masked girl with an eleven-day memory horizon and an unwavering loyalty to Astie.",
+      "description": "Azzie is a friendly, upbeat humanoid girl who carries herself with a warmth that makes her easy to trust. Her exact race remains a mystery to the party because she is always hidden beneath a cloak and mask, yet people around her seem strangely uninterested in questioning it or even noticing how unusual that should be. She is clearly and deeply loyal to Astie, despite being unable to explain why. In truth, Azzie cannot remember anything from more than ten days ago. Once a memory reaches its eleventh day, it fades from her mind without exception, leaving behind only vague impressions too thin to offer real answers. People, events, and even important details vanish beyond that limit, though she continues wandering and carrying out Astie's odd, seemingly random requests in the hope that somewhere in all of it, she is still doing good. At times, she also shows flashes of strange certainty, making predictions or intuitions she cannot fully explain.",
+      "tags": ["masked", "memory loss", "astie", "mystery", "wanderer", "intuition"],
+      "details": {
+        "Known For": "Forgetting everything older than ten days",
+        "Connection": "Feels an intense loyalty to Astie; Appreciates and helps the party as well",
+        "Appearance": "Always concealed by a cloak and mask, with little reaction from others",
+        "Motivation": "Continues helping with Astie's requests in hopes that the work still matters",
+        "Oddity": "Occasionally blurts out uncanny predictions or instincts without understanding why"
+      }
+    },
+    {
+      "id": "character-niamh",
+      "category": "characters",
+      "name": "Niamh",
+      "summary": "The child Eris raised as her own, whose loss became the deepest wound driving her forward.",
+      "description": "Niamh spent several formative years being raised by Eris, and over time became far more than a responsibility. Eris came to see her as her own child, and that bond became the emotional center of her life, giving her stability, purpose, and something to protect beyond mere survival. When Niamh was taken and forced into captivity, that fragile foundation was shattered. Her fear and disappearance became the catalyst for Eris's violent descent, turning the pursuit into both a rescue and a desperate act of reclamation. Even after being saved, Niamh vanished following Eris's divine encounter, leaving her not only as Eris's greatest motivation, but as the unresolved loss that now shapes every choice she makes.",
+      "tags": ["child", "Eris", "abduction", "loss", "motivation"],
+      "details": {
+        "Connection": "Raised by Eris through several formative years",
+        "Narrative Role": "The emotional core of Eris's story",
+        "Turning Point": "Her abduction drove Eris into violent pursuit",
+        "Current Status": "Missing after Eris's divine encounter"
+      }
+    },
+    {
+      "id": "character-eris-radia",
+      "category": "characters",
+      "name": "Eris Radia",
+      "summary": "A fire genasi driven by the loss of Niamh, willing to burn through the world to reclaim the child she raised as her own.",
+      "description": "Eris Radia is a fire genasi from Hoarthcull, though genasi of her kind are nearly indistinguishable from elves until flame answers their strongest emotions. She spent much of her early life in circumstances that forced her to become capable, grounded, and used to carrying more than her share. That burden became permanent when Niamh was left in her care, and over time obligation became devotion. Niamh became Eris's purpose, her stability, and the closest thing she had to family. When Niamh was sold into the black market, Eris did not hesitate. She tracked her child to an operation near Hoarthcull and tore through it in pursuit. Mortally wounded and cornered, she accepted salvation from Astie without question and unleashed the power he offered with absolute force. The black market burned, and Hoarthcull itself was swallowed by flame. When Eris finally awoke from the ruin, Niamh was gone once more. With only grief, memory, and Astie's direction left to her, she traveled to Droland and continues her search, now willing to destroy whatever stands between her and the child she refuses to lose again.",
+      "tags": ["party member", "fire genasi", "astie", "niamh", "hoarthcull", "vengeance", "search"],
+      "details": {
+        "Race": "Fire genasi, outwardly similar to an elf until flame surfaces in intense moments",
+        "Homeland": "Hoarthcull",
+        "Driving Goal": "Find Niamh at any cost",
+        "Known For": "Destroying the black market operation and burning Hoarthcull in the aftermath",
+        "Played By": "Kendra"
+      }
+    },
+    {
+      "id": "character-dove-halloway",
+      "category": "characters",
+      "name": "Dove Halloway",
+      "summary": "A kind, curious warforged artificer whose search for a cure led her into Raiju's path and onto Astie's road to Altasar.",
+      "description": "Dove Halloway is a kind and curious artificer whose warforged nature is something of an open secret rather than a hidden truth. She remembers nothing from before roughly three years ago, when she came under Elorin's care, and the values she carries most strongly were shaped by that upbringing. Concern for Elorin's worsening illness led Dove to investigate a cave near Mount Fullerin, where she discovered repeated references to the name Raiju and was ultimately attacked by a massive mechanical dragon crackling with thunder and gears. Before the creature could kill her, time itself halted and Astie intervened, offering help in exchange for help of his own. When Dove accepted, he sent her back changed, filled with a power she barely understood but could wield through thunder and lightning. After escaping the encounter, she crossed paths with Azzie, brought her back to Mormalake, and from there set out toward Altasar in search of answers. Along the way, she has also begun fielding one of her own creations more often: a mechanical lion named Athena.",
+      "tags": ["party member", "warforged", "artificer", "Mormalake", "Raiju", "Astie", "Azzie", "Athena"],
+      "details": {
+        "Nature": "A warforged, though this is unknown to all aside from the party and Elorin",
+        "Temperament": "Kind, curious, and eager to learn",
+        "Memory": "Remembers nothing from before roughly three years ago",
+        "Creation": "Frequently deploys a mechanical lion named Athena",
+        "Played By": "Dannah"
+      }
+    },
+    {
+      "id": "character-thiollier-thornsong",
+      "category": "characters",
+      "name": "Thiollier Thornsong",
+      "summary": "A half-elf paladin and former caretaker of the Elderwood who escaped Gretel's swamp and now follows Astie's call to Altasar.",
+      "description": "Thiollier Thornsong is a half-elf paladin from Il Fiore in Dynestea and a member of the prestigious Thornsong family, the line entrusted with tending and communing with the Elderwood at the city's center. He showed talent early, taking on major responsibility for the tree while also displaying rare thaumic magic granted by the gods he worships. That life was broken when he spent five full years under the roof of the hag Gretel, trapped in a grotesque swamp life he never accepted as his own. When Azzie appeared and offered him a way out, he readily followed. During their travels, a cave-in nearly killed him before time stopped and a mysterious voice urged him to touch the Conduit and accept a contract. Thiollier agreed, met Astie in a pure white realm, and was told only that he needed to go to Altasar. When he later returned to Il Fiore, he found his home intact but marked by a rushed note about Altasar, Silas's house trashed, and the Elderwood itself dormant, its flow of power halted. With little left to anchor him there, he continued on toward Droland. Since then, his path has only grown stranger, with dreams and visions continuing to tie Silas to whatever lies ahead.",
+      "tags": ["party member", "half-elf", "paladin", "vengeance", "dynestea", "elderwood", "astie", "visions"],
+      "aliases": ["Thiollior Thornsong", "Thiollior"],
+      "details": {
+        "Oath": "Paladin of Vengeance",
+        "Homeland": "Il Fiore in Dynestea",
+        "Family Role": "A Thornsong caretaker of the Elderwood",
+        "Notable Ordeal": "Spent five years living under the hag Gretel before escaping with Azzie's help",
+        "Current Thread": "Traveling toward Droland after Astie directed him to Altasar",
+        "Played By": "Will"
+      }
+    },
+    {
+      "id": "character-valorie-whispthorn",
+      "category": "characters",
+      "name": "Valorie Whispthorn",
+      "summary": "A human illusionist-in-training whose hunger for stronger magic led her into Thalexus's cave and onto Astie's path to Altasar.",
+      "description": "Valorie Whispthorn is a human arcanist with a strong gift for magic and a particular eagerness to master illusion. Though now firmly walking the path of a wizard, her earliest training began with artificer work before her focus shifted more fully toward the arcane. In her pursuit of stronger illusion magic, Valorie tracked a wizard to a cave near Nalu, where she found cryptic notes signed by Thalexus, maddened writings about time and aether, and a chamber filled with disturbing magical remnants. When Eryndor Thalexus began transforming into a lich and left her to be overwhelmed by the undead, time suddenly stopped and Astie offered her a choice. She accepted his aid, was returned to the cave changed by the Conduit, and survived the chaos that followed. In the aftermath, she left with an undead companion she named Bones and began the long road toward Altasar in search of power, answers, and whatever role Astie believes she must play. She now carries a Staff of Better Illusion, a manifest closely tied to that pursuit.",
+      "tags": ["party member", "human", "wizard", "illusion", "astie", "bones", "nalu", "manifest"],
+      "details": {
+        "Training": "A wizard whose earliest level of study was artificer work",
+        "Focus": "Driven to master illusion magic",
+        "Notable Incident": "Survived Eryndor Thalexus's cave and awakened to Astie's Conduit",
+        "Current Tool": "Wields the Staff of Better Illusion",
+        "Current Thread": "Traveling toward Droland alongside Bones",
+        "Played By": "Dawn"
+      }
+    },
+    {
+      "id": "character-bones",
+      "category": "characters",
+      "name": "Bones",
+      "summary": "A resurrected paladin bound to Valorie by a freak revival and guided by fragments of a life he is only beginning to remember.",
+      "description": "Bones is an undead paladin who came back to life through a freak accident tied to Astie's power while Valorie was caught in the chaos surrounding Eryndor Thalexus. Since that revival, he has felt a distinctly fatherly urge to protect Valorie and has remained by her side as she continues her search for stronger illusion magic. Though much of his former life was lost when he returned, pieces of it have begun to surface over time. He slowly recalls more of who he once was, including memories of a wife and daughter, and hints that he once stood in command of an army. He has also survived impossible hazards others could not safely test, including the deadly currents of the Ocean Wall, and returned with accounts of places that should not exist. For now, Bones travels with Valorie toward Altasar, carrying both his shield and the unanswered weight of a past still rising back to meet him.",
+      "tags": ["party member", "undead", "paladin", "resurrected", "valorie", "memory", "ocean wall"],
+      "details": {
+        "Nature": "A resurrected undead paladin",
+        "Connection": "Feels a strong fatherly instinct toward Valorie",
+        "Memory": "Gradually recovering fragments of his past, including family and command",
+        "Notable Feat": "Survived the Ocean Wall currents long enough to glimpse something impossible beyond them",
+        "Recent Aid": "Had his magic replenished by Castro Faehand through what Valorie recognized as a Divion's work",
+        "Age": "44 years old",
+        "Played By": "Max"
+      }
+    },
+    {
+      "id": "character-silas-edafos",
+      "category": "characters",
+      "name": "Silas Edafos",
+      "summary": "Thiollier's childhood best friend, now absent from Il Fiore and lingering only through unanswered traces.",
+      "description": "Silas Edafos was Thiollier Thornsong's childhood best friend in Dynestea. After Thiollier was taken from his life and forced under the hag Gretel's care, he never saw Silas again, not even after eventually escaping and returning home. What he did find was unsettling: Silas's house had been trashed, but not in a way that suggested an ordinary search or burglary. Since then, Silas has continued to surface only in strange and uncertain ways, appearing to Thiollier in dreams, memories, and occasional visions that offer no clear explanation. Whether these glimpses mean Silas is reaching out, being remembered, or tied to something stranger remains unknown.",
+      "tags": ["dynestea", "il fiore", "thiollier", "missing", "visions"],
+      "details": {
+        "Connection": "Thiollier's childhood best friend",
+        "Last Clear Trace": "A trashed house in Il Fiore after Thiollier's return",
+        "Current Status": "Missing",
+        "Mystery": "Appears to Thiollier in dreams, memories, and visions without explanation"
+      }
+    },
+    {
+      "id": "character-dressa-v",
+      "category": "characters",
+      "name": "Dressa V",
+      "summary": "The high elf queen of Droland, bearer of the Divion of Justice, and one of the first rulers to take the Spire's warnings seriously.",
+      "description": "Dressa V is the current ruler of Droland, a high elf queen known for balancing benevolence with a sharp and uncompromising sense of justice. She can be haughty and quick to look down on foolishness, but she is also widely respected for her courage, her hands-on approach to governing, and her willingness to personally pursue criminals when she believes it necessary. Those traits, along with her talent for thaumic magic and her strict moral instincts, have earned her the title Justice's Wrath. Recently, Dressa received the Divion of Justice through a dream in which she was told, \"I need your help. Restore the gate in Altasar and find me.\" Since then, she has devoted much of her attention to investigating what that gate could be, eventually arriving at the only conclusion that made sense to her: the Altasar Spire. Her suspicions only deepened when multiple travelers arrived in Droland carrying eerily similar stories of ominous dreams, strange instructions, and Astie's involvement.",
+      "tags": ["queen", "droland", "altasar", "divion bearer", "justice"],
+      "aliases": ["Justice's Wrath"],
+      "details": {
+        "Role": "Queen of Droland",
+        "Divion": "Divion of Justice",
+        "Known For": "Hands-on rule, sharp investigative instincts, and a strict moral code",
+        "Current Focus": "Investigating the Spire, the gate, and the abnormal signs gathering around Droland",
+        "Recent Concern": "Has taken responsibility for the strange girl Onera after the Waterways investigation"
+      }
+    },
+    {
+      "id": "character-phoroseer",
+      "category": "characters",
+      "name": "Phoroseer",
+      "summary": "An elder elven advisor whose curiosity and long experience make him one of Droland's keenest minds.",
+      "description": "Phoroseer is an elderly elf of considerable wisdom who serves as an advisor to Droland's ruling line, including Dressa V in the present day. Reserved by nature but deeply curious, he carries the temperament of a scientific mind sharpened by age, travel, and a tendency toward quiet judgment. Over the course of his long life, he has journeyed through Altasar and the neighboring domains, but in recent years chose to remain in his childhood home of Droland and lend his knowledge to the throne. When the growing number of strange arrivals, cryptic dreams, eschatons, and Spire-related anomalies began to converge, Phoroseer was among the first to recognize that the pattern was far from normal and that deeper investigation was necessary.",
+      "tags": ["advisor", "elf", "droland", "altasar", "scholar"],
+      "details": {
+        "Role": "Advisor to Dressa V",
+        "Temperament": "Reserved, curious, scientific, and mildly judgmental",
+        "Experience": "Has traveled widely through Altasar and the nearby domains",
+        "Current Focus": "Investigating the Spire, eschatons, and the strange pattern surrounding Astie's chosen travelers"
+      }
+    },
+    {
+      "id": "character-rennick-corvin",
+      "category": "characters",
+      "name": "Rennick Corvin",
+      "summary": "Droland Palace's head medical researcher, an astute scientist whose interest in eschatons and aether runs deeper than he admits.",
+      "description": "Rennick Corvin is an elven scientist at Droland Palace and the Head Researcher of its Medical Branch. At first glance he comes across as purely intellectual, measured, and highly analytical, but that academic demeanor conceals someone far more socially perceptive than he lets on. Rennick reads rooms well, understands people quickly, and often seems to know more about a conversation's shape than he should. He has recently turned much of his attention toward eschatons and the strange properties of aether, and during the party's venture into the Droland Waterways, he also seemed strangely familiar with one of the gutter lords, suggesting roots or connections he has not explained. Unknown to most, he possesses Revis, the Eschaton of Diffusion and Time.",
+      "tags": ["scientist", "droland", "medical", "aether", "waterways", "eschaton"],
+      "details": {
+        "Role": "Head Researcher of the Medical Branch in Droland Palace",
+        "Public Demeanor": "Astute, intellectual, and controlled",
+        "Hidden Strength": "Exceptionally skilled at reading people and social situations",
+        "Current Focus": "Researching eschatons and aether through a medical and scientific lens",
+        "Eschaton": "Possesses Revis, Eschaton of Diffusion and Time"
+      }
+    },
+    {
+      "id": "character-onera",
+      "category": "characters",
+      "name": "Onera",
+      "summary": "A strange little girl with heterochromatic eyes who led the party through the Waterways to Revis and then vanished into Dressa's care.",
+      "description": "Onera is a young girl with mismatched eyes and an unsettling calm about circumstances that should frighten anyone. The party first met her in the Droland Waterways, where her lack of any visible parents or guardians immediately stood out even though she seemed entirely unbothered by it. More unnerving still was how quickly and confidently she was able to guide the group toward Revis, as if she already knew exactly where the Eschaton had been hidden. Afterward, she was left in Dressa's care and has not been seen by the party since.",
+      "tags": ["child", "droland", "waterways", "mystery", "revis"],
+      "details": {
+        "Appearance": "A little girl with heterochromatic eyes",
+        "First Seen": "The Droland Waterways",
+        "Known For": "Finding Revis with eerie speed and certainty",
+        "Current Status": "Left in Dressa's care and unseen since"
+      }
+    },
+    {
+      "id": "settlement-droland",
+      "category": "settlements",
+      "name": "Droland",
+      "summary": "The aristocratic capital of Altasar, a wealthy soul-magic city of raised districts, proud research, and dangerous waterways below.",
+      "description": "Droland is the capital of Altasar, an aristocratic city whose wealth and influence reflect the domain's wider prestige. Though its upper circles are dominated by the rich and politically connected, the city is broadly shaped by benevolent governance and a general sense of civic contentment. That does not make it peaceful. Soul magic lends itself to subtler trouble, and plenty of danger thrives in Droland's back alleys and especially in the waterways beneath the city, where many citizens remain blissfully unaware of how much crime gathers below their feet. The city's ground rises gradually toward its center, where the royal palace stands high enough to be seen from much of the surrounding urban sprawl. Gondolas now carry people swiftly between levels, and the court takes visible pride in the newer technologies that help bind the city together.",
+      "tags": ["capital", "altasar", "soul magic", "waterways", "palace", "gondolas"],
+      "details": {
+        "Domain": "Altasar",
+        "Known For": "Soul magic, civic wealth, and tiered urban design",
+        "Hidden Danger": "The waterways beneath the city are major centers of crime",
+        "Notable Feature": "Gondolas connect the raised levels of the city"
+      }
+    },
+    {
+      "id": "settlement-orville",
+      "category": "settlements",
+      "name": "Orville",
+      "summary": "A small southwestern Altasari town of craftsmen and merchants, lately overshadowed by missing children and grieving families.",
+      "description": "Orville is a modest town in the southwest of Altasar, known more for passing trade, craftsmen, and merchants than for any great political or military importance. Travelers often move through rather than linger, giving the settlement a practical, workmanlike character. Lately, however, the town has been marked by a sharp increase in missing children posters and the visible grief of mothers and families left behind, casting a darker mood over an otherwise unremarkable stop along the road.",
+      "tags": ["altasar", "town", "craftsmen", "merchants", "missing children"],
+      "details": {
+        "Location": "Southwest Altasar",
+        "Known For": "Craftsmen, merchants, and pass-through trade",
+        "Current Concern": "A growing number of missing children"
+      }
+    },
+    {
+      "id": "settlement-portale",
+      "category": "settlements",
+      "name": "Portale",
+      "summary": "The waterside capital of Caybluff, expanded beneath the sea through sorcery, engineering, and necessity.",
+      "description": "Portale is the waterside capital of Caybluff, a city shaped by the sea's steady encroachment and by the ingenuity that rise in sea level forced upon it. As waters from Laytide pressed inward, sections of the city sank beneath the surface. Rather than abandon them, Portale expanded downward. With help from Cirrusian magicians, Alden artificers, and an extensive construction partnership, the city developed broad underwater tunnels and districts that now form much of its real heart. The palace sits underwater on Portale's eastern edge, and a surprising amount of the city's busiest trade, travel, and daily movement happens below the waves. More recently, whispers have spread that Portale's governing body changed too quickly and too completely, and that corruption and disappearances now hide behind the city's polished face.",
+      "tags": ["caybluff", "capital", "underwater", "trade", "engineering", "magic", "corruption"],
+      "details": {
+        "Domain": "Caybluff",
+        "Known For": "Extensive underwater districts and tunnels",
+        "Built With": "Cirrusian magic and Alden artificing",
+        "Notable Feature": "The palace lies underwater on the eastern side of the city",
+        "Current Unease": "Rumors of corruption, missing people, and a suspiciously swift political turnover"
+      }
+    },
+    {
+      "id": "manifest-staff-of-better-illusion",
+      "category": "manifests",
+      "name": "Staff of Better Illusion",
+      "summary": "An illusion-focused manifest whose increasingly absurd names track its steady growth in power.",
+      "description": "The Staff of Better Illusion is a manifest tied to the refinement of illusion magic. Its earliest known recent form, the Staff of Lasting Illusion, was found in the Droland Waterways inside the desk of an unknown researcher who also possessed Revis. After the completion of the quest Mirage Bay Illusionist, the staff advanced into the Staff of Mediocre Illusion. Later, by absorbing magic from the corpse of the Winged Wolf, it grew again into its current state. The staff has become a meaningful tool for anyone intent on pushing illusion further.",
+      "tags": ["manifest", "illusion", "staff", "droland", "revis", "upgrade"],
+      "aliases": ["Staff of Lasting Illusion", "Staff of Mediocre Illusion"],
+      "details": {
+        "Current Form": "Staff of Better Illusion",
+        "Previous Forms": "Staff of Lasting Illusion and Staff of Mediocre Illusion",
+        "Found In": "A desk in the Droland Waterways",
+        "Notable Growth": "Advanced again after absorbing power from the Winged Wolf"
+      }
+    },
+    {
+      "id": "eschaton-revis",
+      "category": "eschatons",
+      "name": "Revis",
+      "summary": "The Eschaton of Diffusion and Time, tied to the Spire's rewind and the rare gift of a second chance.",
+      "description": "Revis is the Eschaton of Diffusion and Time, a being whose authority appears to brush against time without wholly ruling it. When joined to the Spire, Revis grants the tower the ability to rewind, and its influence seems to be what allows certain chosen individuals to receive impossible second chances. Whatever its limits truly are, Revis is deeply tied to the way magic disperses through the world, and to the broader mystery of the Malaise and the sickness now touching both people and the land.",
+      "tags": ["eschaton", "time", "diffusion", "spire", "malaise"],
+      "details": {
+        "Title": "Eschaton of Diffusion and Time",
+        "Known For": "Granting the Spire its rewind function",
+        "Observed Effect": "Allows rare second chances through limited influence over time",
+        "Related Mystery": "Linked to the dispersal of magic and the Malaise"
+      }
+    },
+    {
+      "id": "character-johnny",
+      "category": "characters",
+      "name": "Johnny",
+      "summary": "A grieving Portale contact from the slums who warned the party that the city above is rotting under new leadership.",
+      "description": "Johnny is a man from Portale's slums who became one of the party's first useful local contacts in the city. Though rough around the edges, he proved willing to speak plainly about what he believed was happening beneath Portale's official story. According to Johnny, the city's governing body was replaced with alarming speed over the course of roughly a week, and the new officials have all the signs of deep corruption. He also spoke of people going missing, especially children and those who challenge recent events, and of how little public noise those disappearances seem to generate. Beneath all of that, Johnny is still a grieving husband and father, carrying the loss of his late wife and the disappearance of his child Oliver. More recently, he received a letter from Nazari Ruya of the Unwound implying that the rescue in Waveside had unfolded exactly as they intended.",
+      "tags": ["portale", "slums", "contact", "missing child", "corruption"],
+      "details": {
+        "First Seen": "Behind Portale's Town Hall after meeting Eris in the slums",
+        "Known For": "Warning the party about corruption and disappearances in Portale",
+        "Family": "His wife is dead and his child Oliver is missing",
+        "Value To The Party": "A local source of information outside official channels",
+        "Recent Threat": "Received correspondence from Nazari Ruya of the Unwound"
+      }
+    },
+    {
+      "id": "character-tornga",
+      "category": "characters",
+      "name": "Tornga Worrent",
+      "summary": "A brooding warrior from Chillspire who left inheritance behind to become a traveling warrior doing what he believes to be good.",
+      "description": "Tornga Worrent is a formidable traveler from Chillspire in Giaslan whose size and demeanor give the impression of a man carrying more than he says. He gives off a calm and level-headed demeanor, carrying himself with a sense of capability. He is a born wanderer, and has been searching for something important for a long time, though he has not told us much of what it is. He is childhood friends with Castro, and the pair have saved each others' lives more than they could count.",
+      "tags": ["giaslan", "chillspire", "traveler", "warrior", "ally"],
+      "details": {
+        "Homeland": "Chillspire in Giaslan",
+        "Background": "Eldest son of the mayor who walked away from that path",
+        "Temperament": "Brooding, steady, and clearly burdened by his past",
+        "Family": "Brother to Trish",
+        "Current Thread": "Traveling with the party while investigating strange magic around Chillspire and Viserion's Peak"
+      }
+    },
+    {
+      "id": "character-castro-faehand",
+      "category": "characters",
+      "name": "Castro Faehand",
+      "summary": "A highly gifted mage from Chillspire, close to Tornga Worrent and newly drawn into the strange magic gathering around Viserion's Peak.",
+      "description": "Castro Faehand is a strongly magic-inclined man of Chillspire whose senses are sharp enough to notice when something feels deeply wrong in the fabric of magic itself. He is close friends with Tornga Worrent, and when strange magical residue drew attention near Viserion's Peak, the two set out together to investigate it. Castro is also a family man, returning home to his wife Clarissa and their son Caleb before heading into danger. During the recent events near the mountain, he helped guide the party to a hidden Canthian door and demonstrated power that Valorie immediately identified as the work of a Divion, though its exact nature remains unknown.",
+      "tags": ["giaslan", "chillspire", "mage", "divion bearer", "tornga", "family"],
+      "details": {
+        "Homeland": "Chillspire in Giaslan",
+        "Family": "Husband to Clarissa and father to Caleb",
+        "Connection": "Close friend of Tornga Worrent",
+        "Known For": "Sensing strange magic and guiding the party to the Canthian door on Viserion's Peak",
+        "Divion": "Known to possess a Divion, though its identity is unknown"
+      }
+    },
+    {
+      "id": "character-trish",
+      "category": "characters",
+      "name": "Trish",
+      "summary": "Tornga Worrent's sister, a quiet survivor of Waveside whose innate foresight guided others to safety.",
+      "description": "Trish is Tornga Worrent's younger sister and one of the captives recovered from the hidden facility in Waveside. Though still a child, she led other children to safety with startling composure once the party broke the place open. According to Tornga, Trish possesses a natural Knack that goes beyond ordinary learned magic: she can innately see the future. Whether that gift has marked her, endangered her, or both remains difficult to ignore.",
+      "tags": ["child", "tornga", "waveside", "foresight", "survivor", "knack"],
+      "details": {
+        "Connection": "Tornga Worrent's sister",
+        "Known For": "Guiding the escape from Waveside with ruthless precision",
+        "Ability": "Innate foresight, known as a Knack"
+      }
+    },
+    {
+      "id": "character-nazari-ruya",
+      "category": "characters",
+      "name": "Nazari Ruya",
+      "summary": "A Spool of the Unwound whose letter revealed that the rescue at Waveside may have been part of a larger design.",
+      "description": "Nazari Ruya is a member of the Unwound holding the rank of Spool, a position high enough to place him among the organization's more dangerous and informed figures. The party has not dealt with him directly in open conversation, but his presence became impossible to ignore when Johnny received a letter from him after the raid on Waveside. The message made clear that the Unwound had expected the captives to be freed and viewed the event as a successful field test rather than a setback. Whether that confidence comes from planning, prophecy, or something worse, Nazari reads as an enemy who is far too comfortable with events unfolding around him.",
+      "tags": ["unwound", "spool", "enemy", "waveside", "manipulator"],
+      "details": {
+        "Affiliation": "The Unwound",
+        "Rank": "Spool",
+        "Known For": "Sending a letter that reframed the Waveside rescue as part of a larger design"
+      }
+    },
+    {
+      "id": "settlement-waveside",
+      "category": "settlements",
+      "name": "Waveside",
+      "summary": "A southern Caybluff settlement whose polished exterior concealed captivity, disappearances, and possible ties to the Unwound.",
+      "description": "Waveside is a coastal settlement in southern Caybluff whose elegant sandstone architecture sits uneasily beside the disturbing things found beneath it. When the party entered the town, it looked prosperous but strangely drained of passion, as if something in the place had gone wrong without leaving visible ruin behind. That suspicion proved well founded when a hidden facility tied to the Unwound was uncovered there, containing captive children and abused adults. Even with that discovery, much remains uncertain, and the full extent of Waveside's role is still not entirely understood.",
+      "tags": ["caybluff", "coast", "unwound", "missing people", "captivity"],
+      "details": {
+        "Region": "Southern Caybluff",
+        "Current Importance": "A major lead in the investigation into missing children and disappearances",
+        "What Was Found": "A hidden facility tied to the Unwound",
+        "Ongoing Question": "How deeply the rest of the settlement was involved remains unclear"
+      }
+    },
+    {
+      "id": "location-ocean-wall",
+      "category": "locations",
+      "name": "The Ocean Wall",
+      "summary": "The immense natural barrier outside Portale, home to lethal currents, hidden depths, and the Eschaton Caelum.",
+      "description": "The Ocean Wall is the great natural terrain feature that shields Portale from the open dangers beyond. It is defined by powerful circular currents, deep water, and layers of darkness that make even approaching it hazardous. The party eventually found the Eschaton Caelum within the Ocean Wall, but could only truly reach it after gaining the Seaglide capability from the Canthian settlement in the Fog Basin. Even before that success, the Ocean Wall had already proved itself to be more than a defensive landmark: it is a place where the sea hides secrets that ordinary travel simply cannot breach.",
+      "tags": ["portale", "caybluff", "ocean", "currents", "caelum", "danger"],
+      "details": {
+        "Protects": "Portale from the outside sea",
+        "Known For": "Violent circular currents and impossible depth",
+        "Major Discovery": "The Eschaton Caelum was found within it",
+        "Needed To Traverse": "The Seaglide from the Fog Basin Canthian settlement",
+        "Hidden Trick": "A false light concealed the path to the real Eschaton"
+      }
+    },
+    {
+      "id": "location-viserions-peak",
+      "category": "locations",
+      "name": "Viserion's Peak",
+      "summary": "A frigid Giaslan height of strange cliffs, jagged ice, and blizzards dramatic enough to keep rumor alive.",
+      "description": "Viserion's Peak is a brutal northern height in Giaslan marked by punishing cold, sharp ice formations, and unusually strange cliff faces that make the area as treacherous to navigate as it is miserable to endure. Localized blizzards have been reported around parts of the surrounding terrain, adding yet another layer of danger to an already hostile region. The area around its lower reaches is also tied to the Winged Wolf and, more recently, to the discovery of a hidden Canthian door set into the mountain. People also love to attach dragon stories to the place, as they do to nearly every dramatic mountain in a cold domain, so those tales are best treated with skepticism unless something more convincing appears.",
+      "tags": ["giaslan", "mountain", "cold", "blizzard", "cliffs", "ice", "canthian"],
+      "details": {
+        "Domain": "Giaslan",
+        "Climate": "Extremely frigid with localized blizzards",
+        "Terrain": "Odd cliffs, ice shards, and dangerous elevation",
+        "Reputation": "Frequently tied to dragon hearsay that may be more drama than fact",
+        "Recent Discovery": "A hidden Canthian door on the mountain's side"
+      }
+    },
+    {
+      "id": "location-mount-solare",
+      "category": "locations",
+      "name": "Mount Solare",
+      "summary": "A dangerous and lucrative mountain site where isolation, harsh terrain, and rumor all promise power at a price.",
+      "description": "Mount Solare is widely known as a place where danger and reward seem to gather together more tightly than they should. Its isolation from civilization and its harsh, punishing terrain make it an ideal habitat for powerful beasts, enemies, and things best left undisturbed. At the same time, stories persist that riches and potent magical items are often found there, as though peril itself somehow draws value into the mountain's shadow. Whether that reputation is myth, pattern, or something stranger, Mount Solare has earned a reputation as the kind of place people seek out only when they are desperate, ambitious, or both.",
+      "tags": ["mountain", "danger", "treasure", "magic items", "caybluff"],
+      "details": {
+        "Known For": "High danger and unusually valuable rewards",
+        "Terrain": "Remote, harsh, and difficult to cross",
+        "Typical Threats": "Powerful beasts and hostile inhabitants"
+      }
+    },
+    {
+      "id": "location-caybluff-fog-basin",
+      "category": "locations",
+      "name": "Caybluff Fog Basin",
+      "summary": "A hidden basin of ascending waters, Canthian ruins, and fog-thick caverns watched by ancient steel and a newborn leviathan.",
+      "description": "The Caybluff Fog Basin is a concealed cavern region reached through a river that climbs where no river should. Within it lies a small buried Canthian settlement of strange metal homes, cartridges instead of books, old shrines, and massive constructs left behind to test those who enter. One such guardian, the Canthian Steel Sentinel, oversaw what it called the Beginner Water Trial and granted the party the Seaglide after they passed. Beyond those ruins, the basin opens into denser fog and greater danger still, including a colossal newborn leviathan that drifts wingless through the cavern and exhales a choking mist into the dark. The whole place feels like a fragment of another age sealed inside stone and water.",
+      "tags": ["caybluff", "fog", "canthian", "ruins", "leviathan", "trial"],
+      "details": {
+        "Reached Through": "A river cave south of Portale",
+        "Known For": "A hidden Canthian settlement and the Beginner Water Trial",
+        "Major Guardian": "The Canthian Steel Sentinel",
+        "Deeper Threat": "A massive newborn fog leviathan living beyond the settlement"
+      }
+    },
+    {
+      "id": "function-chronurgic-safety-anchor",
+      "category": "functions",
+      "name": "Chronurgic Safety Anchor",
+      "summary": "A Spire-linked safeguard that can grant the party a limited second chance when time itself turns against them.",
+      "description": "The Chronurgic Safety Anchor is a function tied to the Spire and to Revis's influence over time. What the party has seen of it suggests that it can pull events backward just enough to prevent disaster, effectively granting a second chance when things go catastrophically wrong. It is not limitless. Dressa reported that after one such use, a light on the back wall of the Spire went dark and Rennick felt magic being consumed, indicating that each use burns through a finite reserve. However much deeper theory may exist behind it, the function is already understood in practice as a precious and trackable emergency measure.",
+      "tags": ["function", "spire", "time", "Revis", "second chance"],
+      "details": {
+        "Type": "Spire function",
+        "Observed Effect": "Can rewind events enough to grant the party another chance",
+        "Limitation": "Uses appear finite and consume stored magic",
+        "Tracking": "Remaining uses can be tracked by the lights on the Spire's back wall"
+      }
+    },
+    {
+      "id": "function-seaglide",
+      "category": "functions",
+      "name": "Seaglide",
+      "summary": "A summoned water-travel capability that lets the party cut through currents at speed for a limited time.",
+      "description": "The Seaglide is a capability the party now carries with them after passing the Beginner Water Trial in the Fog Basin. By placing a hand over the chest and imagining flowing water, the user can summon a tool or effect that propels them rapidly through water, fast enough to overcome currents that had previously blocked all progress. At present, the Seaglide appears to function for about five minutes at a time. The party has not yet seen what happens when that limit is fully exhausted, though the available time seems to regenerate on its own between uses.",
+      "tags": ["function", "water", "travel", "canthian", "fog basin"],
+      "details": {
+        "Activation": "Hold a hand over the chest and imagine running water",
+        "Use": "Rapid underwater traversal through difficult currents",
+        "Current Limit": "Roughly five minutes of use at a time",
+        "Recharge": "The time limit appears to regenerate on its own"
+      }
+    },
+    {
+      "id": "function-traversal",
+      "category": "functions",
+      "name": "Traversal",
+      "summary": "A Spire function that allows instant movement to places marked by Black Shards.",
+      "description": "Traversal is one of the Spire's known functions, allowing the party to move instantly to places that have provided them with Black Shards. Once a valid shard has been obtained and integrated with the Spire's broader systems, Traversal appears to let the group relocate there without ordinary travel. The function became available after Caelum was inserted into the Spire, and the first known destination was added through the Black Shard recovered from the Caybluff Canthian settlement. The exact limits of Traversal are still poorly understood, but its practical meaning is clear: distance matters less once the Spire recognizes a destination.",
+      "tags": ["function", "spire", "travel", "black shards", "teleportation", "Caelum"],
+      "details": {
+        "Type": "Spire function",
+        "Requirement": "A valid Black Shard from the destination",
+        "Unlocked By": "Caelum's integration with the Spire",
+        "Known Use": "Instant travel to recognized locations"
+      }
+    },
+    {
+      "id": "lore-the-o-codex",
+      "category": "functions",
+      "name": "The O-Codex",
+      "summary": "A knowledge interface unlocked through Perifreul that the party can access anytime, anywhere, for reasons no one fully understands.",
+      "description": "The O-Codex is a strange informational system unlocked when Perifreul was inserted into the Spire. From the party's perspective, it is a living record they can access anywhere in the world, with the exact same information presented to them that the players themselves can view. Its origins remain unknown, and even more baffling is the way it seems to update on its own without any obvious mechanism. Whether it is a product of the Spire, Perifreul's domain over knowledge, or some older system layered beneath both is still unclear.",
+      "tags": ["lore", "knowledge", "spire", "Perifreul", "codex"],
+      "aliases": ["O-Codex"],
+      "details": {
+        "Unlocked By": "Perifreul's integration with the Spire",
+        "Access": "Available to the party anytime, anywhere",
+        "Strange Quality": "Updates automatically through an unknown mechanism",
+        "Origin": "Unknown"
+      }
+    },
+    {
+      "id": "lore-channeling",
+      "category": "functions",
+      "name": "Channeling",
+      "summary": "A Spire-unlocked form of Divion assignment that lets the party channel divine power through certain people they have met.",
+      "description": "Channeling is the practical name for the Divion assignment capability unlocked through Perifreul. It allows party members to tap into the divine power of certain people they have encountered, effectively channeling the blessings those individuals have already received. So far, the party's known options come from Dressa, Tornga, and Castro. Though the deeper rules are still uncertain, Channeling appears to be the bridge that lets the party borrow divine force without needing to be the original bearers of those blessings.",
+      "tags": ["lore", "divion", "divine power", "spire", "Perifreul", "channeling"],
+      "aliases": ["Divion Assignment"],
+      "details": {
+        "Unlocked By": "Perifreul's integration with the Spire",
+        "What It Does": "Lets the party channel the divine powers of people they have met",
+        "Known Sources": "Dressa, Tornga, and Castro",
+        "Current Understanding": "A way to borrow divine blessings through the Spire"
+      }
+    },
+    {
+      "id": "lore-black-shards",
+      "category": "lore",
+      "name": "Black Shards",
+      "summary": "Strange dark fragments dispensed by ancient sites, used by the Spire to enable Traversal.",
+      "description": "Black Shards are unusual objects dispensed by certain ancient settlements and trial sites. They appear to serve as a kind of destination key, allowing the Spire to recognize and connect to the place that issued them. Once brought back and properly integrated, a shard can enable Traversal, letting the party move there instantly through the Spire rather than by road, sea, or air. Their exact makeup remains strange even by magical standards, and they feel less like treasure than pieces of an older system still waiting to be reactivated.",
+      "tags": ["lore", "spire", "traversal", "ancient", "shards"],
+      "details": {
+        "Source": "Dispensed by certain ancient settlements or trial sites",
+        "Primary Use": "Enable Traversal through the Spire",
+        "Importance": "Acts as a destination key for instant movement"
+      }
+    },
+    {
+      "id": "lore-canthians",
+      "category": "lore",
+      "name": "Canthians",
+      "summary": "An ancient people whose hidden settlements, strange steel, and constructed guardians still test intruders long after their disappearance.",
+      "description": "The Canthians appear to have been an advanced people whose surviving settlements are filled with metalwork, engineered systems, and trials that continue operating long after their makers vanished. Their ruins, always locked behind 'Canthian Doors,' suggest a culture that built not only tools and structures, but also steel guardians and artificial beasts to defend their homes and test those who entered. Known examples include the Canthian Steel Sentinel and the Canthian Frost Wolf, AKA 'The Winged Wolf'. Their materials, methods, and lingering automated intelligence all point to a civilization whose craft blurred the line between mechanism, architecture, and living creatures. Recent discoveries in Giaslan also suggest that Canthian settlements preserved categorized knowledge on subjects such as Manifests and the Aetherwell.",
+      "tags": ["lore", "ancient civilization", "constructs", "steel", "trials", "guardians", "canthian doors"],
+      "aliases": ["Canthian Steel Sentinel", "Winged Wolf", "Canthian Steel Frost-Wolf"],
+      "details": {
+        "Known For": "Advanced settlements, engineered guardians, and enduring trials",
+        "Construct Style": "Steel beasts, sentinels, and other protective creations",
+        "Evidence Found": "Hidden settlements all across the world",
+        "Recovered Knowledge": "Cartridge-like libraries discussing subjects such as Manifests and the Aetherwell"
+      }
+    },
+    {
+      "id": "lore-aetherwell",
+      "category": "lore",
+      "name": "Aetherwell",
+      "summary": "A mysterious force tied to the creation of Manifests, seemingly shaped in part by danger, isolation, and the headspace of nearby minds.",
+      "description": "The Aetherwell is the force currently believed to create Manifests, though not in any simple or predictable way. Notes recovered from a Canthian collection suggest that its effects are partly random, but that nearby conscious beings, their significance, and their headspace can influence what form a Manifest takes. The same notes also suggest that isolation and dangerous locations are especially conducive to what they call the Aetherwell Effect. If true, then powerful items may not merely appear where danger already exists; they may be shaped by the thoughts, stakes, and pressure surrounding those places.",
+      "tags": ["lore", "manifests", "magic", "aetherwell", "aether"],
+      "details": {
+        "Known For": "Creating Manifests",
+        "Influences": "Context, significance, and the headspace of nearby conscious entities",
+        "Conducive Conditions": "Isolation and dangerous areas",
+        "Related Term": "The Aetherwell Effect"
+      }
+    },
+    {
+      "id": "lore-the-unwound",
+      "category": "lore",
+      "name": "The Unwound",
+      "summary": "A dangerous organization devoted to restoring the Originator, structured in ranks from Threads to Tapestries.",
+      "description": "The Unwound are an organized and deeply unsettling force dedicated to the return of a being called the Originator, whose existence is said to threaten everything else with nonexistence. Their members are arranged by rank, ascending from Threads to Yarns, Knots, Spools, and finally Tapestries. According to Caelum, many members at the rank of Knot and above possess Divions, making the group's upper tiers especially dangerous. Their presence has already been felt through hidden facilities, manipulated captives, and the sense that even apparent defeats may fit comfortably inside their larger plans.",
+      "tags": ["lore", "organization", "originator", "divions", "enemy"],
+      "details": {
+        "Purpose": "To bring back the Originator",
+        "Ranks": "Threads, Yarns, Knots, Spools, and Tapestries",
+        "Threat Level": "Higher ranks often possess Divions",
+        "Current Relevance": "Linked to captivity, disappearances, and covert operations in Caybluff"
+      }
+    },
+    {
+      "id": "lore-knacks",
+      "category": "lore",
+      "name": "Knacks",
+      "summary": "Unusual talents that some people are simply born with, or else develop in ways that feel abnormal even by magical standards.",
+      "description": "Knacks are odd talents that appear in certain people without following the usual paths of study, training, or inherited magical discipline. Some seem to be born with them outright, while others develop them in ways that feel abrupt, unnatural, or difficult to explain. However they emerge, Knacks stand apart from ordinary learned magic as abilities that feel personal, instinctive, and often unsettlingly specific.",
+      "tags": ["lore", "talents", "magic", "innate", "abnormal"],
+      "details": {
+        "What They Are": "Unusual personal abilities outside ordinary magical training",
+        "How They Appear": "Either innate from birth or developed in abnormal ways",
+        "Known Example": "Trish's foresight"
+      }
+    },
+    {
+      "id": "eschaton-caelum",
+      "category": "eschatons",
+      "name": "Caelum",
+      "summary": "The Eschaton of Position and Continuity, found in the Ocean Wall and responsible for unlocking Traversal within the Spire.",
+      "description": "Caelum is the Eschaton of Position and Continuity, discovered within the Ocean Wall after the party gained the means to pass its deadly currents. When Dove reached him, Caelum offered answers on a select number of topics and recognized the importance of the Conduit she carried, which is why he was willing to speak with her at all. Through him, the party learned more about the Malaise, the Unwound, and the Spire itself. Once integrated into the Spire, Caelum unlocked Traversal, allowing Black Shards to establish new destinations for instant travel.",
+      "tags": ["eschaton", "position", "continuity", "spire", "traversal", "ocean wall"],
+      "details": {
+        "Title": "Eschaton of Position and Continuity",
+        "Found In": "The Ocean Wall",
+        "Known For": "Providing answers and unlocking Traversal",
+        "Spoke To Dove Because": "He recognized the Conduit she carried"
+      }
+    },
+    {
+      "id": "eschaton-perifreul",
+      "category": "eschatons",
+      "name": "Perifreul",
+      "summary": "Giaslan's eschaton, associated with Knowledge and Cold, found behind a Canthian door on Viserion's Peak.",
+      "description": "Perifreul is the eschaton tied to Giaslan and bears authority over Knowledge and Cold. The party first found him in a Canthian chamber hidden behind a door on Viserion's Peak, surrounded by books and an Ice Shard Weapon. When integrated into the Spire, Perifreul unlocked two major functions for the party. The first is the O-Codex, a knowledge interface the party can now access anytime and anywhere, matching exactly what the players themselves are able to view. The second is Divion assignment, more commonly understood as Channeling, which allows party members to draw on the divine power of certain people they have met and channel the blessings those individuals carry. Much about Perifreul remains unclear for now, but even the setting of that discovery suggests that he is bound not just to ice, but to preserved knowledge and the strange old systems left behind by the Canthians.",
+      "tags": ["eschaton", "giaslan", "knowledge", "cold", "canthian"],
+      "details": {
+        "Domain": "Giaslan",
+        "Title": "Eschaton of Knowledge and Cold",
+        "Found In": "A Canthian chamber on Viserion's Peak",
+        "Unlocked In The Spire": "The O-Codex and Channeling"
+      }
+    },
+    {
+      "id": "manifest-ice-shard-weapon",
+      "category": "manifests",
+      "name": "Ice Shard Weapon",
+      "summary": "A cold-forged manifest currently taking the form of a longsword, recovered from Perifreul's chamber on Viserion's Peak.",
+      "description": "The Ice Shard Weapon is a manifest found within the Canthian chamber that held Perifreul on Viserion's Peak. Though it is currently taking the form of a longsword, its name suggests that the weapon may not be limited to that shape forever. Everything about its presentation ties it to Giaslan's cold, to old Canthian design, and to the eschaton discovered beside it.",
+      "tags": ["manifest", "weapon", "ice", "giaslan", "canthian", "perifreul"],
+      "details": {
+        "Current Form": "Longsword",
+        "Found In": "Perifreul's chamber on Viserion's Peak",
+        "Current Wielder": "Bones"
+      }
+    },
+    {
+      "id": "superficial-timekeeping-and-seasons",
+      "category": "superficial-info",
+      "name": "Seasons and Time",
+      "summary": "The world tracks years through three Kornios, each divided into four named seasons of thirty days each.",
+      "description": "Time is commonly measured through a structured seasonal system. One year contains three Kornios, and each Kornios contains four seasons: Giyat/Kiyat for Earth, Pyrkagia for Fire, Vrontia for Thunder, and Neroia for Water. Each season contains three spans, and each span contains thirty days. Shorthand notation is often used when recording dates, allowing people to quickly mark both season and day within the year.",
+      "tags": ["calendar", "timekeeping", "seasons", "dates", "superficial info"],
+      "aliases": ["Timekeeping", "Calendar"],
+      "details": {
+        "Year Structure": "1 Year = 3 Kornios; 1 Kornios = 4 seasons; 1 season = 3 spans = 30 days",
+        "Season Names": "Γηyat/Kiyat (Earth), πυρκαγιά/Pyrkagia (Fire), βροντήiá/Vrontia (Thunder), Νερόiá/Neroia (Water)",
+        "Example Date": "Sixth day of the second span of the third Vrontia of the year 1499 = V3;26/1499 or V3;s2d6/1499",
+        "Short Example": "Day 2 of the first Neroia of 1499 = N1;2/1499"
+      }
+    },
+    {
+      "id": "superficial-distance-measurements",
+      "category": "superficial-info",
+      "name": "Distance Measurements",
+      "summary": "A single domain spans 192 miles across, and steady overland travel can cross one in about eight days.",
+      "description": "Distances across this part of the world are often thought of in domain-scale measurements. One domain is 192 miles across, covering 36,864 square miles. A full 3x3 domain grid spans 576 by 576 miles, or 331,776 square miles. At a walking pace of roughly one mile every twenty minutes for eight hours a day, a traveler can cross one domain in about eight days, or the full 3x3 grid in twenty-four days, which is roughly two-thirds of a season.",
+      "tags": ["distance", "travel", "domains", "measurement", "superficial info"],
+      "aliases": ["Travel Distances", "World Scale"],
+      "details": {
+        "One Domain": "192 miles across; 36,864 square miles",
+        "Three-By-Three Grid": "576 by 576 miles; 331,776 square miles",
+        "Walking Pace Reference": "A 20-minute mile for 8 hours a day crosses 1 domain in 8 days",
+        "Long Travel Reference": "The full 3x3 grid can be crossed in 24 days, or about two-thirds of a season"
+      }
+    },
+    {
+      "id": "superficial-deities",
+      "category": "superficial-info",
+      "name": "Deities",
+      "summary": "A quick reference for the deities most commonly associated with cleric domains and paladin oaths.",
+      "description": "Different divine paths are commonly associated with different gods, though not every title is universally settled and some remain unnamed. Clerics often frame their worship through domains, while paladins more often tie themselves to ideals or oaths that have grown close to particular deities over time. The following list reflects the associations most relevant to the party's current understanding.",
+      "tags": ["deities", "cleric", "paladin", "religion", "superficial info"],
+      "details": {
+        "Cleric Domains": "Arcana - Arcanthar, the Caster; Death - Thanatos; Life - Helios; Forge - Hestarion; Grave - Thanatos; Knowledge - Uriel; Light - Solanthea; Twilight - Umbrahel; Nature - Elarwen, the Huntress; Order - Bahamut; Peace - Halcya; Tempest - Fulminor; Trickery - Nocturn; War - Tyrrgal",
+        "Paladin Oaths": "Ancients - Uriel; Conquest - Tyrrgal; Crown - Uriel; Devotion - Valstrax; Glory - Ascendra; Redemption - Pharis; Sea - Thalassor; Watchers - Sentiris; Vengeance - Diablo; Oathbreaker - Nothing"
+      }
+    },
+    {
+      "id": "summary-session-15",
+      "category": "summaries",
+      "title": "Session #15: The Door on Viserion's Peak",
+      "summary": "The party hunted the Winged Wolf near Viserion's Peak, Castro and Tornga arrived in time to help, and a hidden Canthian chamber led them to Perifreul.",
+      "description": "While Eris, Bones, and Thiollier hunted the Winged Wolf near the base of Viserion's Peak, Valorie and Dove spent the day tutoring Caleb, son of Castro Faehand. Castro later returned home, collected Tornga, and followed a strange magical signature that felt unlike anything he knew. That trail brought the second group straight to the first just in time to help finish the fight. In the aftermath, lingering magic from the creature was used to improve Valorie's staff, Castro restored some of Bones's magic through what Valorie identified as a Divion, and the group followed the strange residue farther up the mountain. There they found a hidden Canthian door leading to a chamber containing Perifreul, an Ice Shard Weapon, and books discussing Manifests and the Aetherwell. The session ended when Valorie reached out to touch Perifreul and the world went dark.",
+      "tags": ["summary", "giaslan", "viserions peak", "perifreul", "canthian", "winged wolf"],
+      "details": {
+        "Major Discoveries": "Perifreul, the Ice Shard Weapon, and new information on the Aetherwell and Manifests",
+        "Notable NPC": "Castro Faehand",
+        "Closing Moment": "Valorie touched Perifreul and was plunged into darkness"
       }
     }
   ]

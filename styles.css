@@ -62,6 +62,7 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
+  will-change: transform;
   background:
     radial-gradient(circle at 9% 14%, rgba(238, 250, 255, 0.95) 0 1px, transparent 1.8px),
     radial-gradient(circle at 14% 22%, rgba(90, 232, 255, 0.75) 0 1px, transparent 1.9px),
@@ -79,6 +80,17 @@ body::after {
     radial-gradient(circle at 79% 10%, rgba(238, 250, 255, 0.8) 0 1px, transparent 1.8px),
     radial-gradient(circle at 86% 16%, rgba(90, 232, 255, 0.82) 0 1px, transparent 2px),
     radial-gradient(circle at 91% 24%, rgba(122, 135, 255, 0.66) 0 1px, transparent 2px),
+    radial-gradient(circle at 7% 38%, rgba(238, 250, 255, 0.82) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 16% 45%, rgba(90, 232, 255, 0.78) 0 1px, transparent 2px),
+    radial-gradient(circle at 24% 40%, rgba(122, 135, 255, 0.66) 0 1px, transparent 2px),
+    radial-gradient(circle at 31% 48%, rgba(238, 250, 255, 0.88) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 43% 43%, rgba(90, 232, 255, 0.74) 0 1px, transparent 2px),
+    radial-gradient(circle at 51% 36%, rgba(238, 250, 255, 0.84) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 59% 44%, rgba(122, 135, 255, 0.68) 0 1px, transparent 2px),
+    radial-gradient(circle at 67% 37%, rgba(90, 232, 255, 0.82) 0 1px, transparent 2px),
+    radial-gradient(circle at 76% 46%, rgba(238, 250, 255, 0.84) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 84% 40%, rgba(90, 232, 255, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 93% 35%, rgba(122, 135, 255, 0.64) 0 1px, transparent 2px),
     radial-gradient(circle at 12% 72%, rgba(238, 250, 255, 0.85) 0 1px, transparent 1.9px),
     radial-gradient(circle at 20% 66%, rgba(90, 232, 255, 0.72) 0 1px, transparent 2px),
     radial-gradient(circle at 28% 76%, rgba(122, 135, 255, 0.64) 0 1px, transparent 2px),
@@ -88,6 +100,15 @@ body::after {
     radial-gradient(circle at 72% 78%, rgba(122, 135, 255, 0.64) 0 1px, transparent 2px),
     radial-gradient(circle at 83% 68%, rgba(90, 232, 255, 0.78) 0 1px, transparent 2px),
     radial-gradient(circle at 89% 76%, rgba(238, 250, 255, 0.82) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 6% 88%, rgba(238, 250, 255, 0.84) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 17% 92%, rgba(90, 232, 255, 0.76) 0 1px, transparent 2px),
+    radial-gradient(circle at 26% 86%, rgba(122, 135, 255, 0.64) 0 1px, transparent 2px),
+    radial-gradient(circle at 36% 91%, rgba(238, 250, 255, 0.82) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 47% 87%, rgba(90, 232, 255, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle at 57% 93%, rgba(238, 250, 255, 0.84) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 68% 88%, rgba(122, 135, 255, 0.66) 0 1px, transparent 2px),
+    radial-gradient(circle at 79% 92%, rgba(90, 232, 255, 0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 90% 89%, rgba(238, 250, 255, 0.84) 0 1px, transparent 1.9px),
     linear-gradient(114deg, transparent 0 8.9%, rgba(90, 232, 255, 0.08) 9%, transparent 9.12%) no-repeat,
     linear-gradient(131deg, transparent 0 13.9%, rgba(122, 135, 255, 0.08) 14%, transparent 14.12%) no-repeat,
     linear-gradient(102deg, transparent 0 20.9%, rgba(90, 232, 255, 0.08) 21%, transparent 21.12%) no-repeat,
@@ -97,7 +118,13 @@ body::after {
     linear-gradient(112deg, transparent 0 52.9%, rgba(90, 232, 255, 0.08) 53%, transparent 53.12%) no-repeat,
     linear-gradient(142deg, transparent 0 60.9%, rgba(122, 135, 255, 0.07) 61%, transparent 61.12%) no-repeat,
     linear-gradient(116deg, transparent 0 68.9%, rgba(90, 232, 255, 0.08) 69%, transparent 69.12%) no-repeat,
-    linear-gradient(104deg, transparent 0 77.9%, rgba(90, 232, 255, 0.08) 78%, transparent 78.12%) no-repeat;
+    linear-gradient(104deg, transparent 0 77.9%, rgba(90, 232, 255, 0.08) 78%, transparent 78.12%) no-repeat,
+    linear-gradient(126deg, transparent 0 18.9%, rgba(90, 232, 255, 0.1) 19%, transparent 19.12%) no-repeat,
+    linear-gradient(110deg, transparent 0 29.9%, rgba(122, 135, 255, 0.09) 30%, transparent 30.12%) no-repeat,
+    linear-gradient(138deg, transparent 0 40.9%, rgba(90, 232, 255, 0.1) 41%, transparent 41.12%) no-repeat,
+    linear-gradient(116deg, transparent 0 57.9%, rgba(122, 135, 255, 0.09) 58%, transparent 58.12%) no-repeat,
+    linear-gradient(130deg, transparent 0 71.9%, rgba(90, 232, 255, 0.1) 72%, transparent 72.12%) no-repeat,
+    linear-gradient(108deg, transparent 0 84.9%, rgba(122, 135, 255, 0.09) 85%, transparent 85.12%) no-repeat;
   background-size:
     100% 100%,
     100% 100%,
@@ -128,8 +155,53 @@ body::after {
     100% 100%,
     100% 100%,
     100% 100%;
-  opacity: 0.28;
+  opacity: 0.46;
+  animation: constellation-drift 15s linear infinite;
   z-index: -1;
+}
+
+@keyframes constellation-drift {
+  0% {
+    transform: translate3d(0, -11px, 0) rotate(0.12deg);
+  }
+
+  12.5% {
+    transform: translate3d(8px, -8px, 0) rotate(0.16deg);
+  }
+
+  25% {
+    transform: translate3d(11px, 0, 0) rotate(0.1deg);
+  }
+
+  37.5% {
+    transform: translate3d(8px, 8px, 0) rotate(0.04deg);
+  }
+
+  50% {
+    transform: translate3d(0, 11px, 0) rotate(-0.05deg);
+  }
+
+  62.5% {
+    transform: translate3d(-8px, 8px, 0) rotate(-0.12deg);
+  }
+
+  75% {
+    transform: translate3d(-11px, 0, 0) rotate(-0.16deg);
+  }
+
+  87.5% {
+    transform: translate3d(-8px, -8px, 0) rotate(-0.05deg);
+  }
+
+  100% {
+    transform: translate3d(0, -11px, 0) rotate(0.12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
 }
 
 button,
@@ -232,15 +304,17 @@ img {
 
 .view-tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.8rem;
-  overflow-x: auto;
+  overflow: visible;
   padding-top: 0.35rem;
   padding-bottom: 0.35rem;
-  scrollbar-width: thin;
 }
 
 .view-tab {
-  flex: 0 0 auto;
+  flex: 0 1 240px;
+  max-width: 240px;
   min-height: 3rem;
   padding: 0.8rem 1.15rem;
   border: 1px solid var(--border);
@@ -259,6 +333,11 @@ img {
   color: var(--text-main);
   box-shadow: 0 0 22px rgba(90, 232, 255, 0.1);
   outline: none;
+}
+
+.view-tab:first-child {
+  flex-basis: 100%;
+  max-width: 320px;
 }
 
 .view-tab.is-active {
