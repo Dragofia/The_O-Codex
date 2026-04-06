@@ -58,6 +58,34 @@ Tips:
 - `image` is optional. If you leave it out, the site shows a fallback card image.
 - `details` is optional. It is a good place for neat extra info.
 
+For Manifest and Divion entries, you can add a combat-friendly quick reference block with `quickStats`:
+
+```json
+"quickStats": {
+  "Action": "Bonus Action",
+  "Range": "30 feet",
+  "Charges": "3 per long rest"
+}
+```
+
+Those stats render before the normal description/details in the modal.
+
+If a Manifest or Divion can be upgraded through a quest, link it with:
+
+```json
+"upgradeQuestId": "quest-example-id",
+"upgradeStatus": "available"
+```
+
+or
+
+```json
+"upgradeQuestId": "quest-example-id",
+"upgradeStatus": "completed"
+```
+
+The modal will then show a sentence with the quest name as a clickable link.
+
 For quest entries, you can mark progress with a `questStatus` field:
 
 ```json
@@ -71,6 +99,14 @@ or
 ```
 
 If you leave `questStatus` out on a quest entry, the site treats it as ongoing by default.
+
+For Story entries, you can push more urgent or important threads upward with a `priority` field such as:
+
+```json
+"priority": "critical"
+```
+
+Other useful values are `high`, `normal`, `low`, and `background`.
 
 You can also add extra fields outside `details`, like `"status": "Missing"` or `"dangerLevel": "High"`. The site will still show them in the modal details area automatically.
 

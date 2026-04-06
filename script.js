@@ -14,6 +14,20 @@ const RESERVED_ENTRY_KEYS = new Set([
   "aliases",
   "image",
   "imageLayout",
+  "quickStats",
+  "upgradeQuestId",
+  "upgradeNotes",
+  "linkedManifestId",
+  "linkedManifestIds",
+  "linkedDivionId",
+  "linkedDivionIds",
+  "upgradesEntryId",
+  "upgradesEntryIds",
+  "upgradesManifestId",
+  "upgradesManifestIds",
+  "upgradesDivionId",
+  "upgradesDivionIds",
+  "upgradeStatus",
   "details",
   "_createdIndex"
 ]);
@@ -56,6 +70,10 @@ const elements = {
   modalDescription: document.getElementById("modal-description"),
   modalBody: document.getElementById("modal-body"),
   modalMedia: document.getElementById("modal-media"),
+  modalQuickStatsSection: document.getElementById("modal-quick-stats-section"),
+  modalQuickStats: document.getElementById("modal-quick-stats"),
+  modalUpgradeSection: document.getElementById("modal-upgrade-section"),
+  modalUpgradeCopy: document.getElementById("modal-upgrade-copy"),
   modalTagsSection: document.getElementById("modal-tags-section"),
   modalTags: document.getElementById("modal-tags"),
   modalAliasesSection: document.getElementById("modal-aliases-section"),
@@ -427,7 +445,7 @@ function buildEntryCard(entry, categoryLabel) {
 
   category.textContent = categoryLabel;
   meta.replaceChildren(category);
-  appendQuestStatusBadge(meta, entry);
+  appendEntryMetaBadge(meta, entry);
   title.textContent = getEntryTitle(entry);
   summary.textContent = entry.summary ?? "No summary added yet.";
   button.setAttribute("aria-label", `Open details for ${getEntryTitle(entry)}`);
@@ -524,7 +542,7 @@ function getOrderedEntries(entries) {
   const orderedEntries = [...entries];
 
   if (state.activeView === "complete-codex") {
-    orderedEntries.sort((left, right) => right._createdIndex - left._createdIndex);
+    orderedEntries.sort((left, right) => compareEntries(left, right, "newest-first", { preserveScore: !!state.query }));
     return orderedEntries;
   }
 
@@ -532,7 +550,16 @@ function getOrderedEntries(entries) {
   return orderedEntries;
 }
 
-function compareEntries(left, right, sortMode) {
+function compareEntries(left, right, sortMode, options = {}) {
+  if (options.preserveScore && right._score !== left._score) {
+    return right._score - left._score;
+  }
+
+  const storyPriorityComparison = compareStoryPriority(left, right);
+  if (storyPriorityComparison !== 0) {
+    return storyPriorityComparison;
+  }
+
   const leftTitle = getEntryTitle(left);
   const rightTitle = getEntryTitle(right);
 
@@ -547,6 +574,14 @@ function compareEntries(left, right, sortMode) {
     default:
       return right._createdIndex - left._createdIndex;
   }
+}
+
+function compareStoryPriority(left, right) {
+  if (left.category !== "stories" || right.category !== "stories") {
+    return 0;
+  }
+
+  return getStoryPriorityWeight(right) - getStoryPriorityWeight(left);
 }
 
 function passesCategoryFilter(entry) {
@@ -777,18 +812,6 @@ function toggleSetValue(set, value) {
   set.add(value);
 }
 
-function appendQuestStatusBadge(container, entry) {
-  if (entry.category !== "quests") {
-    return;
-  }
-
-  const badge = document.createElement("span");
-  const questStatus = getQuestStatus(entry);
-  badge.className = `entry-status-badge entry-status-badge--${questStatus}`;
-  badge.textContent = questStatus === "completed" ? "Completed" : "Ongoing";
-  container.append(badge);
-}
-
 function getQuestStatus(entry) {
   const normalized = String(entry.questStatus ?? "")
     .trim()
@@ -799,6 +822,118 @@ function getQuestStatus(entry) {
   }
 
   return "ongoing";
+}
+
+function appendEntryMetaBadge(container, entry) {
+  const badgeConfig = getEntryMetaBadgeConfig(entry);
+
+  if (!badgeConfig) {
+    return;
+  }
+
+  const badge = document.createElement("span");
+  badge.className = `entry-meta-badge ${badgeConfig.className}`;
+  badge.textContent = badgeConfig.label;
+  container.append(badge);
+}
+
+function getEntryMetaBadgeConfig(entry) {
+  if (entry.category === "quests") {
+    const questStatus = getQuestStatus(entry);
+    return {
+      label: questStatus === "completed" ? "Completed" : "Ongoing",
+      className: `entry-meta-badge--quest-${questStatus}`
+    };
+  }
+
+  if (entry.category === "stories") {
+    const storyPriority = getStoryPriorityLabel(entry);
+
+    if (!storyPriority) {
+      return null;
+    }
+
+    return {
+      label: storyPriority.label,
+      className: `entry-meta-badge--story-${storyPriority.tone}`
+    };
+  }
+
+  return null;
+}
+
+function getStoryPriorityWeight(entry) {
+  const rawPriority = entry.priority;
+
+  if (typeof rawPriority === "number" && Number.isFinite(rawPriority)) {
+    return rawPriority;
+  }
+
+  const normalized = String(rawPriority ?? "")
+    .trim()
+    .toLowerCase();
+
+  switch (normalized) {
+    case "critical":
+    case "urgent":
+      return 4;
+    case "high":
+      return 3;
+    case "medium":
+    case "normal":
+      return 2;
+    case "low":
+      return 1;
+    case "background":
+    case "backburner":
+      return 0;
+    default:
+      return 0;
+  }
+}
+
+function getStoryPriorityLabel(entry) {
+  const rawPriority = entry.priority;
+
+  if (rawPriority == null || rawPriority === "") {
+    return null;
+  }
+
+  if (typeof rawPriority === "number" && Number.isFinite(rawPriority)) {
+    if (rawPriority >= 4) {
+      return { label: "Critical", tone: "critical" };
+    }
+
+    if (rawPriority >= 3) {
+      return { label: "High", tone: "high" };
+    }
+
+    if (rawPriority >= 2) {
+      return { label: "Normal", tone: "normal" };
+    }
+
+    return { label: "Low", tone: "low" };
+  }
+
+  const normalized = String(rawPriority).trim().toLowerCase();
+
+  switch (normalized) {
+    case "critical":
+    case "urgent":
+      return { label: "Critical", tone: "critical" };
+    case "high":
+      return { label: "High", tone: "high" };
+    case "medium":
+    case "normal":
+      return { label: "Normal", tone: "normal" };
+    case "background":
+    case "backburner":
+      return { label: "Background", tone: "low" };
+    case "low":
+      return { label: "Low", tone: "low" };
+    default:
+      return { label: formatLabel(rawPriority), tone: "normal" };
+  }
 }
 
 function getActiveViewLabel() {
@@ -818,6 +953,7 @@ function openModal(entryId) {
   }
 
   const category = state.worldData.categories.find((item) => item.id === entry.category);
+  const quickStatPairs = collectQuickStatPairs(entry);
   const detailPairs = collectDetailPairs(entry);
 
   state.selectedEntryId = entryId;
@@ -828,6 +964,8 @@ function openModal(entryId) {
   elements.modalMedia.replaceChildren(buildMediaFrame(entry, true));
   applyModalMediaLayout("side");
   void updateModalMediaLayout(entry);
+  renderQuickStatPairs(quickStatPairs);
+  renderUpgradePath(entry);
 
   elements.modalTags.replaceChildren(...buildChips(entry.tags));
   elements.modalTagsSection.classList.toggle("hidden", entry.tags.length === 0);
@@ -938,6 +1076,33 @@ function collectDetailPairs(entry) {
   return detailPairs;
 }
 
+function collectQuickStatPairs(entry) {
+  if (!isReferenceFirstEntry(entry)) {
+    return [];
+  }
+
+  if (!entry.quickStats || typeof entry.quickStats !== "object" || Array.isArray(entry.quickStats)) {
+    return [];
+  }
+
+  return Object.entries(entry.quickStats);
+}
+
+function isReferenceFirstEntry(entry) {
+  return ["manifests", "divions"].includes(entry.category);
+}
+
+function renderQuickStatPairs(quickStatPairs) {
+  elements.modalQuickStats.innerHTML = "";
+  elements.modalQuickStatsSection.classList.toggle("hidden", quickStatPairs.length === 0);
+
+  if (quickStatPairs.length === 0) {
+    return;
+  }
+
+  elements.modalQuickStats.append(buildDetailItemsFragment(quickStatPairs));
+}
+
 function renderDetailPairs(detailPairs) {
   elements.modalDetails.innerHTML = "";
   elements.modalDetailsSection.classList.toggle("hidden", detailPairs.length === 0);
@@ -947,9 +1112,13 @@ function renderDetailPairs(detailPairs) {
     return;
   }
 
+  elements.modalDetails.append(buildDetailItemsFragment(detailPairs));
+}
+
+function buildDetailItemsFragment(pairs) {
   const fragment = document.createDocumentFragment();
 
-  detailPairs.forEach(([label, value]) => {
+  pairs.forEach(([label, value]) => {
     const wrapper = document.createElement("dl");
     wrapper.className = "detail-item";
 
@@ -963,7 +1132,169 @@ function renderDetailPairs(detailPairs) {
     fragment.append(wrapper);
   });
 
-  elements.modalDetails.append(fragment);
+  return fragment;
+}
+
+function renderUpgradePath(entry) {
+  const upgradeInfo = getUpgradeInfo(entry);
+  elements.modalUpgradeCopy.replaceChildren();
+  elements.modalUpgradeSection.classList.toggle("hidden", !upgradeInfo);
+
+  if (!upgradeInfo) {
+    return;
+  }
+
+  elements.modalUpgradeCopy.append(buildLinkedEntryCopy(upgradeInfo.prefix, upgradeInfo.targets));
+
+  if (upgradeInfo.notes.length > 0) {
+    upgradeInfo.notes.forEach((note) => {
+      const noteLine = document.createElement("div");
+      noteLine.textContent = note;
+      elements.modalUpgradeCopy.append(noteLine);
+    });
+  }
+}
+
+function getUpgradeInfo(entry) {
+  const notes = normalizeUpgradeNotes(entry.upgradeNotes);
+
+  if (entry.upgradeQuestId) {
+    const linkedQuest = state.worldData.entries.find((item) => item.id === entry.upgradeQuestId);
+    if (!linkedQuest) {
+      return null;
+    }
+
+    const upgradeStatus = getUpgradeStatus(entry);
+
+    return {
+      prefix: upgradeStatus === "completed"
+        ? "Was upgraded upon completing "
+        : "Can be upgraded by completing ",
+      notes,
+      targets: [
+        {
+          id: linkedQuest.id,
+          title: getEntryTitle(linkedQuest)
+        }
+      ]
+    };
+  }
+
+  if (entry.category === "quests") {
+    const linkedEntries = getQuestUpgradeTargets(entry);
+    if (linkedEntries.length === 0) {
+      return null;
+    }
+
+    return {
+      prefix: getQuestStatus(entry) === "completed" ? "Upgraded " : "Can upgrade ",
+      notes,
+      targets: linkedEntries.map((linkedEntry) => ({
+        id: linkedEntry.id,
+        title: getEntryTitle(linkedEntry)
+      }))
+    };
+  }
+
+  return null;
+}
+
+function normalizeUpgradeNotes(value) {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+
+  const text = String(value).trim();
+  return text ? [text] : [];
+}
+
+function getQuestUpgradeTargets(entry) {
+  const explicitTargetIds = collectQuestUpgradeTargetIds(entry);
+  const inferredTargetIds = state.worldData.entries
+    .filter((item) => isReferenceFirstEntry(item) && item.upgradeQuestId === entry.id)
+    .map((item) => item.id);
+  const targetIds = [...new Set([...explicitTargetIds, ...inferredTargetIds])];
+
+  return targetIds
+    .map((targetId) => state.worldData.entries.find((item) => item.id === targetId))
+    .filter(Boolean);
+}
+
+function collectQuestUpgradeTargetIds(entry) {
+  const targetIds = [];
+  const keys = [
+    "linkedManifestId",
+    "linkedManifestIds",
+    "linkedDivionId",
+    "linkedDivionIds",
+    "upgradesEntryId",
+    "upgradesEntryIds",
+    "upgradesManifestId",
+    "upgradesManifestIds",
+    "upgradesDivionId",
+    "upgradesDivionIds"
+  ];
+
+  keys.forEach((key) => {
+    const value = entry[key];
+
+    if (typeof value === "string" && value.trim()) {
+      targetIds.push(value.trim());
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (typeof item === "string" && item.trim()) {
+          targetIds.push(item.trim());
+        }
+      });
+    }
+  });
+
+  return targetIds;
+}
+
+function buildLinkedEntryCopy(prefix, targets) {
+  const fragment = document.createDocumentFragment();
+  fragment.append(document.createTextNode(prefix));
+
+  targets.forEach((target, index) => {
+    if (index > 0) {
+      const joiner = index === targets.length - 1 ? " and " : ", ";
+      fragment.append(document.createTextNode(joiner));
+    }
+
+    const linkButton = document.createElement("button");
+    linkButton.type = "button";
+    linkButton.className = "inline-link-button";
+    linkButton.textContent = target.title;
+    linkButton.addEventListener("click", () => {
+      openModal(target.id);
+    });
+
+    fragment.append(linkButton);
+  });
+
+  return fragment;
+}
+
+function getUpgradeStatus(entry) {
+  const normalized = String(entry.upgradeStatus ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (["completed", "upgraded", "done", "finished"].includes(normalized)) {
+    return "completed";
+  }
+
+  return "available";
 }
 
 function renderValue(value) {

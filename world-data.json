@@ -478,17 +478,78 @@
       }
     },
     {
+      "id": "quest-mirage-bay-illusionist",
+      "category": "quests",
+      "title": "Mirage Bay Illusionist",
+      "summary": "A completed Altasar thread in which a faerie illusionist hiding in Mirage Bay was expelled back to the Fey Realm.",
+      "description": "A creature from a fey island in Cirrusia slipped into Altasar and took asylum in Mirage Bay. There it survived by provoking fear responses in both fauna and humanoids, filling the area with dangerous false visions and escalating panic wherever it lingered. The target could not simply be killed in the party's then-current state, but dealing enough damage would trigger a planar rejection response and cast it back to the Fey Realm. The party ultimately completed that task, turning Mirage Bay Illusionist into one of the key milestones in the evolution of Valorie's illusion-focused manifest.",
+      "questStatus": "completed",
+      "linkedManifestId": "manifest-staff-of-better-illusion",
+      "tags": ["completed quest", "illusion", "valorie", "manifest upgrade"],
+      "details": {
+        "Target": "A faerie illusionist hiding in Mirage Bay",
+        "Threat": "It preyed on fear by making creatures and people see dangerous illusions",
+        "Required End": "Deal enough damage to trigger planar rejection and send it back to the Fey Realm",
+        "Outcome": "Advanced the staff into its next illusion-focused form"
+      }
+    },
+    {
+      "id": "quest-triton-generals-plea",
+      "category": "quests",
+      "title": "Triton General's Plea",
+      "summary": "An elderly Triton general between Portale and Waveside begs worthy warriors to face him in one final proper challenge.",
+      "description": "An elderly Triton general wanders the road between Portale and Waveside, spending his days beseeching passing adventurers and warriors to combat him. He seeks a worthy final challenge and calls on anyone strong enough to answer him. Put his desires for battle to rest.",
+      "questStatus": "ongoing",
+      "linkedManifestId": "manifest-triton-knight-trident",
+      "tags": ["ongoing quest", "manifest upgrade", "triton", "portale", "waveside", "duel"],
+      "details": {
+        "Target": "An elderly Triton general",
+        "Location": "The road between Portale and Waveside"
+      }
+    },
+    {
+      "id": "quest-shadewood-frostmother",
+      "category": "quests",
+      "title": "Shadewood Avian Menace",
+      "summary": "A frigid avian menace in the Shadewood Grove has left travelers shaken and the surrounding path unsafe.",
+      "description": "A frigid avian menace resides in the Shadewood Grove. Adventurers who travel off the beaten path have reported being terrorized by this icy fiend. Prevent more harm from being caused by the creature's presence.",
+      "questStatus": "ongoing",
+      "linkedManifestId": "manifest-unstable-ice-crystal-blade",
+      "tags": ["ongoing quest", "manifest upgrade", "shadewood", "avian", "ice", "threat"],
+      "details": {
+        "Target": "A dangerous icy avian",
+        "Location": "Shadewood Grove",
+        "Initial Reports": "Travelers described repeated sightings of a dangerous icy menace"
+      }
+    },
+    {
       "id": "manifest-staff-of-better-illusion",
       "category": "manifests",
       "name": "Staff of Better Illusion",
       "summary": "An illusion-focused manifest whose increasingly absurd names track its steady growth in power.",
       "description": "The Staff of Better Illusion is a manifest tied to the refinement of illusion magic. Its earliest known recent form, the Staff of Lasting Illusion, was found in the Droland Waterways inside the desk of an unknown researcher who also possessed Revis. After the completion of the quest Mirage Bay Illusionist, the staff advanced into the Staff of Mediocre Illusion. Later, by absorbing magic from the corpse of the Winged Wolf, it grew again into its current state. The staff has become a meaningful tool for anyone intent on pushing illusion further.",
+      "quickStats": {
+        "Rarity": "Rare",
+        "Type": "Staff",
+        "Attunement": "Requires attunement by a spellcaster",
+        "Charges": "4",
+        "Recharge": "Regains 2d2 charges daily at dawn",
+        "Spell Save DC": "14",
+        "At Will": "Prestidigitation or Minor Illusion",
+        "Head Space": "1"
+      },
+      "upgradeQuestId": "quest-mirage-bay-illusionist",
+      "upgradeStatus": "completed",
+      "upgradeNotes": "It also strengthened by absorbing magic from the Winged Wolf.",
       "tags": ["manifest", "illusion", "staff", "droland", "revis", "upgrade"],
       "aliases": ["Staff of Lasting Illusion", "Staff of Mediocre Illusion"],
       "details": {
         "Current Form": "Staff of Better Illusion",
         "Previous Forms": "Staff of Lasting Illusion and Staff of Mediocre Illusion",
         "Found In": "A desk in the Droland Waterways",
+        "Charged Spells": "Silent Image (1 charge), Disguise Self (2 charges), Distort Value (2 charges), or Shadow Blade (3 charges)",
+        "Minor Restriction": "After casting Prestidigitation or Minor Illusion from the staff, you cannot cast that same spell from it again for 10 minutes unless you expend 1 charge to ignore the restriction",
+        "Passive Effect": "The first Intelligence (Investigation) check a creature makes to determine one of the staff's illusions is fake is made with disadvantage",
         "Notable Growth": "Advanced again after absorbing power from the Winged Wolf"
       }
     },
@@ -818,16 +879,56 @@
       }
     },
     {
-      "id": "manifest-ice-shard-weapon",
+      "id": "manifest-unstable-ice-crystal-blade",
       "category": "manifests",
-      "name": "Ice Shard Weapon",
-      "summary": "A cold-forged manifest currently taking the form of a longsword, recovered from Perifreul's chamber on Viserion's Peak.",
-      "description": "The Ice Shard Weapon is a manifest found within the Canthian chamber that held Perifreul on Viserion's Peak. Though it is currently taking the form of a longsword, its name suggests that the weapon may not be limited to that shape forever. Everything about its presentation ties it to Giaslan's cold, to old Canthian design, and to the eschaton discovered beside it.",
+      "name": "Unstable Ice Crystal Blade",
+      "summary": "A volatile cold-forged manifest that can reform into different slashing weapons, but shatters explosively when pushed too far.",
+      "description": "The Unstable Ice Crystal Blade is a manifest found within the Canthian chamber that held Perifreul on Viserion's Peak. Though it was first recovered in the form of a longsword, the weapon is unstable by design and can re-form into whatever slashing shape its wielder chooses once it has fully re-coalesced. Everything about its presentation ties it to Giaslan's cold, to old Canthian design, and to the eschaton discovered beside it.",
+      "quickStats": {
+        "Rarity": "Uncommon+",
+        "Type": "Slashing weapon (varies)",
+        "Bonus": "+1 to attack and damage rolls",
+        "On Hit": "DC 13 Con save or 1d8 cold damage",
+        "Shatter Trigger": "Attack roll of 1 or 2",
+        "Shatter Burst": "2d8+2 cold damage in 10 feet",
+        "Re-form Time": "15 minutes",
+        "Head Space": "1"
+      },
+      "upgradeQuestId": "quest-shadewood-frostmother",
+      "upgradeStatus": "available",
       "tags": ["manifest", "weapon", "ice", "giaslan", "canthian", "perifreul"],
+      "aliases": ["Ice Shard Weapon"],
       "details": {
         "Current Form": "Longsword",
         "Found In": "Perifreul's chamber on Viserion's Peak",
-        "Current Wielder": "Bones"
+        "Current Wielder": "Bones",
+        "Shatter Option": "It can be deliberately shattered on a melee hit, but cannot be forced to shatter while being thrown",
+        "Reconstitution": "When it reforms, it can take the shape of any slashing weapon"
+      }
+    },
+    {
+      "id": "manifest-triton-knight-trident",
+      "category": "manifests",
+      "name": "Triton Knight Trident",
+      "summary": "A disciplined water-aligned manifest that pairs a defensive stance with a limited magical spear technique.",
+      "description": "The Triton Knight Trident is a martial manifest built around defense, water control, and repeatable battlefield utility. In direct combat it functions as a spear with a defensive stance that rewards two-handed control, and it can channel enough water magic to launch a limited Water Spear technique between rests. Outside of direct attacks, it also grants a small but useful ability to manipulate water at will.",
+      "quickStats": {
+        "Rarity": "Common+",
+        "Type": "Spear",
+        "Damage": "1d8 piercing",
+        "Versatile": "1d12",
+        "Thrown": "10/30",
+        "Defensive Stance": "+1 AC until end of next turn",
+        "Water Spear": "Action, twice per rest",
+        "Head Space": "1"
+      },
+      "upgradeQuestId": "quest-triton-generals-plea",
+      "upgradeStatus": "available",
+      "tags": ["manifest", "weapon", "trident", "water", "defense"],
+      "details": {
+        "Defensive Stance": "If wielded with 2 hands, you may still use the 1-handed d8 damage and gain +1 AC until the end of your next turn",
+        "Water Spear": "Casts a magical piercing version of Firebolt through the trident twice per rest",
+        "At Will": "Limited water manipulation"
       }
     },
     {
@@ -870,6 +971,118 @@
       "details": {
         "Cleric Domains": "Arcana - Arcanthar, the Caster; Death - Thanatos; Life - Helios; Forge - Hestarion; Grave - Thanatos; Knowledge - Uriel; Light - Solanthea; Twilight - Umbrahel; Nature - Elarwen, the Huntress; Order - Bahamut; Peace - Halcya; Tempest - Fulminor; Trickery - Nocturn; War - Tyrrgal",
         "Paladin Oaths": "Ancients - Uriel; Conquest - Tyrrgal; Crown - Uriel; Devotion - Valstrax; Glory - Ascendra; Redemption - Pharis; Sea - Thalassor; Watchers - Sentiris; Vengeance - Diablo; Oathbreaker - Nothing"
+      }
+    },
+    {
+      "id": "story-fog-leviathan-johnson",
+      "category": "stories",
+      "title": "The Fog Leviathan",
+      "summary": "A newborn leviathan, jokingly dubbed Johnson, still waits in the Fog Basin with an infection and a memory too old to ignore.",
+      "description": "Deep within the Caybluff Fog Basin, beyond the Canthian settlement and its trials, the party encountered a colossal newborn fog leviathan that Thiollier, for reasons known only to him, decided to call Johnson. Beneath the joke sits a very real problem. The creature is infected, isolated, and powerful enough that earning its trust could matter enormously later. It may still be waiting for the party to return, and it may behoove them to befriend and aid something that vast before the world gives it a reason to become anything else.",
+      "tags": ["hook", "fog basin", "leviathan", "johnson", "caybluff"],
+      "details": {
+        "Location": "Caybluff Fog Basin",
+        "Current State": "Still infected and left behind in the basin",
+        "Why It Matters": "A creature that powerful could become a major ally or a major problem"
+      }
+    },
+    {
+      "id": "story-mount-solare-with-the-twins",
+      "category": "stories",
+      "title": "Mount Solare Expedition",
+      "summary": "Clive and Joshua intend to head for Mount Solare soon, with or without the party if they wait too long.",
+      "description": "The tour guide brothers Clive and Joshua offered to travel with the party to Mount Solare, a place famous for danger, profit, and the sort of stories that usually end with either treasure or disaster. They said they would wait a few weeks for the party to return, but not forever. If enough time passes, they may simply head up the mountain without them, leaving the party to decide whether they want to join the expedition, race to catch up, or let that opportunity vanish into the snow.",
+      "tags": ["hook", "mount solare", "clive", "joshua", "expedition"],
+      "details": {
+        "Key Figures": "Clive and Joshua",
+        "Destination": "Mount Solare",
+        "Time Pressure": "The twins will only wait a few weeks before going without the party"
+      }
+    },
+    {
+      "id": "story-silas-and-the-elderwood",
+      "category": "stories",
+      "title": "Silas and the Elderwood",
+      "summary": "Thiollier's visions of Silas and the ruined Elderwood point toward a homecoming that has gone horribly wrong.",
+      "description": "Thiollier's path keeps circling back to Il Fiore, Silas, and the Elderwood. His dreams and visions show a version of home overtaken by rot, metal, and corruption, with Silas standing within it as if caught between warning and silence. A doorway in the Elderwood appeared behind him, and he walked through it without answering. Whatever happened in Il Fiore did not end when Thiollier left, and the sacred tree at its heart may now be tied to the fate of both his missing friend and his broken homeland.",
+      "tags": ["hook", "thiollier", "silas", "elderwood", "il fiore", "visions"],
+      "details": {
+        "Primary Mystery": "What happened to Silas and what became of the Elderwood",
+        "Why It Matters": "Thiollier's home and oldest bond may both be bound up in the same corruption"
+      }
+    },
+    {
+      "id": "story-trail-of-missing-children",
+      "category": "stories",
+      "title": "Trail of Missing Children",
+      "summary": "From Orville to Waveside, too many missing children point to a pattern that still has not been broken.",
+      "description": "The disappearances scattered across Altasar and Caybluff no longer look isolated. Missing children in Orville, captives in Waveside, quiet grief in Portale, and the wider movements of the Unwound all suggest a larger trail still waiting to be followed. Even after freeing those found in Waveside, the pattern remains active enough to demand more answers. Somewhere ahead lies the rest of the chain, and likely far more victims than the party has already seen.",
+      "tags": ["hook", "missing children", "orville", "waveside", "portale", "unwound"],
+      "details": {
+        "Current Scope": "Spans multiple settlements across Altasar and Caybluff",
+        "Urgency": "The pattern continues even after the Waveside rescue"
+      }
+    },
+    {
+      "id": "story-johnnys-lost-son",
+      "category": "stories",
+      "title": "Johnny's Lost Son",
+      "summary": "Johnny helped the party, but his son Oliver is still missing somewhere in the same darkness he warned them about.",
+      "description": "Johnny offered the party information when Portale's polished facade was hiding rot beneath it, but his help was never detached from personal loss. His child, Oliver, is still missing, and that absence remains one of the clearest human costs of everything happening around Portale and Waveside. Finding Oliver would mean more than repaying a favor. It would also mean proving that at least one child swallowed by this wider pattern can still be brought home.",
+      "tags": ["hook", "johnny", "oliver", "portale", "missing child"],
+      "details": {
+        "Key Figure": "Johnny",
+        "Goal": "Find Oliver",
+        "Emotional Weight": "A personal thread tied directly to the wider disappearances"
+      }
+    },
+    {
+      "id": "story-troldith-and-the-malaise",
+      "category": "stories",
+      "title": "Troldith and the Malaise",
+      "summary": "Caelum pointed toward Troldith in West Alden as a place where the party may finally learn more about the Malaise.",
+      "description": "The Malaise has already touched too many lives to remain a distant theory, and Caelum explicitly named Troldith in West Alden as a place worth seeking out. If the party wants to understand why the world's magic is dispersing so abnormally, and what that means for the people already suffering under it, Troldith may be one of the most promising leads they have. Whether it offers answers, treatment, or only worse questions remains to be seen.",
+      "tags": ["hook", "troldith", "malaise", "alden", "caelum"],
+      "details": {
+        "Lead Source": "Caelum",
+        "Region": "West Alden",
+        "Why Go": "To learn more about the Malaise and its unnatural spread"
+      }
+    },
+    {
+      "id": "story-the-watcher-nazari",
+      "category": "stories",
+      "title": "The Watcher, Nazari",
+      "summary": "Nazari Ruya does not seem interested in merely opposing the party; he appears to be studying them.",
+      "description": "Nazari Ruya's involvement has the shape of observation more than simple pursuit. His letter to Johnny reframed the rescue at Waveside as though it had been part of a successful test, not a setback, suggesting a confidence that goes beyond ordinary villainy. Whether he is measuring the party, steering them, or waiting for them to reveal something useful, Nazari feels less like an obstacle and more like a watcher whose attention will only become more dangerous with time.",
+      "tags": ["hook", "nazari ruya", "unwound", "watcher", "manipulation"],
+      "details": {
+        "Affiliation": "The Unwound",
+        "Current Concern": "He seems to view the party as part of a larger experiment or design"
+      }
+    },
+    {
+      "id": "story-the-world-beneath-ours",
+      "category": "stories",
+      "title": "The World Beneath Ours",
+      "summary": "Bones fell beneath the Ocean Wall and glimpsed a vast hidden world below, one that may connect to the layered structure of reality itself.",
+      "description": "When Bones was lost to the currents of the Ocean Wall, he did not simply drift through water. He fell into darkness and struck a fog-laden landscape far below, vast enough to feel like a world laid underneath the one everyone knows. Caelum's explanations about broader structures of the world only make that memory harder to dismiss. Whatever lies beneath is unlikely to be metaphor, and the fact that Bones survived seeing even a fragment of it suggests there may be whole layers of reality still waiting beneath the surface of the familiar world.",
+      "tags": ["hook", "bones", "ocean wall", "world layers", "hidden world"],
+      "details": {
+        "Primary Witness": "Bones",
+        "Why It Matters": "Suggests the world may be layered in ways the party barely understands"
+      }
+    },
+    {
+      "id": "story-gifts-from-the-settlements",
+      "category": "stories",
+      "title": "Gifts from the Settlements",
+      "summary": "Opening Canthian doors keeps rewarding the party with power, tools, and knowledge that seem too useful to be coincidence.",
+      "description": "Every Canthian settlement the party has reached has offered more than mystery. There have been trials, new functions, Black Shards, strange knowledge, and useful items pulled from places that should have been sealed for ages. The pattern is becoming too consistent to ignore. Whatever system the Canthians built, it seems designed to reward those capable of finding and opening their doors. If the party keeps following that trail, the next settlement may offer exactly the gift they need, or exactly the test they are not yet ready for.",
+      "tags": ["hook", "canthian", "settlements", "trials", "black shards", "rewards"],
+      "details": {
+        "Pattern": "Canthian sites repeatedly grant tools, knowledge, or access",
+        "Implication": "Finding more settlements could steadily expand the party's power and options"
       }
     },
     {
