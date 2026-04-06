@@ -254,21 +254,6 @@
       }
     },
     {
-      "id": "character-azzie",
-      "category": "characters",
-      "name": "Azzie",
-      "summary": "A cheerful masked girl with an eleven-day memory horizon and an unwavering loyalty to Astie.",
-      "description": "Azzie is a friendly, upbeat humanoid girl who carries herself with a warmth that makes her easy to trust. Her exact race remains a mystery to the party because she is always hidden beneath a cloak and mask, yet people around her seem strangely uninterested in questioning it or even noticing how unusual that should be. She is clearly and deeply loyal to Astie, despite being unable to explain why. In truth, Azzie cannot remember anything from more than ten days ago. Once a memory reaches its eleventh day, it fades from her mind without exception, leaving behind only vague impressions too thin to offer real answers. People, events, and even important details vanish beyond that limit, though she continues wandering and carrying out Astie's odd, seemingly random requests in the hope that somewhere in all of it, she is still doing good. At times, she also shows flashes of strange certainty, making predictions or intuitions she cannot fully explain.",
-      "tags": ["masked", "memory loss", "astie", "mystery", "wanderer", "intuition"],
-      "details": {
-        "Known For": "Forgetting everything older than ten days",
-        "Connection": "Feels an intense loyalty to Astie; Appreciates and helps the party as well",
-        "Appearance": "Always concealed by a cloak and mask, with little reaction from others",
-        "Motivation": "Continues helping with Astie's requests in hopes that the work still matters",
-        "Oddity": "Occasionally blurts out uncanny predictions or instincts without understanding why"
-      }
-    },
-    {
       "id": "character-niamh",
       "category": "characters",
       "name": "Niamh",
