@@ -1256,6 +1256,9 @@ const router = {
 };
 
 // Modal behavior
+let modalCloseTimer = null;
+let helpCloseTimer = null;
+
 function openModal(entryId, options = {}) {
   const { syncUrl = true, pushHistory = true } = options;
   const entry = state.worldData.entries.find((item) => item.id === entryId);
@@ -1288,6 +1291,12 @@ function openModal(entryId, options = {}) {
 
   renderDetailPairs(detailPairs);
 
+  if (modalCloseTimer) {
+    clearTimeout(modalCloseTimer);
+    modalCloseTimer = null;
+    elements.modal.classList.remove("is-closing");
+  }
+
   elements.modal.classList.remove("hidden");
   elements.modal.setAttribute("aria-hidden", "false");
   elements.modalClose.focus();
@@ -1305,15 +1314,35 @@ function closeModal(options = {}) {
 
   state.selectedEntryId = null;
   resetCopyLinkButton();
-  elements.modal.classList.add("hidden");
-  elements.modal.setAttribute("aria-hidden", "true");
 
   if (syncUrl) {
     router.updateUrl({ viewId: state.activeView, pushHistory });
   }
+
+  if (modalCloseTimer) {
+    clearTimeout(modalCloseTimer);
+    modalCloseTimer = null;
+  }
+
+  elements.modal.classList.add("is-closing");
+  elements.modal.setAttribute("aria-hidden", "true");
+
+  modalCloseTimer = setTimeout(() => {
+    elements.modal.classList.remove("is-closing");
+    elements.modal.classList.add("hidden");
+    modalCloseTimer = null;
+  }, 200);
 }
 
 function openHelpModal() {
+  if (helpCloseTimer) {
+    clearTimeout(helpCloseTimer);
+    helpCloseTimer = null;
+    if (elements.helpModal) {
+      elements.helpModal.classList.remove("is-closing");
+    }
+  }
+
   state.isHelpOpen = true;
   if (elements.helpModal) {
     elements.helpModal.classList.remove("hidden");
@@ -1326,8 +1355,26 @@ function openHelpModal() {
 
 function closeHelpModal() {
   state.isHelpOpen = false;
-  elements.helpModal.classList.add("hidden");
+  if (!elements.helpModal || elements.helpModal.classList.contains("hidden")) {
+    return;
+  }
+
+  if (helpCloseTimer) {
+    clearTimeout(helpCloseTimer);
+    helpCloseTimer = null;
+  }
+
+  elements.helpModal.classList.add("is-closing");
   elements.helpModal.setAttribute("aria-hidden", "true");
+
+  helpCloseTimer = setTimeout(() => {
+    if (elements.helpModal) {
+      elements.helpModal.classList.remove("is-closing");
+      elements.helpModal.classList.add("hidden");
+    }
+    helpCloseTimer = null;
+  }, 200);
+
   if (elements.helpButton) {
     elements.helpButton.focus();
   }

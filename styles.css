@@ -900,6 +900,7 @@ img {
   inset: 0;
   background: rgba(1, 4, 9, 0.86);
   backdrop-filter: blur(14px);
+  will-change: opacity, backdrop-filter;
 }
 
 .modal__dialog {
@@ -914,6 +915,78 @@ img {
   background:
     linear-gradient(180deg, rgba(8, 14, 24, 0.98), rgba(3, 7, 13, 0.98));
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), 0 0 42px rgba(90, 232, 255, 0.1);
+  will-change: transform, opacity;
+}
+
+/* Modal Entrance & Exit Animations */
+.modal:not(.hidden):not(.is-closing) .modal__backdrop {
+  animation: modal-backdrop-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal:not(.hidden):not(.is-closing) .modal__dialog {
+  animation: modal-dialog-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal.is-closing .modal__backdrop {
+  animation: modal-backdrop-out 0.2s ease-in forwards;
+}
+
+.modal.is-closing .modal__dialog {
+  animation: modal-dialog-out 0.2s ease-in forwards;
+}
+
+@keyframes modal-backdrop-in {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(14px);
+  }
+}
+
+@keyframes modal-backdrop-out {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(14px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes modal-dialog-in {
+  0% {
+    opacity: 0;
+    transform: translateY(min(130px, 16vh));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-dialog-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(45px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal:not(.hidden):not(.is-closing) .modal__dialog,
+  .modal:not(.hidden):not(.is-closing) .modal__backdrop,
+  .modal.is-closing .modal__dialog,
+  .modal.is-closing .modal__backdrop {
+    animation-duration: 0.01ms !important;
+    transform: none !important;
+  }
 }
 
 .modal__actions {
