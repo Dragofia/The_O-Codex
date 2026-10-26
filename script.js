@@ -39,55 +39,64 @@ const state = {
   sortMode: "newest-first",
   questStatusFilter: "ongoing",
   activeTags: new Set(),
-  selectedEntryId: null
+  selectedEntryId: null,
+  isHelpOpen: false
 };
 
 let viewTransitionTimer = null;
 
-const elements = {
-  siteTitle: document.getElementById("site-title"),
-  siteSubtitle: document.getElementById("site-subtitle"),
-  viewTabs: document.getElementById("view-tabs"),
-  controls: document.getElementById("controls"),
-  searchInput: document.getElementById("search-input"),
-  clearFilters: document.getElementById("clear-filters"),
-  sortControls: document.getElementById("sort-controls"),
-  sortSelect: document.getElementById("sort-select"),
-  questStatusControls: document.getElementById("quest-status-controls"),
-  questStatusSelect: document.getElementById("quest-status-select"),
-  resultsSummary: document.getElementById("results-summary"),
-  tagSuggestionsBlock: document.getElementById("tag-suggestions-block"),
-  tagFilters: document.getElementById("tag-filters"),
-  results: document.getElementById("results"),
-  sectionTemplate: document.getElementById("section-template"),
-  cardTemplate: document.getElementById("card-template"),
-  modal: document.getElementById("entry-modal"),
-  modalBackdrop: document.getElementById("modal-backdrop"),
-  modalClose: document.getElementById("modal-close"),
-  modalCategory: document.getElementById("modal-category"),
-  modalTitle: document.getElementById("modal-title"),
-  modalSummary: document.getElementById("modal-summary"),
-  modalDescription: document.getElementById("modal-description"),
-  modalBody: document.getElementById("modal-body"),
-  modalMedia: document.getElementById("modal-media"),
-  modalQuickStatsSection: document.getElementById("modal-quick-stats-section"),
-  modalQuickStats: document.getElementById("modal-quick-stats"),
-  modalUpgradeSection: document.getElementById("modal-upgrade-section"),
-  modalUpgradeCopy: document.getElementById("modal-upgrade-copy"),
-  modalTagsSection: document.getElementById("modal-tags-section"),
-  modalTags: document.getElementById("modal-tags"),
-  modalAliasesSection: document.getElementById("modal-aliases-section"),
-  modalAliases: document.getElementById("modal-aliases"),
-  modalDetailsSection: document.getElementById("modal-details-section"),
-  modalDetails: document.getElementById("modal-details")
-};
+const elements = {};
+
+function initElements() {
+  elements.siteTitle = document.getElementById("site-title");
+  elements.siteSubtitle = document.getElementById("site-subtitle");
+  elements.helpButton = document.getElementById("help-button");
+  elements.helpModal = document.getElementById("help-modal");
+  elements.helpBackdrop = document.getElementById("help-backdrop");
+  elements.helpClose = document.getElementById("help-close");
+  elements.viewTabs = document.getElementById("view-tabs");
+  elements.controls = document.getElementById("controls");
+  elements.searchInput = document.getElementById("search-input");
+  elements.clearFilters = document.getElementById("clear-filters");
+  elements.sortControls = document.getElementById("sort-controls");
+  elements.sortSelect = document.getElementById("sort-select");
+  elements.questStatusControls = document.getElementById("quest-status-controls");
+  elements.questStatusSelect = document.getElementById("quest-status-select");
+  elements.resultsSummary = document.getElementById("results-summary");
+  elements.tagSuggestionsBlock = document.getElementById("tag-suggestions-block");
+  elements.tagFilters = document.getElementById("tag-filters");
+  elements.results = document.getElementById("results");
+  elements.sectionTemplate = document.getElementById("section-template");
+  elements.cardTemplate = document.getElementById("card-template");
+  elements.modal = document.getElementById("entry-modal");
+  elements.modalBackdrop = document.getElementById("modal-backdrop");
+  elements.modalClose = document.getElementById("modal-close");
+  elements.modalCopyLink = document.getElementById("modal-copy-link");
+  elements.modalCategory = document.getElementById("modal-category");
+  elements.modalTitle = document.getElementById("modal-title");
+  elements.modalSummary = document.getElementById("modal-summary");
+  elements.modalDescription = document.getElementById("modal-description");
+  elements.modalBody = document.getElementById("modal-body");
+  elements.modalMedia = document.getElementById("modal-media");
+  elements.modalQuickStatsSection = document.getElementById("modal-quick-stats-section");
+  elements.modalQuickStats = document.getElementById("modal-quick-stats");
+  elements.modalUpgradeSection = document.getElementById("modal-upgrade-section");
+  elements.modalUpgradeCopy = document.getElementById("modal-upgrade-copy");
+  elements.modalTagsSection = document.getElementById("modal-tags-section");
+  elements.modalTags = document.getElementById("modal-tags");
+  elements.modalAliasesSection = document.getElementById("modal-aliases-section");
+  elements.modalAliases = document.getElementById("modal-aliases");
+  elements.modalDetailsSection = document.getElementById("modal-details-section");
+  elements.modalDetails = document.getElementById("modal-details");
+}
 
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  initElements();
   bindEvents();
   await loadWorldData();
-  renderApp();
+  router.applyInitialRoute();
 }
 
 // Data loading
@@ -178,13 +187,54 @@ function bindEvents() {
     renderApp();
   });
 
-  elements.modalClose.addEventListener("click", closeModal);
-  elements.modalBackdrop.addEventListener("click", closeModal);
+  elements.modalClose.addEventListener("click", () => closeModal());
+  elements.modalBackdrop.addEventListener("click", () => closeModal());
+
+  if (elements.modalCopyLink) {
+    elements.modalCopyLink.addEventListener("click", copyEntryLink);
+  }
+
+  if (elements.helpButton) {
+    elements.helpButton.addEventListener("click", () => openHelpModal());
+  }
+  if (elements.helpClose) {
+    elements.helpClose.addEventListener("click", () => closeHelpModal());
+  }
+  if (elements.helpBackdrop) {
+    elements.helpBackdrop.addEventListener("click", () => closeHelpModal());
+  }
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !elements.modal.classList.contains("hidden")) {
-      closeModal();
+    if (event.key === "Escape") {
+      if (state.isHelpOpen) {
+        closeHelpModal();
+        return;
+      }
+      if (!elements.modal.classList.contains("hidden")) {
+        closeModal();
+        return;
+      }
     }
+
+    if (
+      event.key === "/" &&
+      document.activeElement !== elements.searchInput &&
+      !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) &&
+      elements.modal.classList.contains("hidden") &&
+      !state.isHelpOpen
+    ) {
+      event.preventDefault();
+      elements.searchInput.focus();
+      elements.searchInput.select();
+    }
+  });
+
+  window.addEventListener("popstate", () => {
+    router.handlePopState();
+  });
+
+  window.addEventListener("hashchange", () => {
+    router.handlePopState();
   });
 }
 
@@ -247,7 +297,9 @@ function buildViewTabButton(label, viewId) {
   return button;
 }
 
-function switchView(nextViewId) {
+function switchView(nextViewId, options = {}) {
+  const { syncUrl = true, pushHistory = true } = options;
+
   if (state.activeView === nextViewId) {
     return;
   }
@@ -264,6 +316,9 @@ function switchView(nextViewId) {
   viewTransitionTimer = setTimeout(() => {
     state.activeView = nextViewId;
     renderApp();
+    if (syncUrl) {
+      router.updateUrl({ viewId: nextViewId, pushHistory });
+    }
     elements.controls.classList.add("view-transition-in");
     elements.results.classList.add("view-transition-in");
 
@@ -945,8 +1000,264 @@ function getActiveViewLabel() {
 }
 
 
+// ============================================================================
+// URL ROUTER & DEEP LINKING MODULE
+// Modular navigation handler for direct entry/category linking, browser history
+// synchronization, and clipboard sharing.
+// ============================================================================
+const router = {
+  // Parse current URL hash into an actionable route intent
+  parseRoute() {
+    let raw = window.location.hash.replace(/^#\/?/, "").trim();
+
+    if (!raw && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("entry") || params.has("item") || params.has("id")) {
+        raw = params.get("entry") || params.get("item") || params.get("id");
+      } else if (params.has("category") || params.has("view")) {
+        raw = params.get("category") || params.get("view");
+      } else if (params.has("help")) {
+        raw = "help";
+      }
+    }
+
+    if (!raw) {
+      return { type: "home", id: null };
+    }
+
+    const decoded = decodeURIComponent(raw).trim();
+
+    if (decoded.toLowerCase() === "help") {
+      return { type: "help", id: "help" };
+    }
+
+    const entryPrefixMatch = decoded.match(/^(?:entry[\/:]|item[\/:]|id[\/:])(.+)$/i);
+    const candidateEntryId = (entryPrefixMatch ? entryPrefixMatch[1].trim() : decoded).toLowerCase();
+
+    const categoryPrefixMatch = decoded.match(/^(?:category[\/:]|view[\/:])(.+)$/i);
+    const candidateCatId = (categoryPrefixMatch ? categoryPrefixMatch[1].trim() : decoded).toLowerCase();
+
+    if (state.worldData) {
+      // 1. Direct entry ID match (e.g. #domain-alden, #lore-channeling)
+      let matchedEntry = state.worldData.entries.find(
+        (entry) => entry.id.toLowerCase() === candidateEntryId
+      );
+      if (matchedEntry) {
+        return { type: "entry", id: matchedEntry.id, entry: matchedEntry };
+      }
+
+      // 2. Direct category match (e.g. #characters, #settlements)
+      const matchedCategory = state.worldData.categories.find(
+        (category) =>
+          category.id.toLowerCase() === candidateCatId ||
+          category.label.toLowerCase() === candidateCatId
+      );
+      if (matchedCategory || candidateCatId === "complete-codex") {
+        return {
+          type: "category",
+          id: matchedCategory ? matchedCategory.id : "complete-codex"
+        };
+      }
+
+      // 3. Match entry by Name or Title (e.g. #alden, #channeling)
+      matchedEntry = state.worldData.entries.find((entry) => {
+        const title = (entry.name || entry.title || "").toLowerCase();
+        return title === candidateEntryId;
+      });
+      if (matchedEntry) {
+        return { type: "entry", id: matchedEntry.id, entry: matchedEntry };
+      }
+
+      // 4. Match entry by stripped prefix (e.g. #function-channeling -> #channeling)
+      const stripped = candidateEntryId.replace(/^[a-z0-9]+[_-]+/i, "");
+      if (stripped && stripped !== candidateEntryId) {
+        matchedEntry = state.worldData.entries.find((entry) => {
+          const title = (entry.name || entry.title || "").toLowerCase();
+          const cleanId = entry.id.replace(/^[a-z0-9]+[_-]+/i, "").toLowerCase();
+          return title === stripped || cleanId === stripped;
+        });
+        if (matchedEntry) {
+          return { type: "entry", id: matchedEntry.id, entry: matchedEntry };
+        }
+      }
+
+      // 5. Match entry by Aliases (e.g. #Divion Assignment)
+      matchedEntry = state.worldData.entries.find(
+        (entry) =>
+          Array.isArray(entry.aliases) &&
+          entry.aliases.some((alias) => alias.toLowerCase() === candidateEntryId)
+      );
+      if (matchedEntry) {
+        return { type: "entry", id: matchedEntry.id, entry: matchedEntry };
+      }
+    }
+
+    return { type: "unknown", id: decoded };
+  },
+
+  formatEntryHash(entryId) {
+    return `#${encodeURIComponent(entryId)}`;
+  },
+
+  formatCategoryHash(categoryId) {
+    if (!categoryId || categoryId === "complete-codex") {
+      return "";
+    }
+    return `#${encodeURIComponent(categoryId)}`;
+  },
+
+  getAbsoluteEntryUrl(entryId) {
+    const url = new URL(window.location.href);
+    url.hash = router.formatEntryHash(entryId);
+    return url.href;
+  },
+
+  getAbsoluteCategoryUrl(categoryId) {
+    const url = new URL(window.location.href);
+    url.hash = router.formatCategoryHash(categoryId);
+    return url.href;
+  },
+
+  updateUrl({ entryId = null, viewId = null, pushHistory = false } = {}) {
+    let targetHash = "";
+
+    if (entryId) {
+      targetHash = router.formatEntryHash(entryId);
+    } else if (viewId) {
+      targetHash = router.formatCategoryHash(viewId);
+    } else if (state.activeView && state.activeView !== "complete-codex") {
+      targetHash = router.formatCategoryHash(state.activeView);
+    }
+
+    const currentHash = window.location.hash;
+    if (currentHash === targetHash || (!currentHash && !targetHash)) {
+      return;
+    }
+
+    const targetUrl = targetHash
+      ? `${window.location.pathname}${window.location.search}${targetHash}`
+      : `${window.location.pathname}${window.location.search}`;
+
+    try {
+      if (pushHistory) {
+        window.history.pushState({ entryId, viewId: viewId ?? state.activeView }, "", targetUrl);
+      } else {
+        window.history.replaceState({ entryId, viewId: viewId ?? state.activeView }, "", targetUrl);
+      }
+    } catch {
+      window.location.hash = targetHash;
+    }
+  },
+
+  handlePopState() {
+    if (!state.worldData) {
+      return;
+    }
+
+    const route = router.parseRoute();
+
+    if (route.type === "entry") {
+      const entry = route.entry || state.worldData.entries.find(
+        (item) => item.id.toLowerCase() === route.id.toLowerCase()
+      );
+      if (entry) {
+        if (state.selectedEntryId !== entry.id) {
+          openModal(entry.id, { syncUrl: false, pushHistory: false });
+        }
+        return;
+      }
+    }
+
+    if (state.selectedEntryId) {
+      closeModal({ syncUrl: false, pushHistory: false });
+    }
+
+    if (route.type === "help") {
+      openHelpModal();
+      return;
+    }
+
+    if (state.isHelpOpen) {
+      closeHelpModal();
+    }
+
+    if (route.type === "category") {
+      if (state.activeView !== route.id) {
+        switchView(route.id, { syncUrl: false, pushHistory: false });
+      }
+      return;
+    }
+
+    if (route.type === "home") {
+      if (state.activeView !== "complete-codex") {
+        switchView("complete-codex", { syncUrl: false, pushHistory: false });
+      }
+    }
+  },
+
+  applyInitialRoute() {
+    const route = router.parseRoute();
+
+    if (route.type === "entry") {
+      const entry = route.entry || state.worldData.entries.find(
+        (item) => item.id.toLowerCase() === route.id.toLowerCase()
+      );
+      if (entry) {
+        if (entry.category && state.worldData.categories.some((c) => c.id === entry.category)) {
+          state.activeView = entry.category;
+        }
+        renderApp();
+        openModal(entry.id, { syncUrl: false, pushHistory: false });
+        return;
+      }
+    }
+
+    if (route.type === "category") {
+      state.activeView = route.id;
+      renderApp();
+      return;
+    }
+
+    if (route.type === "help") {
+      renderApp();
+      openHelpModal();
+      return;
+    }
+
+    renderApp();
+  },
+
+  async copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fall back below
+      }
+    }
+
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return successful;
+    } catch {
+      return false;
+    }
+  }
+};
+
 // Modal behavior
-function openModal(entryId) {
+function openModal(entryId, options = {}) {
+  const { syncUrl = true, pushHistory = true } = options;
   const entry = state.worldData.entries.find((item) => item.id === entryId);
   if (!entry) {
     return;
@@ -957,6 +1268,8 @@ function openModal(entryId) {
   const detailPairs = collectDetailPairs(entry);
 
   state.selectedEntryId = entryId;
+  resetCopyLinkButton();
+
   elements.modalCategory.textContent = category?.label ?? "Entry";
   elements.modalTitle.textContent = getEntryTitle(entry);
   elements.modalSummary.textContent = entry.summary ?? "No summary added yet.";
@@ -978,12 +1291,88 @@ function openModal(entryId) {
   elements.modal.classList.remove("hidden");
   elements.modal.setAttribute("aria-hidden", "false");
   elements.modalClose.focus();
+
+  if (syncUrl) {
+    router.updateUrl({ entryId, pushHistory });
+  }
 }
 
-function closeModal() {
+function closeModal(options = {}) {
+  const { syncUrl = true, pushHistory = false } = options;
+  if (!state.selectedEntryId && elements.modal.classList.contains("hidden")) {
+    return;
+  }
+
   state.selectedEntryId = null;
+  resetCopyLinkButton();
   elements.modal.classList.add("hidden");
   elements.modal.setAttribute("aria-hidden", "true");
+
+  if (syncUrl) {
+    router.updateUrl({ viewId: state.activeView, pushHistory });
+  }
+}
+
+function openHelpModal() {
+  state.isHelpOpen = true;
+  if (elements.helpModal) {
+    elements.helpModal.classList.remove("hidden");
+    elements.helpModal.setAttribute("aria-hidden", "false");
+  }
+  if (elements.helpClose) {
+    elements.helpClose.focus();
+  }
+}
+
+function closeHelpModal() {
+  state.isHelpOpen = false;
+  elements.helpModal.classList.add("hidden");
+  elements.helpModal.setAttribute("aria-hidden", "true");
+  if (elements.helpButton) {
+    elements.helpButton.focus();
+  }
+}
+
+let copyResetTimer = null;
+
+async function copyEntryLink() {
+  if (!state.selectedEntryId) {
+    return;
+  }
+
+  const url = router.getAbsoluteEntryUrl(state.selectedEntryId);
+  const success = await router.copyToClipboard(url);
+
+  if (success && elements.modalCopyLink) {
+    const labelSpan = elements.modalCopyLink.querySelector(".copy-label");
+    const iconSpan = elements.modalCopyLink.querySelector(".copy-icon");
+
+    if (labelSpan) labelSpan.textContent = "Link Copied!";
+    if (iconSpan) iconSpan.textContent = "✓";
+    elements.modalCopyLink.classList.add("is-copied");
+
+    if (copyResetTimer) {
+      clearTimeout(copyResetTimer);
+    }
+
+    copyResetTimer = setTimeout(resetCopyLinkButton, 2000);
+  }
+}
+
+function resetCopyLinkButton() {
+  if (copyResetTimer) {
+    clearTimeout(copyResetTimer);
+    copyResetTimer = null;
+  }
+
+  if (elements.modalCopyLink) {
+    const labelSpan = elements.modalCopyLink.querySelector(".copy-label");
+    const iconSpan = elements.modalCopyLink.querySelector(".copy-icon");
+
+    if (labelSpan) labelSpan.textContent = "Copy Link";
+    if (iconSpan) iconSpan.textContent = "🔗";
+    elements.modalCopyLink.classList.remove("is-copied");
+  }
 }
 
 async function updateModalMediaLayout(entry) {

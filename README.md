@@ -188,6 +188,20 @@ Search behavior:
 - Aliases are searched too
 - Light typo and phonetic matching are included, but aliases are still the best way to guarantee unusual names are found
 
+## Direct Linking & Sharing (Deep Links)
+
+The codex supports direct URL navigation using URL hashes:
+
+- **Link to a category**: `https://.../#characters` or `https://.../#settlements`
+- **Link directly to an entry**: `https://.../#domain-alden` or `https://.../#function-channeling`
+- **Open Help Guide**: `https://.../#help`
+
+Features:
+- **Automatic URL Sync**: As you click through cards or switch tabs, the browser address bar updates automatically.
+- **Copy Link Button**: Click the "Copy Link" button inside any open entry modal to copy a direct link to your clipboard.
+- **Back/Forward History**: Using the browser's Back and Forward buttons closes or re-opens modals without reloading the page.
+- **Shortcuts**: Press `Esc` to close any modal; press `/` to jump straight to search.
+
 ## How to host it as a static site later
 
 The easiest path is GitHub Pages.

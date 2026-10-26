@@ -257,6 +257,57 @@ img {
   margin: 0 auto;
 }
 
+.help-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(10, 20, 34, 0.94), rgba(4, 9, 17, 0.94));
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.help-button:hover,
+.help-button:focus-visible {
+  border-color: var(--border-strong);
+  color: var(--text-main);
+  box-shadow: 0 0 24px rgba(90, 232, 255, 0.22);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.help-button__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(90, 232, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  .help-button {
+    top: 1rem;
+    right: 1rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+  }
+}
+
 .eyebrow,
 .section-kicker,
 .modal__category {
@@ -865,16 +916,58 @@ img {
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), 0 0 42px rgba(90, 232, 255, 0.1);
 }
 
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal__action-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(8, 14, 24, 0.96), rgba(4, 9, 16, 0.96));
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.modal__action-button:hover,
+.modal__action-button:focus-visible {
+  border-color: var(--border-strong);
+  background: linear-gradient(180deg, rgba(10, 22, 33, 0.98), rgba(5, 13, 21, 0.98));
+  color: var(--text-main);
+  box-shadow: 0 0 24px rgba(90, 232, 255, 0.15);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.modal__action-button.is-copied {
+  border-color: #5affb6;
+  background: linear-gradient(180deg, rgba(8, 28, 20, 0.98), rgba(4, 16, 11, 0.98));
+  color: #c9ffe7;
+  box-shadow: 0 0 24px rgba(90, 255, 182, 0.28);
+}
+
 .modal__close {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  margin-left: auto;
   padding: 0.65rem 0.9rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(8, 14, 24, 0.96), rgba(4, 9, 16, 0.96));
   color: var(--text-soft);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .modal__close:hover,
@@ -884,6 +977,81 @@ img {
   color: var(--text-main);
   box-shadow: 0 0 24px rgba(90, 232, 255, 0.12);
   outline: none;
+}
+
+/* Help Modal Specifics */
+.modal__dialog--help {
+  max-width: 860px;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.15rem;
+  margin-top: 1.5rem;
+}
+
+.help-card {
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(9, 16, 28, 0.88), rgba(4, 8, 16, 0.92));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.help-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(90, 232, 255, 0.08);
+}
+
+.help-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.help-card__header h3 {
+  margin: 0;
+  font-family: var(--heading-font);
+  font-size: 1.05rem;
+  color: var(--text-main);
+  letter-spacing: 0.02em;
+}
+
+.help-card__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.help-card p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.help-card strong {
+  color: var(--text-main);
+}
+
+.help-card em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.help-card kbd {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: rgba(14, 25, 42, 0.8);
+  color: var(--accent);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .modal__header {

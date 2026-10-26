@@ -4,11 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>World Codex</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
   <div class="site-shell">
     <header class="hero">
+      <button id="help-button" class="help-button" type="button" aria-haspopup="dialog" aria-controls="help-modal">
+        <span class="help-button__icon" aria-hidden="true">?</span>
+        <span>Help</span>
+      </button>
+
       <div class="hero__content">
         <h1 id="site-title">World Codex</h1>
         <p id="site-subtitle" class="hero__subtitle">A lore index for characters, cities, quests, and relics.</p>
@@ -73,7 +78,13 @@
     <div id="modal-backdrop" class="modal__backdrop"></div>
 
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button id="modal-close" class="modal__close" type="button" aria-label="Close details">Close</button>
+      <div class="modal__actions">
+        <button id="modal-copy-link" class="modal__action-button" type="button" aria-label="Copy direct link to this entry">
+          <span class="copy-icon" aria-hidden="true">🔗</span>
+          <span class="copy-label">Copy Link</span>
+        </button>
+        <button id="modal-close" class="modal__close" type="button" aria-label="Close details">Close</button>
+      </div>
 
       <div class="modal__header">
         <p id="modal-category" class="modal__category"></p>
@@ -121,6 +132,64 @@
     </div>
   </div>
 
+  <div id="help-modal" class="modal hidden" aria-hidden="true">
+    <div id="help-backdrop" class="modal__backdrop"></div>
+
+    <div class="modal__dialog modal__dialog--help" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="modal__actions">
+        <button id="help-close" class="modal__close" type="button" aria-label="Close help">Close</button>
+      </div>
+
+      <div class="modal__header">
+        <p class="modal__category">Codex Guide</p>
+        <h2 id="help-title">Codex Guide & Sharing Tips</h2>
+        <p class="modal__summary">Quick tips for navigating, searching, and sharing lore entries with your campaign party.</p>
+      </div>
+
+      <div class="help-grid">
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">🔗</span>
+            <h3>Direct Link Sharing</h3>
+          </div>
+          <p>Every single entry and category has its own direct link! When you browse or open an entry, your browser address bar updates automatically. Copy the URL from your address bar or click the <strong>Copy Link</strong> button inside any entry modal to send it to players (e.g. in Discord)—they'll open straight to that entry.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">🔍</span>
+            <h3>Smart Typo & Phonetic Search</h3>
+          </div>
+          <p>Don't remember the exact spelling? The search bar tolerates typos and uses sound-alike phonetic matching for fantasy names. It also checks aliases, keywords, and tags to surface the right cards fast.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">🗺️</span>
+            <h3>Category Views & Quests Filter</h3>
+          </div>
+          <p>Use the category tabs above the search bar to zoom in on specific topics (Settlements, Eschatons, Lore, etc.). In the <strong>Quests</strong> view, an extra status filter appears so you can toggle between <em>Ongoing</em> and <em>Completed</em> missions.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">⚔️</span>
+            <h3>Combat Quick Stats & Upgrades</h3>
+          </div>
+          <p>Manifests and Divions feature quick-reference action, range, and charge stats for fast lookup during combat. Linked upgrade paths also provide clickable cross-references connecting items with their associated Spire quests.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">⌨️</span>
+            <h3>Shortcuts & Back Navigation</h3>
+          </div>
+          <p>Press <kbd>Esc</kbd> anytime to close open detail or help windows. Press <kbd>/</kbd> to instantly jump to the search bar. You can also use your browser's <strong>Back</strong> button to return to the previous view without reloading.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <template id="section-template">
     <section class="category-section panel">
       <div class="section-heading">
@@ -157,6 +226,6 @@
     </article>
   </template>
 
-  <script src="script.js" defer></script>
+  <script src="script.js?v=2" defer></script>
 </body>
 </html>
