@@ -513,9 +513,21 @@
         terrLabel.textContent = `Territories (${(activeMap.regions || []).length})`;
       }
 
+      // Map switcher: only render when multiple maps exist; keep hidden until more maps are added
+      const selectorContainer = document.getElementById('map-selector-container') || document.querySelector('.map-dropdown-container');
+      if (selectorContainer) {
+        selectorContainer.classList.toggle('hidden', this.maps.length <= 1);
+      }
+
+      // Copy data button: only relevant if multiple maps exist
+      const copyBtn = document.getElementById('map-copy-data-btn');
+      if (copyBtn) {
+        copyBtn.classList.toggle('hidden', this.maps.length <= 1);
+      }
+
       // Populate map list dropdown
       const listEl = document.getElementById('map-selector-list');
-      if (listEl) {
+      if (listEl && this.maps.length > 1) {
         listEl.innerHTML = '';
         this.maps.forEach(m => {
           const isCur = m.id === this.activeMapId;
