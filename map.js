@@ -1019,8 +1019,9 @@
         drawNewTerritoryBtn.classList.toggle('hidden', !isDm);
       }
 
-      // 6. Re-render pins so secret pins appear or disappear
+      // 6. Re-render pins so secret pins appear or disappear and draggability syncs
       this.renderPins();
+      this.setMarkerDraggingEnabled(isDm);
 
       // 7. Refresh territory list if open
       const manageModal = document.getElementById('manage-territories-modal');
@@ -1367,8 +1368,38 @@
         const isHighlighted = (pin.codexId || pin.id) === this.currentHighlightedPinId;
         const marker = L.marker([pin.y, pin.x], {
           icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret),
-          title: pin.name || pin.title
+          title: pin.name || pin.title,
+          draggable: isDm
         });
+
+        let wasDragged = false;
+
+        if (isDm) {
+          marker.on('dragstart', () => {
+            if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) {
+              if (marker.dragging) marker.dragging.disable();
+              return;
+            }
+            wasDragged = true;
+            marker.closeTooltip();
+          });
+
+          marker.on('dragend', () => {
+            if (!this.isDmMode()) return;
+            const pos = marker.getLatLng();
+            const clampedX = Math.max(0, Math.min(1000, Math.round(pos.lng)));
+            const clampedY = Math.max(0, Math.min(1000, Math.round(pos.lat)));
+            marker.setLatLng([clampedY, clampedX]);
+
+            pin.x = clampedX;
+            pin.y = clampedY;
+            this.movePin(pin.id, clampedX, clampedY);
+
+            setTimeout(() => {
+              wasDragged = false;
+            }, 120);
+          });
+        }
 
         const secretSuffix = pin.isSecret ? ' · 🔒 Secret' : '';
         // Hover tooltip
@@ -1384,7 +1415,7 @@
         });
 
         marker.on('click', () => {
-          if (this.isDrawingRegion || this.isDroppingPin) return;
+          if (wasDragged || this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
           this.openPinDrawer(pin);
         });
 
@@ -1498,9 +1529,55 @@
       this.renderPins();
     }
 
+    movePin(pinId, newX, newY) {
+      if (!this.isDmMode()) return;
+
+      const activeMap = this.getActiveMap();
+      let targetPin = null;
+
+      if (activeMap.officialLocations) {
+        targetPin = activeMap.officialLocations.find(p => p.id === pinId);
+      }
+      if (!targetPin && activeMap.playerPins) {
+        targetPin = activeMap.playerPins.find(p => p.id === pinId);
+      }
+
+      if (!targetPin) return;
+
+      targetPin.x = newX;
+      targetPin.y = newY;
+      this.saveStorage();
+
+      // If drawer is currently open for this pin, update coordinates readout
+      if (this.currentHighlightedPinId === (targetPin.codexId || targetPin.id)) {
+        const coordsEl = document.getElementById('drawer-pin-coords');
+        if (coordsEl) {
+          coordsEl.textContent = `X: ${newX} · Y: ${newY}`;
+        }
+      }
+
+      if (typeof window.showToast === 'function') {
+        window.showToast(`👑 Moved pin "${targetPin.name || targetPin.title}" to (${newX}, ${newY})`, 'dm');
+      }
+    }
+
+    setMarkerDraggingEnabled(enabled) {
+      const canDrag = Boolean(enabled && this.isDmMode() && !this.isDrawingRegion && !this.isDroppingPin && !this.isEditingVertices);
+      this.markerLayers.forEach(marker => {
+        if (marker && marker.dragging) {
+          if (canDrag) {
+            marker.dragging.enable();
+          } else {
+            marker.dragging.disable();
+          }
+        }
+      });
+    }
+
     // Pin Dropping Workflow
     startPinDropMode() {
       this.isDroppingPin = true;
+      this.setMarkerDraggingEnabled(false);
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.add('cursor-crosshair');
       document.getElementById('pin-drop-banner')?.classList.remove('hidden');
@@ -1508,6 +1585,7 @@
 
     exitPinDropMode() {
       this.isDroppingPin = false;
+      this.setMarkerDraggingEnabled(true);
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.remove('cursor-crosshair');
       document.getElementById('pin-drop-banner')?.classList.add('hidden');
@@ -1714,6 +1792,7 @@
         window.showToast?.('Drawing territory boundaries is restricted to the Dungeon Master.', 'warning');
         return;
       }
+      this.setMarkerDraggingEnabled(false);
 
       this.isDrawingRegion = true;
       this.drawingPoints = [];
@@ -1823,6 +1902,7 @@
 
     exitTerritoryDrawMode() {
       this.isDrawingRegion = false;
+      this.setMarkerDraggingEnabled(true);
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.remove('cursor-crosshair');
       document.getElementById('drawing-banner')?.classList.add('hidden');
@@ -2004,6 +2084,7 @@
       this.closeModal('manage-territories-modal');
 
       this.isEditingVertices = true;
+      this.setMarkerDraggingEnabled(false);
       this.activeEditingRegionId = targetId;
       this.backupEditingPoints = JSON.parse(JSON.stringify(reg.points));
       this.clearVertexMarkers();
@@ -2046,6 +2127,7 @@
       this.saveStorage();
       this.clearVertexMarkers();
       this.isEditingVertices = false;
+      this.setMarkerDraggingEnabled(true);
       this.backupEditingPoints = null;
       document.getElementById('vertex-move-banner')?.classList.add('hidden');
       this.renderRegions();

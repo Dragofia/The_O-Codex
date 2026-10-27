@@ -1701,6 +1701,21 @@ body.map-mode-active {
   z-index: 100;
 }
 
+/* Draggable marker states (DM Mode only) */
+.leaflet-marker-draggable .map-marker-wrapper {
+  cursor: grab !important;
+}
+
+.leaflet-marker-dragging .map-marker-wrapper,
+.leaflet-marker-draggable:active .map-marker-wrapper {
+  cursor: grabbing !important;
+}
+
+.leaflet-marker-dragging .map-marker-body {
+  transform: scale(1.22);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7), 0 0 18px rgba(245, 158, 11, 0.85) !important;
+}
+
 .map-marker-body {
   width: 32px;
   height: 32px;
