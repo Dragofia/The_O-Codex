@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -105,6 +105,9 @@
 
     <!-- Interactive World Map View Mode -->
     <div id="map-mode-view" class="mode-view mode-view--map">
+      <!-- Leaflet Map Canvas (Base Layer) -->
+      <div id="campaign-map-canvas" class="campaign-map-canvas"></div>
+
       <!-- Floating Map Header (Top Left) -->
       <div class="map-header-bar">
         <div class="map-title-pill">
@@ -158,7 +161,7 @@
         </button>
       </div>
 
-      <!-- Action Banners -->
+      <!-- Action Banners (Top Center) -->
       <div id="pin-drop-banner" class="map-action-banner hidden">
         <span class="banner-icon" aria-hidden="true">📍</span>
         <span class="banner-text">Click anywhere on the map to place a pin marker</span>
@@ -167,15 +170,12 @@
 
       <div id="drawing-banner" class="map-action-banner hidden">
         <span class="banner-icon" aria-hidden="true">📐</span>
-        <span class="banner-text">Click on the map to add territory vertices (Points: <strong id="drawing-point-count">0</strong>)</span>
+        <span class="banner-text">Click map to add boundary points, or click the starting dot to finish (Points: <strong id="drawing-point-count">0</strong>)</span>
         <div class="banner-actions">
           <button id="drawing-finish-btn" type="button" class="banner-confirm-btn">Finish & Save</button>
           <button id="drawing-cancel-btn" type="button" class="banner-cancel-btn">Cancel</button>
         </div>
       </div>
-
-      <!-- Leaflet Map Canvas -->
-      <div id="campaign-map-canvas" class="campaign-map-canvas"></div>
 
       <!-- Dynamic Hover Territory HUD (Bottom Left) -->
       <div id="map-region-hud" class="map-region-hud">
@@ -552,7 +552,7 @@
   <!-- Leaflet Map JS CDN -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- Core Scripts -->
-  <script src="script.js?v=4" defer></script>
-  <script src="map.js?v=1" defer></script>
+  <script src="script.js?v=5" defer></script>
+  <script src="map.js?v=2" defer></script>
 </body>
 </html>

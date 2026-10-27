@@ -283,6 +283,7 @@
       this.isDrawingRegion = false;
       this.drawingPoints = [];
       this.tempDrawingLayer = null;
+      this.startPointMarker = null;
       this.isDroppingPin = false;
       this.pendingPinCoords = null;
 
@@ -400,7 +401,16 @@
 
         // Live polygon drawing preview
         if (this.isDrawingRegion && this.drawingPoints.length > 0) {
-          const previewPoints = [...this.drawingPoints, [y, x]];
+          let previewTarget = [y, x];
+          if (this.drawingPoints.length >= 3) {
+            const startPt = this.drawingPoints[0];
+            const dist = Math.hypot(x - startPt[1], y - startPt[0]);
+            // Snapping preview to the start dot when cursor gets close
+            if (dist <= 25) {
+              previewTarget = [startPt[0], startPt[1]];
+            }
+          }
+          const previewPoints = [...this.drawingPoints, previewTarget];
           if (this.tempDrawingLayer) {
             this.tempDrawingLayer.setLatLngs(previewPoints);
           }
@@ -414,9 +424,26 @@
 
         // 1. Territory Drawing Mode
         if (this.isDrawingRegion) {
+          // If we have at least 3 points and user clicks near the starting dot, finish drawing
+          if (this.drawingPoints.length >= 3) {
+            const startPt = this.drawingPoints[0];
+            const dist = Math.hypot(x - startPt[1], y - startPt[0]);
+            if (dist <= 25) {
+              this.finishTerritoryDraw();
+              return;
+            }
+          }
+
           this.drawingPoints.push([y, x]);
           const counter = document.getElementById('drawing-point-count');
           if (counter) counter.textContent = this.drawingPoints.length;
+
+          // If this is the very first vertex, place the interactive start dot
+          if (this.drawingPoints.length === 1) {
+            this.createStartPointMarker(y, x);
+          } else if (this.drawingPoints.length >= 3) {
+            this.updateStartPointMarkerReady();
+          }
 
           if (!this.tempDrawingLayer) {
             this.tempDrawingLayer = L.polygon(this.drawingPoints, {
@@ -702,11 +729,69 @@
     startTerritoryDrawMode() {
       this.isDrawingRegion = true;
       this.drawingPoints = [];
+      if (this.startPointMarker) {
+        this.map.removeLayer(this.startPointMarker);
+        this.startPointMarker = null;
+      }
+      if (this.tempDrawingLayer) {
+        this.map.removeLayer(this.tempDrawingLayer);
+        this.tempDrawingLayer = null;
+      }
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.add('cursor-crosshair');
       document.getElementById('drawing-banner')?.classList.remove('hidden');
       const counter = document.getElementById('drawing-point-count');
       if (counter) counter.textContent = '0';
+    }
+
+    createStartPointMarker(y, x) {
+      if (this.startPointMarker) {
+        this.map.removeLayer(this.startPointMarker);
+      }
+
+      const icon = L.divIcon({
+        className: 'custom-drawing-start-marker',
+        html: `
+          <div class="drawing-start-dot" id="drawing-start-dot-el">
+            <span class="drawing-start-pulse"></span>
+            <span class="drawing-start-core"></span>
+          </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      this.startPointMarker = L.marker([y, x], {
+        icon: icon,
+        zIndexOffset: 3000,
+        interactive: true
+      }).addTo(this.map);
+
+      this.startPointMarker.bindTooltip('Starting Point (Add 3+ points then click here to finish)', {
+        direction: 'top',
+        offset: [0, -14],
+        className: 'custom-map-tooltip'
+      });
+
+      this.startPointMarker.on('click', (e) => {
+        if (e) {
+          L.DomEvent.stopPropagation(e);
+        }
+        if (this.drawingPoints.length >= 3) {
+          this.finishTerritoryDraw();
+        } else {
+          alert(`Please add at least 3 boundary points before closing the territory (currently ${this.drawingPoints.length}).`);
+        }
+      });
+    }
+
+    updateStartPointMarkerReady() {
+      if (!this.startPointMarker) return;
+      const el = document.getElementById('drawing-start-dot-el') || this.startPointMarker.getElement()?.querySelector('.drawing-start-dot');
+      if (el) {
+        el.classList.add('can-close');
+      }
+      this.startPointMarker.setTooltipContent('✨ Click here to finish & save territory!');
     }
 
     finishTerritoryDraw() {
@@ -721,10 +806,6 @@
 
     cancelTerritoryDraw() {
       this.exitTerritoryDrawMode();
-      if (this.tempDrawingLayer) {
-        this.map.removeLayer(this.tempDrawingLayer);
-        this.tempDrawingLayer = null;
-      }
       this.drawingPoints = [];
     }
 
@@ -733,6 +814,15 @@
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.remove('cursor-crosshair');
       document.getElementById('drawing-banner')?.classList.add('hidden');
+
+      if (this.startPointMarker) {
+        this.map.removeLayer(this.startPointMarker);
+        this.startPointMarker = null;
+      }
+      if (this.tempDrawingLayer) {
+        this.map.removeLayer(this.tempDrawingLayer);
+        this.tempDrawingLayer = null;
+      }
     }
 
     openSaveTerritoryModal() {

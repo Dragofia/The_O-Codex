@@ -1465,7 +1465,7 @@ img {
   top: 0;
   left: 50%;
   transform: translate(-50%, -20px);
-  z-index: 1000;
+  z-index: 1600;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1764,7 +1764,7 @@ body.map-mode-active {
   position: absolute;
   top: 1.25rem;
   left: 1.5rem;
-  z-index: 50;
+  z-index: 1200;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1927,7 +1927,7 @@ body.map-mode-active {
   position: absolute;
   top: 1.25rem;
   right: 1.5rem;
-  z-index: 50;
+  z-index: 1200;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1975,22 +1975,24 @@ body.map-mode-active {
    ============================================================================ */
 .map-action-banner {
   position: absolute;
-  top: 4.5rem;
+  top: 4.8rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 60;
+  z-index: 1500;
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.65rem 1.25rem;
-  background: rgba(7, 14, 26, 0.95);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(90, 232, 255, 0.45);
+  padding: 0.75rem 1.4rem;
+  background: rgba(7, 14, 26, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(90, 232, 255, 0.5);
   border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(90, 232, 255, 0.2);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 24px rgba(90, 232, 255, 0.3);
   color: var(--text-main);
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
+  pointer-events: auto;
   animation: banner-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2052,7 +2054,7 @@ body.map-mode-active {
   position: absolute;
   bottom: 1.5rem;
   left: 1.5rem;
-  z-index: 50;
+  z-index: 1200;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -2106,7 +2108,7 @@ body.map-mode-active {
   backdrop-filter: blur(18px);
   border-left: 1px solid rgba(90, 232, 255, 0.25);
   box-shadow: -14px 0 45px rgba(0, 0, 0, 0.75);
-  z-index: 80;
+  z-index: 1400;
   display: flex;
   flex-direction: column;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2342,6 +2344,61 @@ body.map-mode-active {
 .cta-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 22px rgba(90, 232, 255, 0.45);
+}
+
+/* Territory Drawing Start Point Marker */
+.custom-drawing-start-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.drawing-start-dot {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.drawing-start-core {
+  width: 14px;
+  height: 14px;
+  background: #10b981;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.9), 0 0 20px rgba(16, 185, 129, 0.6);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  z-index: 2;
+}
+
+.drawing-start-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid #10b981;
+  animation: start-dot-pulse 1.3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  pointer-events: none;
+}
+
+.drawing-start-dot.can-close .drawing-start-core,
+.drawing-start-dot:hover .drawing-start-core {
+  background: #5ae8ff;
+  border-color: #ffffff;
+  transform: scale(1.4);
+  box-shadow: 0 0 16px rgba(90, 232, 255, 1), 0 0 28px rgba(90, 232, 255, 0.7);
+}
+
+.drawing-start-dot.can-close .drawing-start-pulse,
+.drawing-start-dot:hover .drawing-start-pulse {
+  border-color: #5ae8ff;
+  animation-duration: 0.9s;
+}
+
+@keyframes start-dot-pulse {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 
 /* Responsive Map Mode */
