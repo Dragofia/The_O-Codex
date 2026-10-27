@@ -40,7 +40,8 @@ const state = {
   questStatusFilter: "ongoing",
   activeTags: new Set(),
   selectedEntryId: null,
-  isHelpOpen: false
+  isHelpOpen: false,
+  appMode: "codex"
 };
 
 let viewTransitionTimer = null;
@@ -48,6 +49,12 @@ let viewTransitionTimer = null;
 const elements = {};
 
 function initElements() {
+  elements.appModeBar = document.getElementById("app-mode-bar");
+  elements.viewportStage = document.getElementById("viewport-stage");
+  elements.modeTabCodex = document.getElementById("mode-tab-codex");
+  elements.modeTabMap = document.getElementById("mode-tab-map");
+  elements.modeTabCharacters = document.getElementById("mode-tab-characters");
+  elements.modalViewOnMap = document.getElementById("modal-view-on-map");
   elements.siteTitle = document.getElementById("site-title");
   elements.siteSubtitle = document.getElementById("site-subtitle");
   elements.helpButton = document.getElementById("help-button");
@@ -94,6 +101,8 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   initElements();
+  window.state = state;
+  window.openModal = openModal;
   bindEvents();
   await loadWorldData();
   router.applyInitialRoute();
@@ -163,8 +172,104 @@ function showLoadError(error) {
   elements.results.append(message);
 }
 
+// View Mode Management (The O-Codex vs World Map)
+window.setAppMode = function(mode, options = {}) {
+  const { syncUrl = true, pushHistory = true } = options;
+  state.appMode = mode;
+
+  const stage = elements.viewportStage || document.getElementById("viewport-stage");
+  const tabCodex = elements.modeTabCodex || document.getElementById("mode-tab-codex");
+  const tabMap = elements.modeTabMap || document.getElementById("mode-tab-map");
+
+  if (mode === "map") {
+    if (stage) {
+      stage.classList.remove("mode--codex");
+      stage.classList.add("mode--map");
+    }
+    document.body.classList.add("map-mode-active");
+    tabCodex?.classList.remove("is-active");
+    tabMap?.classList.add("is-active");
+
+    if (syncUrl) {
+      try {
+        if (pushHistory) {
+          window.history.pushState({ mode: "map" }, "", "#map");
+        } else {
+          window.history.replaceState({ mode: "map" }, "", "#map");
+        }
+      } catch {
+        window.location.hash = "#map";
+      }
+    }
+
+    // Invalidate Leaflet map size during slide and after slide finishes
+    if (window.mapEngine) {
+      window.mapEngine.invalidateSize();
+      setTimeout(() => window.mapEngine?.invalidateSize(), 150);
+      setTimeout(() => window.mapEngine?.invalidateSize(), 460);
+    }
+  } else {
+    if (stage) {
+      stage.classList.remove("mode--map");
+      stage.classList.add("mode--codex");
+    }
+    document.body.classList.remove("map-mode-active");
+    tabMap?.classList.remove("is-active");
+    tabCodex?.classList.add("is-active");
+
+    if (syncUrl && window.location.hash.toLowerCase() === "#map") {
+      try {
+        if (pushHistory) {
+          window.history.pushState({ mode: "codex" }, "", window.location.pathname);
+        } else {
+          window.history.replaceState({ mode: "codex" }, "", window.location.pathname);
+        }
+      } catch {
+        window.location.hash = "";
+      }
+    }
+  }
+};
+
 // Event wiring
 function bindEvents() {
+  // Mode Bar Navigation
+  elements.modeTabCodex?.addEventListener("click", () => {
+    window.setAppMode("codex");
+  });
+
+  elements.modeTabMap?.addEventListener("click", () => {
+    window.setAppMode("map");
+  });
+
+  elements.modeTabCharacters?.addEventListener("click", () => {
+    alert("Character Sheets mode is in development and coming in a future update!");
+  });
+
+  // Mobile/touch pull-down handle toggle
+  elements.appModeBar?.addEventListener("click", (event) => {
+    if (event.target.closest(".mode-tab")) return;
+    elements.appModeBar.classList.toggle("is-expanded");
+  });
+
+  document.addEventListener("click", (event) => {
+    if (elements.appModeBar && !elements.appModeBar.contains(event.target)) {
+      elements.appModeBar.classList.remove("is-expanded");
+    }
+  });
+
+  // Entry Modal View On Map
+  if (elements.modalViewOnMap) {
+    elements.modalViewOnMap.addEventListener("click", () => {
+      const currentId = state.selectedEntryId;
+      closeModal({ syncUrl: false });
+      if (window.CodexMapBridge && currentId) {
+        window.CodexMapBridge.navigateToPin(currentId);
+      } else {
+        window.setAppMode("map");
+      }
+    });
+  }
   elements.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value.trim();
     renderApp();
@@ -1031,6 +1136,10 @@ const router = {
       return { type: "help", id: "help" };
     }
 
+    if (decoded.toLowerCase() === "map") {
+      return { type: "map", id: "map" };
+    }
+
     const entryPrefixMatch = decoded.match(/^(?:entry[\/:]|item[\/:]|id[\/:])(.+)$/i);
     const candidateEntryId = (entryPrefixMatch ? entryPrefixMatch[1].trim() : decoded).toLowerCase();
 
@@ -1156,6 +1265,13 @@ const router = {
 
     const route = router.parseRoute();
 
+    if (route.type === "map") {
+      window.setAppMode("map", { syncUrl: false });
+      return;
+    } else if (state.appMode === "map") {
+      window.setAppMode("codex", { syncUrl: false });
+    }
+
     if (route.type === "entry") {
       const entry = route.entry || state.worldData.entries.find(
         (item) => item.id.toLowerCase() === route.id.toLowerCase()
@@ -1197,6 +1313,12 @@ const router = {
 
   applyInitialRoute() {
     const route = router.parseRoute();
+
+    if (route.type === "map") {
+      renderApp();
+      window.setAppMode("map", { syncUrl: false });
+      return;
+    }
 
     if (route.type === "entry") {
       const entry = route.entry || state.worldData.entries.find(
@@ -1290,6 +1412,24 @@ function openModal(entryId, options = {}) {
   elements.modalAliasesSection.classList.toggle("hidden", entry.aliases.length === 0);
 
   renderDetailPairs(detailPairs);
+
+  if (elements.modalViewOnMap) {
+    const isMappableCategory = ["settlement", "settlements", "domain", "domains", "location", "locations", "quest", "quests", "eschaton", "eschatons"].includes(String(entry.category || "").toLowerCase());
+    let hasLocationPin = false;
+    if (window.mapEngine && window.mapEngine.maps) {
+      for (const m of window.mapEngine.maps) {
+        const found = [
+          ...(m.officialLocations || []),
+          ...(m.playerPins || [])
+        ].some(p => p.codexId === entry.id || (p.name && p.name.toLowerCase() === (entry.name || entry.title || "").toLowerCase()));
+        if (found) {
+          hasLocationPin = true;
+          break;
+        }
+      }
+    }
+    elements.modalViewOnMap.classList.toggle("hidden", !(isMappableCategory || hasLocationPin));
+  }
 
   if (modalCloseTimer) {
     clearTimeout(modalCloseTimer);

@@ -3,82 +3,219 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>World Codex</title>
-  <link rel="stylesheet" href="styles.css?v=6">
+  <title>The O-Codex & World Map</title>
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
-  <div class="site-shell">
-    <header class="hero">
-      <button id="help-button" class="help-button" type="button" aria-haspopup="dialog" aria-controls="help-modal">
-        <span class="help-button__icon" aria-hidden="true">?</span>
-        <span>Help</span>
+  <!-- Top Floating & Receding View Mode Bar -->
+  <nav id="app-mode-bar" class="app-mode-bar" aria-label="Application View Mode">
+    <div class="mode-bar-content">
+      <button type="button" class="mode-tab is-active" data-mode="codex" id="mode-tab-codex">
+        <span class="mode-tab__icon">📜</span>
+        <span class="mode-tab__label">The O-Codex</span>
       </button>
+      <button type="button" class="mode-tab" data-mode="map" id="mode-tab-map">
+        <span class="mode-tab__icon">🗺️</span>
+        <span class="mode-tab__label">World Map</span>
+      </button>
+      <button type="button" class="mode-tab mode-tab--disabled" data-mode="characters" id="mode-tab-characters" title="Character Sheets coming soon">
+        <span class="mode-tab__icon">⚔️</span>
+        <span class="mode-tab__label">Characters</span>
+        <span class="mode-tab__badge">Soon</span>
+      </button>
+    </div>
+    <div class="mode-bar-handle" aria-hidden="true">
+      <span class="mode-bar-grip"></span>
+    </div>
+  </nav>
 
-      <div class="hero__content">
-        <h1 id="site-title">World Codex</h1>
-        <p id="site-subtitle" class="hero__subtitle">A lore index for characters, cities, quests, and relics.</p>
+  <!-- Viewport Stage for Smooth Mode Transitions -->
+  <div id="viewport-stage" class="viewport-stage mode--codex">
+    <!-- Codex View Mode -->
+    <div id="codex-mode-view" class="mode-view mode-view--codex">
+      <div class="site-shell">
+        <header class="hero">
+          <button id="help-button" class="help-button" type="button" aria-haspopup="dialog" aria-controls="help-modal">
+            <span class="help-button__icon" aria-hidden="true">?</span>
+            <span>Help</span>
+          </button>
+
+          <div class="hero__content">
+            <h1 id="site-title">World Codex</h1>
+            <p id="site-subtitle" class="hero__subtitle">A lore index for characters, cities, quests, and relics.</p>
+          </div>
+        </header>
+
+        <main class="layout">
+          <nav class="codex-nav" aria-label="Codex views">
+            <div id="view-tabs" class="view-tabs"></div>
+          </nav>
+
+          <section id="controls" class="controls" aria-label="Search and filters">
+            <div class="search-row">
+              <label class="search-field" for="search-input">
+                <input
+                  id="search-input"
+                  type="search"
+                  placeholder="Search names, summaries, tags, or aliases..."
+                  autocomplete="off"
+                  aria-label="Search the codex"
+                >
+              </label>
+
+              <button id="clear-filters" class="ghost-button" type="button">Clear</button>
+            </div>
+
+            <div id="sort-controls" class="sort-controls hidden">
+              <div class="control-group">
+                <label class="sort-label" for="sort-select">Sort</label>
+                <select id="sort-select" class="sort-select">
+                  <option value="alphabetical-asc">Alphabetical A-Z</option>
+                  <option value="alphabetical-desc">Alphabetical Z-A</option>
+                  <option value="newest-first">Newest First</option>
+                  <option value="oldest-first">Oldest First</option>
+                </select>
+              </div>
+
+              <div id="quest-status-controls" class="control-group hidden">
+                <label class="sort-label" for="quest-status-select">Status</label>
+                <select id="quest-status-select" class="sort-select">
+                  <option value="ongoing">Ongoing</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-grid filter-grid--single">
+              <div id="tag-suggestions-block" class="filter-block hidden">
+                <h2>Suggested Tags</h2>
+                <div id="tag-filters" class="chip-row"></div>
+              </div>
+            </div>
+
+            <p id="results-summary" class="results-summary">Loading entries...</p>
+          </section>
+
+          <section id="results" class="results" aria-live="polite"></section>
+        </main>
       </div>
-    </header>
+    </div>
 
-    <main class="layout">
-      <nav class="codex-nav" aria-label="Codex views">
-        <div id="view-tabs" class="view-tabs"></div>
-      </nav>
-
-      <section id="controls" class="controls" aria-label="Search and filters">
-        <div class="search-row">
-          <label class="search-field" for="search-input">
-            <input
-              id="search-input"
-              type="search"
-              placeholder="Search names, summaries, tags, or aliases..."
-              autocomplete="off"
-              aria-label="Search the codex"
-            >
-          </label>
-
-          <button id="clear-filters" class="ghost-button" type="button">Clear</button>
-        </div>
-
-        <div id="sort-controls" class="sort-controls hidden">
-          <div class="control-group">
-            <label class="sort-label" for="sort-select">Sort</label>
-            <select id="sort-select" class="sort-select">
-              <option value="alphabetical-asc">Alphabetical A-Z</option>
-              <option value="alphabetical-desc">Alphabetical Z-A</option>
-              <option value="newest-first">Newest First</option>
-              <option value="oldest-first">Oldest First</option>
-            </select>
-          </div>
-
-          <div id="quest-status-controls" class="control-group hidden">
-            <label class="sort-label" for="quest-status-select">Status</label>
-            <select id="quest-status-select" class="sort-select">
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
-            </select>
+    <!-- Interactive World Map View Mode -->
+    <div id="map-mode-view" class="mode-view mode-view--map">
+      <!-- Floating Map Header (Top Left) -->
+      <div class="map-header-bar">
+        <div class="map-title-pill">
+          <span class="map-title-icon" aria-hidden="true">🗺️</span>
+          <div class="map-title-text">
+            <span id="map-current-title" class="map-title-main">The Surface World</span>
           </div>
         </div>
 
-        <div class="filter-grid filter-grid--single">
-          <div id="tag-suggestions-block" class="filter-block hidden">
-            <h2>Suggested Tags</h2>
-            <div id="tag-filters" class="chip-row"></div>
+        <div class="map-dropdown-container">
+          <button id="map-selector-btn" class="map-action-button" type="button" aria-haspopup="true">
+            <span>Layers</span>
+            <span class="dropdown-caret" aria-hidden="true">▾</span>
+          </button>
+
+          <div id="map-selector-dropdown" class="map-dropdown-menu hidden">
+            <div class="map-dropdown-header">Campaign Layers</div>
+            <div id="map-selector-list" class="map-dropdown-items"></div>
+            <div class="map-dropdown-footer">
+              <button id="map-add-new-btn" class="map-dropdown-action-btn" type="button">
+                <span>+ New Map Layer</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <p id="results-summary" class="results-summary">Loading entries...</p>
-      </section>
+        <button id="map-settings-btn" class="map-action-button" type="button" title="Edit Map Image & Details">
+          <span aria-hidden="true">🖼️</span>
+          <span>Edit Map</span>
+        </button>
 
-      <section id="results" class="results" aria-live="polite"></section>
-    </main>
+        <button id="map-copy-data-btn" class="map-action-button" type="button" title="Copy Pins & Territories from Another Layer">
+          <span aria-hidden="true">📋</span>
+          <span>Copy Data</span>
+        </button>
+      </div>
+
+      <!-- Floating Map Toolbar (Top Right) -->
+      <div class="map-toolbar">
+        <button id="map-tool-pin" class="map-tool-btn" type="button" title="Drop a pin marker on the map">
+          <span class="map-tool-icon" aria-hidden="true">📌</span>
+          <span>Drop Pin</span>
+        </button>
+        <button id="map-tool-draw" class="map-tool-btn" type="button" title="Draw territory boundary polygon">
+          <span class="map-tool-icon" aria-hidden="true">📐</span>
+          <span>Draw Territory</span>
+        </button>
+        <button id="map-toggle-borders-btn" class="map-tool-btn is-active" type="button" title="Toggle territory borders visibility">
+          <span class="map-tool-icon" aria-hidden="true">👁️</span>
+          <span>Borders</span>
+        </button>
+      </div>
+
+      <!-- Action Banners -->
+      <div id="pin-drop-banner" class="map-action-banner hidden">
+        <span class="banner-icon" aria-hidden="true">📍</span>
+        <span class="banner-text">Click anywhere on the map to place a pin marker</span>
+        <button id="pin-drop-cancel-btn" type="button" class="banner-cancel-btn">Cancel</button>
+      </div>
+
+      <div id="drawing-banner" class="map-action-banner hidden">
+        <span class="banner-icon" aria-hidden="true">📐</span>
+        <span class="banner-text">Click on the map to add territory vertices (Points: <strong id="drawing-point-count">0</strong>)</span>
+        <div class="banner-actions">
+          <button id="drawing-finish-btn" type="button" class="banner-confirm-btn">Finish & Save</button>
+          <button id="drawing-cancel-btn" type="button" class="banner-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Leaflet Map Canvas -->
+      <div id="campaign-map-canvas" class="campaign-map-canvas"></div>
+
+      <!-- Dynamic Hover Territory HUD (Bottom Left) -->
+      <div id="map-region-hud" class="map-region-hud">
+        <span id="map-region-hud-dot" class="hud-dot"></span>
+        <div class="hud-text">
+          <span id="map-region-hud-name" class="hud-name">Uncharted Territory</span>
+          <span id="map-region-hud-coords" class="hud-coords">X: 0 · Y: 0</span>
+        </div>
+      </div>
+
+      <!-- Slide-over Pin Detail Drawer (Right Side) -->
+      <aside id="map-pin-drawer" class="map-pin-drawer is-collapsed" aria-label="Pin details">
+        <div class="drawer-header">
+          <span id="drawer-pin-category" class="drawer-badge">Location</span>
+          <button id="map-drawer-close" class="drawer-close" type="button" aria-label="Close pin drawer">✕</button>
+        </div>
+        <div class="drawer-body">
+          <h3 id="drawer-pin-title" class="drawer-title">Pin Name</h3>
+          <p id="drawer-pin-coords" class="drawer-coords">X: 0 · Y: 0</p>
+          <div class="drawer-divider"></div>
+          <p id="drawer-pin-summary" class="drawer-summary">Pin notes and details...</p>
+        </div>
+        <div class="drawer-footer">
+          <div id="drawer-codex-action" class="drawer-action-slot"></div>
+          <div id="drawer-delete-action" class="drawer-action-slot"></div>
+        </div>
+      </aside>
+    </div>
   </div>
 
+  <!-- Entry Detail Modal -->
   <div id="entry-modal" class="modal hidden" aria-hidden="true">
     <div id="modal-backdrop" class="modal__backdrop"></div>
 
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal__actions">
+        <button id="modal-view-on-map" class="modal__action-button hidden" type="button" aria-label="View location on world map">
+          <span class="map-icon" aria-hidden="true">🗺️</span>
+          <span class="map-label">View on Map</span>
+        </button>
         <button id="modal-copy-link" class="modal__action-button" type="button" aria-label="Copy direct link to this entry">
           <span class="copy-icon" aria-hidden="true">🔗</span>
           <span class="copy-label">Copy Link</span>
@@ -132,6 +269,7 @@
     </div>
   </div>
 
+  <!-- Help & Guide Modal -->
   <div id="help-modal" class="modal hidden" aria-hidden="true">
     <div id="help-backdrop" class="modal__backdrop"></div>
 
@@ -147,6 +285,14 @@
       </div>
 
       <div class="help-grid">
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">🗺️</span>
+            <h3>Interactive World Map Mode</h3>
+          </div>
+          <p>Switch seamlessly between the <strong>O-Codex</strong> and the <strong>World Map</strong> using the hover mode bar at the very top of your screen! Explore territories, place pins with lore notes, and jump directly from settlements to their map coordinates.</p>
+        </section>
+
         <section class="help-card">
           <div class="help-card__header">
             <span class="help-card__icon" aria-hidden="true">🔗</span>
@@ -165,7 +311,7 @@
 
         <section class="help-card">
           <div class="help-card__header">
-            <span class="help-card__icon" aria-hidden="true">🗺️</span>
+            <span class="help-card__icon" aria-hidden="true">📜</span>
             <h3>Category Views & Quests Filter</h3>
           </div>
           <p>Use the category tabs above the search bar to zoom in on specific topics (Settlements, Eschatons, Lore, etc.). In the <strong>Quests</strong> view, an extra status filter appears so you can toggle between <em>Ongoing</em> and <em>Completed</em> missions.</p>
@@ -186,6 +332,183 @@
           </div>
           <p>Press <kbd>Esc</kbd> anytime to close open detail or help windows. Press <kbd>/</kbd> to instantly jump to the search bar. You can also use your browser's <strong>Back</strong> button to return to the previous view without reloading.</p>
         </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Modals -->
+  <!-- 1. Create Pin Modal -->
+  <div id="create-pin-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <p class="modal__category">World Cartography</p>
+        <h2>Place New Map Pin</h2>
+        <p class="modal__summary" id="new-pin-coords-display">X: 500 · Y: 500</p>
+      </div>
+      <div class="map-form-body">
+        <label class="form-field">
+          <span>Pin Title / Label</span>
+          <input id="new-pin-title" type="text" placeholder="e.g., Hidden Outpost, Ancient Ruins" required>
+        </label>
+        <label class="form-field">
+          <span>Category & Theme</span>
+          <select id="new-pin-category">
+            <option value="Location">Location</option>
+            <option value="Settlement">Settlement</option>
+            <option value="Domain">Domain</option>
+            <option value="Dungeon">Dungeon / Hazard</option>
+            <option value="Quest">Quest / Spire</option>
+            <option value="Campsite">Campsite / Safehouse</option>
+            <option value="Danger">Danger / Monster</option>
+            <option value="Loot">Loot / Relic</option>
+            <option value="Note">Note / Discovery</option>
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Link to O-Codex Entry (Optional)</span>
+          <select id="new-pin-codex-link">
+            <option value="">None (Standalone Pin)</option>
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Notes & Description</span>
+          <textarea id="new-pin-notes" rows="3" placeholder="Add tactical notes, secrets, or lore description..."></textarea>
+        </label>
+      </div>
+      <div class="modal__form-actions">
+        <button id="cancel-new-pin-btn" type="button" class="ghost-button">Cancel</button>
+        <button id="save-new-pin-btn" type="button" class="cta-button">Place Pin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Save Territory Modal -->
+  <div id="save-territory-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <p class="modal__category">Domain Boundaries</p>
+        <h2>Save Territory Region</h2>
+        <p class="modal__summary">Define the realm, territory, or biome name for the enclosed polygon.</p>
+      </div>
+      <div class="map-form-body">
+        <label class="form-field">
+          <span>Territory Name</span>
+          <input id="new-territory-name" type="text" placeholder="e.g., Domain of Alden, Whispering Woods" required>
+        </label>
+        <label class="form-field">
+          <span>Border & Fill Color</span>
+          <select id="new-territory-color">
+            <option value="#5ae8ff" selected>Celestial Cyan (#5ae8ff)</option>
+            <option value="#7a87ff">Arcane Indigo (#7a87ff)</option>
+            <option value="#f59e0b">Golden Amber (#f59e0b)</option>
+            <option value="#10b981">Verdant Emerald (#10b981)</option>
+            <option value="#ef4444">Crimson Red (#ef4444)</option>
+            <option value="#a855f7">Mystic Purple (#a855f7)</option>
+            <option value="#f43f5e">Rose Danger (#f43f5e)</option>
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Territory Lore & Description</span>
+          <textarea id="new-territory-desc" rows="3" placeholder="Description shown in region HUD and hover inspector..."></textarea>
+        </label>
+      </div>
+      <div class="modal__form-actions">
+        <button id="cancel-new-territory-btn" type="button" class="ghost-button">Cancel</button>
+        <button id="save-new-territory-btn" type="button" class="cta-button">Save Territory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Copy Map Data Modal (Feature A) -->
+  <div id="copy-map-data-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <p class="modal__category">Layer Management</p>
+        <h2>Copy Map Layer Data</h2>
+        <p class="modal__summary">Duplicate markers and territory polygons from another map layer into this one.</p>
+      </div>
+      <div class="map-form-body">
+        <label class="form-field">
+          <span>Source Map Layer</span>
+          <select id="copy-source-map-select"></select>
+        </label>
+        <div class="form-checkbox-group">
+          <label class="checkbox-field">
+            <input type="checkbox" id="copy-opt-territories" checked>
+            <span>Copy Territory Polygons & Regions</span>
+          </label>
+          <label class="checkbox-field">
+            <input type="checkbox" id="copy-opt-pins" checked>
+            <span>Copy Markers, Locations & Pins</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal__form-actions">
+        <button id="cancel-copy-data-btn" type="button" class="ghost-button">Cancel</button>
+        <button id="execute-copy-data-btn" type="button" class="cta-button">Copy Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Edit Map Image Modal (Feature B) -->
+  <div id="edit-map-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <p class="modal__category">Layer Settings</p>
+        <h2>Edit Map Layer & Image</h2>
+        <p class="modal__summary">Customize the map title, subtitle, or replace the background image URL.</p>
+      </div>
+      <div class="map-form-body">
+        <label class="form-field">
+          <span>Map Title</span>
+          <input id="edit-map-title" type="text" placeholder="e.g., Surface World, The Underdark" required>
+        </label>
+        <label class="form-field">
+          <span>Subtitle</span>
+          <input id="edit-map-subtitle" type="text" placeholder="e.g., Known Domains & Settlements">
+        </label>
+        <label class="form-field">
+          <span>Custom Image URL (Leave blank to keep procedural fantasy map)</span>
+          <input id="edit-map-image-url" type="url" placeholder="https://example.com/map.jpg or local path">
+        </label>
+      </div>
+      <div class="modal__form-actions">
+        <button id="cancel-edit-map-btn" type="button" class="ghost-button">Cancel</button>
+        <button id="save-edit-map-btn" type="button" class="cta-button">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Create Map Layer Modal -->
+  <div id="create-map-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__header">
+        <p class="modal__category">New Layer</p>
+        <h2>Create New Map Layer</h2>
+        <p class="modal__summary">Add a new layer for planes, skies, caves, or regional maps.</p>
+      </div>
+      <div class="map-form-body">
+        <label class="form-field">
+          <span>Layer Title</span>
+          <input id="new-map-title" type="text" placeholder="e.g., The Underhalls, Astral Sea" required>
+        </label>
+        <label class="form-field">
+          <span>Subtitle (Optional)</span>
+          <input id="new-map-subtitle" type="text" placeholder="e.g., Subterranean Passages">
+        </label>
+        <label class="form-field">
+          <span>Image URL (Optional)</span>
+          <input id="new-map-image-url" type="url" placeholder="Leave blank for celestial fantasy generator">
+        </label>
+      </div>
+      <div class="modal__form-actions">
+        <button id="cancel-new-map-btn" type="button" class="ghost-button">Cancel</button>
+        <button id="save-new-map-btn" type="button" class="cta-button">Create Layer</button>
       </div>
     </div>
   </div>
@@ -226,6 +549,10 @@
     </article>
   </template>
 
-  <script src="script.js?v=3" defer></script>
+  <!-- Leaflet Map JS CDN -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Core Scripts -->
+  <script src="script.js?v=4" defer></script>
+  <script src="map.js?v=1" defer></script>
 </body>
 </html>
