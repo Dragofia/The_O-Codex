@@ -8,181 +8,309 @@
   'use strict';
 
   /* ========================================================================
-     1. PROCEDURAL FANTASY MAP SVG GENERATOR (Maladen Continental Canvas)
+     1. PROCEDURAL FANTASY MAP SVG GENERATOR (Inkarnate-Styled 3x3 Maladen Grid)
      ======================================================================== */
   function createProceduralFantasyMapSvg() {
     const svgContent = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
       <defs>
-        <!-- Ocean Gradients -->
-        <radialGradient id="oceanGrad" cx="50%" cy="50%" r="75%">
-          <stop offset="0%" stop-color="#091424" />
-          <stop offset="60%" stop-color="#040913" />
-          <stop offset="100%" stop-color="#020408" />
-        </radialGradient>
-        <linearGradient id="laytideAbyss" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0a1d3a" />
-          <stop offset="50%" stop-color="#051024" />
-          <stop offset="100%" stop-color="#020712" />
+        <!-- Domain Biome Background Gradients -->
+        <linearGradient id="giaslanSnowBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc" />
+          <stop offset="45%" stop-color="#eef2f6" />
+          <stop offset="100%" stop-color="#dce4ed" />
+        </linearGradient>
+        <linearGradient id="altasarPlainsBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#a49f5a" />
+          <stop offset="60%" stop-color="#938e4d" />
+          <stop offset="100%" stop-color="#807c40" />
+        </linearGradient>
+        <linearGradient id="caybluffPlateauBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6e5728" />
+          <stop offset="50%" stop-color="#5c471e" />
+          <stop offset="100%" stop-color="#4a3715" />
+        </linearGradient>
+        <linearGradient id="aldenAridBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3d2c1d" />
+          <stop offset="100%" stop-color="#22180e" />
+        </linearGradient>
+        <linearGradient id="klabatsDesertBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4a3215" />
+          <stop offset="100%" stop-color="#2a1c0b" />
+        </linearGradient>
+        <linearGradient id="dynesteaPrimeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#143622" />
+          <stop offset="100%" stop-color="#0a1d13" />
+        </linearGradient>
+        <linearGradient id="cirrusiaSkyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#132c45" />
+          <stop offset="100%" stop-color="#0a1624" />
+        </linearGradient>
+        <linearGradient id="hemwoodDarkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#211020" />
+          <stop offset="100%" stop-color="#0e050e" />
+        </linearGradient>
+        <linearGradient id="laytideOceanBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0c2547" />
+          <stop offset="100%" stop-color="#040e1c" />
         </linearGradient>
 
-        <!-- Biome Gradients -->
-        <linearGradient id="giaslanSnow" x1="0%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stop-color="#1e293b" />
-          <stop offset="50%" stop-color="#283852" />
-          <stop offset="100%" stop-color="#172437" />
+        <!-- Water and Sand fills -->
+        <linearGradient id="freshWater" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#48a0b5" />
+          <stop offset="100%" stop-color="#2b7185" />
         </linearGradient>
-        <linearGradient id="aldenArid" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#2b2015" />
-          <stop offset="60%" stop-color="#1e1810" />
-          <stop offset="100%" stop-color="#14100c" />
-        </linearGradient>
-        <linearGradient id="hemwoodDark" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#190e18" />
-          <stop offset="60%" stop-color="#110811" />
-          <stop offset="100%" stop-color="#090409" />
-        </linearGradient>
-        <linearGradient id="klabatsDesert" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#2c1e10" />
-          <stop offset="50%" stop-color="#1f160b" />
-          <stop offset="100%" stop-color="#130e07" />
-        </linearGradient>
-        <linearGradient id="dynesteaVerdant" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0d281e" />
-          <stop offset="50%" stop-color="#081b14" />
-          <stop offset="100%" stop-color="#04100c" />
-        </linearGradient>
-        <linearGradient id="altasarSavannah" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#262210" />
-          <stop offset="50%" stop-color="#1b180a" />
-          <stop offset="100%" stop-color="#100f06" />
-        </linearGradient>
-        <linearGradient id="caybluffPlateau" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#20152d" />
-          <stop offset="60%" stop-color="#140d1e" />
-          <stop offset="100%" stop-color="#0b0612" />
+        <linearGradient id="caybluffBeach" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#5c471e" />
+          <stop offset="15%" stop-color="#dcc188" />
+          <stop offset="100%" stop-color="#c9ad72" />
         </linearGradient>
 
-        <!-- Grid Pattern -->
-        <pattern id="nauticalGrid" width="80" height="80" patternUnits="userSpaceOnUse">
-          <path d="M 80 0 L 0 0 0 80" fill="none" stroke="rgba(90, 232, 255, 0.05)" stroke-width="0.75" stroke-dasharray="2,4" />
+        <pattern id="domainGridLines" width="333.33" height="333.33" patternUnits="userSpaceOnUse">
+          <path d="M 333.33 0 L 0 0 0 333.33" fill="none" stroke="rgba(90, 232, 255, 0.12)" stroke-width="1.2" stroke-dasharray="4,6" />
         </pattern>
       </defs>
 
-      <!-- Ocean Floor & Grid -->
-      <rect width="1000" height="1000" fill="url(#oceanGrad)" />
-      <rect width="1000" height="1000" fill="url(#nauticalGrid)" opacity="0.8" />
+      <!-- Deep Map Parchment Base -->
+      <rect width="1000" height="1000" fill="#040913" />
 
-      <!-- Laytide Ocean Shelf (Far East) -->
-      <path d="M 750,0 C 820,150 880,350 870,550 C 860,750 920,880 1000,950 L 1000,0 Z" 
-            fill="url(#laytideAbyss)" opacity="0.8" />
+      <!-- 3x3 MALADEN BIOME BASE TILES -->
+      <!-- Row 1: North -->
+      <rect x="0" y="0" width="335" height="335" fill="url(#aldenAridBg)" />
+      <rect x="335" y="0" width="335" height="335" fill="url(#klabatsDesertBg)" />
+      <rect x="670" y="0" width="330" height="335" fill="url(#dynesteaPrimeBg)" />
 
-      <!-- Continental Coastline Outline / Shallows -->
-      <path d="M 120,40 C 250,15 480,20 650,45 C 800,70 890,160 880,320 C 870,440 920,520 890,680 C 860,820 820,920 680,950 C 520,980 340,960 220,910 C 120,850 70,720 60,560 C 50,400 80,220 120,40 Z" 
-            fill="none" stroke="#1c3b5e" stroke-width="28" opacity="0.4" stroke-linejoin="round" />
-      <path d="M 140,55 C 260,35 480,40 640,65 C 780,90 870,170 860,320 C 850,430 900,510 870,670 C 840,800 800,900 670,930 C 510,960 340,940 230,890 C 130,830 90,710 80,560 C 70,410 100,230 140,55 Z" 
-            fill="none" stroke="#2563eb" stroke-width="8" opacity="0.3" stroke-linejoin="round" />
+      <!-- Row 2: Middle -->
+      <!-- GIASLAN: Snowy Glacial Tundra -->
+      <rect x="0" y="335" width="335" height="335" fill="url(#giaslanSnowBg)" />
+      <!-- ALTASAR: Golden Grassland Plains -->
+      <rect x="335" y="335" width="335" height="335" fill="url(#altasarPlainsBg)" />
+      <!-- CIRRUSIA: Cloud Ocean Sky Realm -->
+      <rect x="670" y="335" width="330" height="335" fill="url(#cirrusiaSkyBg)" />
 
-      <!-- 1. Giaslan Tundra & Northern Peaks (SVG Top Left) -->
-      <path d="M 150,50 C 260,30 450,40 520,80 C 500,180 460,220 360,240 C 240,240 180,180 150,50 Z" 
-            fill="url(#giaslanSnow)" stroke="#7a87ff" stroke-width="1.8" stroke-opacity="0.8" />
-      <!-- Viserion's Peak Mountains -->
-      <g id="viserions-peaks" stroke="#94a3b8" stroke-width="1.5" fill="#0f172a">
-        <polygon points="320,130 350,75 380,130" />
-        <polygon points="360,140 390,85 420,140" />
-        <polygon points="270,150 300,95 330,150" />
-        <polygon points="400,160 430,110 460,160" />
-        <!-- Snow highlight caps -->
-        <polygon points="340,95 350,75 360,95" fill="#e2e8f0" stroke="none" />
-        <polygon points="380,105 390,85 400,105" fill="#e2e8f0" stroke="none" />
-        <polygon points="290,115 300,95 310,115" fill="#e2e8f0" stroke="none" />
+      <!-- Row 3: South -->
+      <!-- HEMWOOD: Shadowed Heated Forest -->
+      <rect x="0" y="670" width="335" height="330" fill="url(#hemwoodDarkBg)" />
+      <!-- CAYBLUFF: Earthy Plateau & Coastal Beach -->
+      <rect x="335" y="670" width="335" height="330" fill="url(#caybluffPlateauBg)" />
+      <!-- LAYTIDE: Vast Eastern Ocean -->
+      <rect x="670" y="670" width="330" height="330" fill="url(#laytideOceanBg)" />
+
+      <!-- ======================================================================
+           DETAILED INKARNATE ARTWORK: GIASLAN (x: 0-335, y: 335-670)
+           ====================================================================== -->
+      <!-- Northern Gialden Strip Mountains (along border to Alden) -->
+      <g id="inkarnate-gialden-strip" fill="#6c5543" stroke="#3b2b20" stroke-width="1.2">
+        <polygon points="20,360 45,340 70,360" />
+        <polygon points="65,362 95,338 125,362" />
+        <polygon points="120,365 150,342 180,365" />
+        <polygon points="210,362 245,338 280,362" />
+        <polygon points="275,365 305,340 330,365" />
+        <!-- Snow highlight ridge lines -->
+        <path d="M 45,340 L 45,360 M 95,338 L 95,362 M 150,342 L 150,365 M 245,338 L 245,362 M 305,340 L 305,365" stroke="#f1f5f9" stroke-width="1.5" />
       </g>
 
-      <!-- 2. Alden Arid Empire & Forges (SVG Top Right) -->
-      <path d="M 520,80 C 650,60 780,80 850,150 C 860,250 820,320 740,320 C 660,320 540,240 520,80 Z" 
-            fill="url(#aldenArid)" stroke="#5ae8ff" stroke-width="1.8" stroke-opacity="0.8" />
-      <!-- Gialden Strip Mountains (Dividing Giaslan & Alden) -->
-      <g id="gialden-strip" stroke="#78350f" stroke-width="1.5" fill="#1c120c">
-        <polygon points="480,190 505,140 530,190" />
-        <polygon points="510,210 535,160 560,210" />
-        <polygon points="460,230 485,180 510,230" />
-        <!-- Copper crest highlights -->
-        <path d="M 505,140 L 507,190 M 535,160 L 537,210" stroke="#f59e0b" stroke-width="1.2" />
+      <!-- Froslan Lake with Island Tower (Northeast Giaslan) -->
+      <g id="inkarnate-froslan">
+        <ellipse cx="255" cy="405" rx="38" ry="24" fill="#6daab8" stroke="#376874" stroke-width="2" />
+        <circle cx="255" cy="405" r="7" fill="#cbd5e1" stroke="#475569" stroke-width="1" />
+        <polygon points="255,398 252,408 258,408" fill="#1e293b" />
       </g>
 
-      <!-- 3. Hemwood Shadowed Forest (SVG Upper Mid-Left) -->
-      <path d="M 360,240 C 460,220 540,240 540,350 C 500,420 400,420 320,360 C 340,300 350,260 360,240 Z" 
-            fill="url(#hemwoodDark)" stroke="#f43f5e" stroke-width="1.8" stroke-opacity="0.8" />
-      <!-- Hell Sigil Core Aura in Hemwood -->
-      <ellipse cx="460" cy="280" rx="30" ry="18" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.8" />
-      <ellipse cx="460" cy="280" rx="14" ry="8" fill="#450a0a" stroke="#f87171" stroke-width="1" opacity="0.9" />
-
-      <!-- 4. Klabats Western Deserts & Badlands (SVG Mid-Left) -->
-      <path d="M 80,320 C 180,300 320,360 320,500 C 300,620 180,640 100,580 C 70,480 70,380 80,320 Z" 
-            fill="url(#klabatsDesert)" stroke="#f59e0b" stroke-width="1.8" stroke-opacity="0.8" />
-      <!-- Desert Ridge Dunes -->
-      <path d="M 120,400 Q 180,380 240,420 M 140,460 Q 200,440 260,480 M 110,520 Q 180,500 230,540" 
-            fill="none" stroke="#b45309" stroke-width="1.5" opacity="0.6" stroke-linecap="round" />
-
-      <!-- 5. Dynestea Central Verdant Heartland (SVG Center) -->
-      <path d="M 320,360 C 400,420 540,350 640,380 C 660,500 580,580 480,580 C 380,580 320,500 320,360 Z" 
-            fill="url(#dynesteaVerdant)" stroke="#10b981" stroke-width="2" stroke-opacity="0.85" />
-      <!-- Confluent Prime Rivers -->
-      <path d="M 500,80 Q 480,240 500,380 Q 520,460 480,550 Q 420,620 360,700" 
-            fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.85" stroke-linecap="round" />
-      <path d="M 500,380 Q 600,420 680,420" 
-          fill="none" stroke="#38bdf8" stroke-width="1.8" opacity="0.75" stroke-linecap="round" />
-
-      <!-- 6. Altasar Eastern Savannah & Plains (SVG Mid-Right) -->
-      <path d="M 640,380 C 740,320 850,320 890,440 C 900,560 840,650 720,650 C 640,650 620,540 640,380 Z" 
-            fill="url(#altasarSavannah)" stroke="#eab308" stroke-width="1.8" stroke-opacity="0.85" />
-      <!-- The Spire Monolith Crater in Altasar -->
-      <g id="altasar-spire" transform="translate(760, 440)">
-        <ellipse cx="0" cy="0" rx="40" ry="22" fill="#181504" stroke="#eab308" stroke-width="1.5" stroke-dasharray="3,3" />
-        <polygon points="-8,8 0,-36 8,8" fill="#fef08a" stroke="#ca8a04" stroke-width="1" />
-        <circle cx="0" cy="-36" r="3.5" fill="#ffffff" filter="drop-shadow(0 0 6px #eab308)" />
+      <!-- Oresalt Lake & Mines (Northwest Giaslan) -->
+      <g id="inkarnate-oresalt">
+        <path d="M 80,410 Q 95,385 110,415 T 85,445 Z" fill="#78b5c4" stroke="#3d6f7a" stroke-width="1.5" />
+        <polygon points="50,420 65,390 80,420" fill="#846e5b" stroke="#4a3b2f" stroke-width="1" />
       </g>
 
-      <!-- 7. Cirrusia Sky Islands & Cloud Ocean (SVG Lower Center/Left) -->
-      <path d="M 320,580 C 420,580 520,580 560,700 C 520,820 380,880 260,820 C 200,720 240,640 320,580 Z" 
-            fill="#0c1929" stroke="#38bdf8" stroke-width="1.8" stroke-opacity="0.8" />
-      <!-- Floating Clouds and Sky Islands -->
-      <g id="cirrusia-clouds" opacity="0.75">
-        <ellipse cx="380" cy="720" rx="35" ry="14" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2,2" />
-        <ellipse cx="460" cy="740" rx="45" ry="16" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="1.2" />
-        <ellipse cx="330" cy="770" rx="28" ry="12" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="1" />
+      <!-- Viserion's Peak & Chillspire Fortress Complex (Center Giaslan) -->
+      <g id="inkarnate-viserions-peak" stroke="#334155" stroke-width="1.5">
+        <!-- Massive central mountain range -->
+        <polygon points="110,545 165,440 220,545" fill="#475569" />
+        <polygon points="140,550 165,465 190,550" fill="#334155" />
+        <polygon points="80,530 115,465 150,530" fill="#64748b" />
+        <polygon points="180,535 215,470 250,535" fill="#64748b" />
+        <!-- Snow cap peaks -->
+        <polygon points="152,465 165,440 178,465" fill="#ffffff" stroke="none" />
+        <polygon points="107,480 115,465 123,480" fill="#ffffff" stroke="none" />
+        <polygon points="207,485 215,470 223,485" fill="#ffffff" stroke="none" />
+        <!-- Chillspire fortress citadel in the center mountain saddle -->
+        <rect x="156" y="488" width="18" height="14" fill="#0f172a" stroke="#94a3b8" stroke-width="1.2" />
+        <polygon points="153,488 165,476 177,488" fill="#1e293b" stroke="#7dd3fc" stroke-width="1" />
       </g>
 
-      <!-- 8. Caybluff Starlit Plateau & Cliffs (SVG Lower Right) -->
-      <path d="M 560,700 C 640,650 780,650 860,720 C 880,840 820,920 680,940 C 580,940 520,820 560,700 Z" 
-            fill="url(#caybluffPlateau)" stroke="#a855f7" stroke-width="2" stroke-opacity="0.85" />
-      <!-- Caybluff Fissure Ravine -->
-      <path d="M 820,740 Q 840,780 830,830" fill="none" stroke="#c084fc" stroke-width="3" opacity="0.85" stroke-linecap="round" />
-      <!-- Ocean Wall Circular Currents outside Portale -->
-      <g id="ocean-wall-currents" fill="none" stroke="#38bdf8" stroke-width="1.8" opacity="0.7">
-        <circle cx="890" cy="650" r="28" stroke-dasharray="4,4" />
-        <circle cx="890" cy="650" r="16" stroke-dasharray="3,3" />
+      <!-- Shadewood Grove (Dead trees on eastern flank of Viserion's Peak) -->
+      <g id="inkarnate-shadewood" stroke="#1e293b" stroke-width="1" stroke-linecap="round">
+        <path d="M 200,505 L 200,490 M 197,495 L 200,492 L 203,497" />
+        <path d="M 208,508 L 208,493 M 205,498 L 208,495 L 211,500" />
+        <path d="M 216,506 L 216,492 M 213,497 L 216,494 L 219,499" />
       </g>
+
+      <!-- Saltwater Camp & Lake (Southeast Giaslan) -->
+      <g id="inkarnate-saltwater">
+        <ellipse cx="250" cy="640" rx="32" ry="18" fill="#5c9aa8" stroke="#2d5e6a" stroke-width="1.5" />
+        <polygon points="220,610 240,580 260,610" fill="#715c4c" stroke="#3b2d23" stroke-width="1" />
+        <polygon points="255,615 275,585 295,615" fill="#715c4c" stroke="#3b2d23" stroke-width="1" />
+      </g>
+
+      <!-- Snowden Pine Tree Line (Southern border to Hemwood) -->
+      <g id="inkarnate-snowden-pines" fill="#1e3a29" stroke="#0e1f15" stroke-width="0.8">
+        <polygon points="120,665 125,650 130,665" />
+        <polygon points="140,665 145,648 150,665" />
+        <polygon points="160,665 165,646 170,665" />
+        <polygon points="180,665 185,648 190,665" />
+        <polygon points="200,665 205,650 210,665" />
+      </g>
+
+      <!-- ======================================================================
+           DETAILED INKARNATE ARTWORK: ALTASAR (x: 335-665, y: 335-670)
+           ====================================================================== -->
+      <!-- Mirage Bay & Lakes (Northwest Altasar) -->
+      <g id="inkarnate-mirage-bay">
+        <path d="M 370,360 Q 410,345 420,380 T 380,440 Q 360,420 370,360 Z" fill="url(#freshWater)" stroke="#225361" stroke-width="1.8" />
+        <ellipse cx="450" cy="405" rx="34" ry="26" fill="url(#freshWater)" stroke="#225361" stroke-width="1.8" />
+      </g>
+
+      <!-- Talsancea Falls Mountains (West-Central Altasar) -->
+      <g id="inkarnate-talsancea" stroke="#4d422e" stroke-width="1.2" fill="#736345">
+        <polygon points="415,485 435,445 455,485" />
+        <polygon points="445,490 465,450 485,490" />
+        <!-- Waterfalls line -->
+        <path d="M 450,455 Q 455,485 450,515" fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round" />
+      </g>
+
+      <!-- Altasar River System (cascading from Talsancea past Droland & Orville into Caybluff) -->
+      <path d="M 450,515 Q 470,535 480,560 Q 485,590 465,620 Q 430,640 400,650 T 470,670" 
+            fill="none" stroke="#38bdf8" stroke-width="3.2" stroke-linecap="round" opacity="0.9" />
+      <!-- Southwest River Delta Lakes -->
+      <ellipse cx="410,545" rx="30" ry="20" fill="url(#freshWater)" stroke="#225361" stroke-width="1.5" />
+      <path d="M 520,640 Q 560,630 580,660 T 540,670 Z" fill="url(#freshWater)" stroke="#225361" stroke-width="1.5" />
+
+      <!-- Knotwood Forest & Eastern Lake (Northeast Altasar) -->
+      <g id="inkarnate-knotwood">
+        <!-- Forest canopy clump -->
+        <ellipse cx="575" cy="460" rx="46" ry="34" fill="#2d5324" stroke="#193313" stroke-width="1.5" />
+        <ellipse cx="550" cy="445" rx="30" ry="24" fill="#35612b" stroke="#193313" stroke-width="1" />
+        <ellipse cx="600" cy="470" rx="28" ry="20" fill="#24451c" stroke="#193313" stroke-width="1" />
+        <!-- Eastern Lake -->
+        <ellipse cx="630" cy="475" rx="26" ry="18" fill="url(#freshWater)" stroke="#225361" stroke-width="1.5" />
+      </g>
+
+      <!-- Mountain Ridges on Altasar Edges -->
+      <g id="altasar-boundary-mountains" stroke="#473a27" stroke-width="1.2" fill="#695639">
+        <polygon points="580,390 600,365 620,390" />
+        <polygon points="610,395 630,370 650,395" />
+        <polygon points="560,625 585,595 610,625" />
+        <polygon points="595,630 620,600 645,630" />
+      </g>
+
+      <!-- Altasar Spire Monolith (North of Droland) -->
+      <g id="inkarnate-altasar-spire" transform="translate(475, 435)">
+        <ellipse cx="0" cy="10" rx="28" ry="14" fill="#141a12" stroke="#eab308" stroke-width="1.5" stroke-dasharray="3,3" />
+        <polygon points="-12,10 0,-48 12,10" fill="#090d09" stroke="#ca8a04" stroke-width="1.5" />
+        <circle cx="0" cy="-48" r="4" fill="#ffffff" filter="drop-shadow(0 0 8px #eab308)" />
+      </g>
+
+      <!-- Droland Capital (Tiered walled city immediately south of the Spire) -->
+      <g id="inkarnate-droland" transform="translate(500, 495)">
+        <ellipse cx="0" cy="0" rx="24" ry="16" fill="#475569" stroke="#94a3b8" stroke-width="1.5" />
+        <circle cx="0" cy="-2" r="9" fill="#1e293b" stroke="#eab308" stroke-width="1.2" />
+        <circle cx="0" cy="-2" r="3" fill="#fef08a" />
+      </g>
+
+      <!-- ======================================================================
+           DETAILED INKARNATE ARTWORK: CAYBLUFF (x: 335-665, y: 670-1000)
+           ====================================================================== -->
+      <!-- Northern Mountain Barrier: Mount Pheltil, Mount Famil & Montepass -->
+      <g id="inkarnate-northern-caybluff" stroke="#3b2b18" stroke-width="1.2" fill="#614b2d">
+        <!-- Mount Pheltil -->
+        <polygon points="415,735 440,685 465,735" />
+        <path d="M 440,685 L 440,735" stroke="#9a815a" stroke-width="1.2" />
+        <!-- Mount Famil -->
+        <polygon points="495,745 520,695 545,745" />
+        <path d="M 520,695 L 520,745" stroke="#9a815a" stroke-width="1.2" />
+        <!-- Montepass Road line between them -->
+        <path d="M 470,670 Q 480,720 460,760" fill="none" stroke="#d5b882" stroke-width="2" stroke-dasharray="2,3" />
+      </g>
+
+      <!-- Central Fog Basin (Middle of Caybluff) -->
+      <g id="inkarnate-fog-basin">
+        <ellipse cx="530" cy="800" rx="35" ry="18" fill="#2d6475" stroke="#163943" stroke-width="1.8" />
+        <!-- Fog mist wisps -->
+        <path d="M 500,795 Q 530,785 560,795 M 510,805 Q 530,815 550,805" fill="none" stroke="rgba(241, 245, 249, 0.6)" stroke-width="3" stroke-linecap="round" />
+      </g>
+
+      <!-- Caybluff Fissure (Deep black/purple chasm slicing vertically) -->
+      <path d="M 565,700 Q 580,750 575,800 Q 570,840 560,880" 
+            fill="none" stroke="#050308" stroke-width="6" stroke-linecap="round" />
+      <path d="M 565,700 Q 580,750 575,800 Q 570,840 560,880" 
+            fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,4" />
+
+      <!-- Eastern Coastal Beach Strip (across fissure) -->
+      <path d="M 575,695 C 600,690 660,700 665,710 L 665,920 C 650,910 630,900 600,890 Z" 
+            fill="url(#caybluffBeach)" stroke="#ad9157" stroke-width="1.2" />
+
+      <!-- Portale City (On the beach strip) -->
+      <g id="inkarnate-portale" transform="translate(610, 770)">
+        <rect x="-14" y="-12" width="28" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+        <circle cx="0" cy="0" r="5" fill="#f59e0b" />
+      </g>
+
+      <!-- The Ocean Wall (Curved sea barrier in the ocean bay off Portale) -->
+      <path d="M 635,745 C 650,755 655,785 640,800" 
+            fill="none" stroke="#67e8f9" stroke-width="4.5" stroke-linecap="round" opacity="0.9" />
+
+      <!-- Waveside (Southern coastal town) -->
+      <g id="inkarnate-waveside" transform="translate(650, 840)">
+        <polygon points="-8,6 0,-8 8,6" fill="#78350f" stroke="#d97706" stroke-width="1.2" />
+      </g>
+
+      <!-- Massive Mount Solare (Dominating South of Caybluff) -->
+      <g id="inkarnate-mount-solare" stroke="#261b0c" stroke-width="2">
+        <polygon points="380,985 500,905 620,985" fill="#423016" />
+        <polygon points="440,985 500,920 560,985" fill="#573f1d" />
+        <!-- Golden rock striations -->
+        <path d="M 500,905 L 500,985 M 460,950 L 485,985 M 540,950 L 515,985" stroke="#ca8a04" stroke-width="1.8" />
+        <polygon points="485,925 500,905 515,925" fill="#fef08a" stroke="none" />
+      </g>
+
+      <!-- ======================================================================
+           SURROUNDING REALMS: ALDEN, KLABATS, DYNESTEA, CIRRUSIA, HEMWOOD, LAYTIDE
+           ====================================================================== -->
+      <!-- Hemwood Hell Sigil (Bottom Left) -->
+      <g id="hemwood-sigil" transform="translate(190, 850)">
+        <ellipse cx="0" cy="0" rx="36" ry="20" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,3" />
+        <circle cx="0" cy="0" r="10" fill="#450a0a" stroke="#f87171" stroke-width="1.2" />
+      </g>
+
+      <!-- Cirrusia Floating Clouds (Mid Right) -->
+      <g id="cirrusia-sky" transform="translate(820, 500)" opacity="0.8">
+        <ellipse cx="0" cy="0" rx="42" ry="18" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="1.2" />
+        <ellipse cx="20" cy="-15" rx="30" ry="12" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8" stroke-width="1" />
+      </g>
+
+      <!-- 3x3 Domain Division Grid Lines Overlay -->
+      <rect width="1000" height="1000" fill="url(#domainGridLines)" pointer-events="none" />
 
       <!-- Vintage Nautical Compass Rose (Top Left) -->
-      <g id="compass-rose" transform="translate(90, 90)">
-        <circle cx="0" cy="0" r="42" fill="none" stroke="rgba(90, 232, 255, 0.35)" stroke-width="1.2" />
-        <polygon points="0,-40 6,-8 0,0 -6,-8" fill="#5ae8ff" />
-        <polygon points="0,40 5,8 0,0 -5,8" fill="#1e3a5f" />
-        <polygon points="40,0 8,5 0,0 8,-5" fill="#7a87ff" />
-        <polygon points="-40,0 -8,5 0,0 -8,-5" fill="#1e3a5f" />
-        <text x="0" y="-46" text-anchor="middle" font-family="'Segoe UI', serif" font-size="11" font-weight="bold" fill="#eefaff">N</text>
+      <g id="compass-rose" transform="translate(60, 60)">
+        <circle cx="0" cy="0" r="32" fill="none" stroke="rgba(90, 232, 255, 0.4)" stroke-width="1.2" />
+        <polygon points="0,-30 5,-6 0,0 -5,-6" fill="#5ae8ff" />
+        <polygon points="0,30 4,6 0,0 -4,6" fill="#1e3a5f" />
+        <polygon points="30,0 6,4 0,0 6,-4" fill="#7a87ff" />
+        <polygon points="-30,0 -6,4 0,0 -6,-4" fill="#1e3a5f" />
+        <text x="0" y="-35" text-anchor="middle" font-family="'Segoe UI', serif" font-size="10" font-weight="bold" fill="#eefaff">N</text>
       </g>
 
-      <!-- Map Cartouche / Banner -->
-      <g id="map-cartouche" transform="translate(500, 965)">
-        <rect x="-140" y="-18" width="280" height="28" rx="6" fill="rgba(6, 12, 22, 0.85)" stroke="rgba(90, 232, 255, 0.4)" stroke-width="1" />
-        <text x="0" y="2" text-anchor="middle" font-family="'Segoe UI', serif" font-size="12" font-weight="bold" fill="#90e0ef" letter-spacing="2">MALADEN — THE SURFACE WORLD</text>
+      <!-- Map Banner / Title -->
+      <g id="map-banner" transform="translate(500, 975)">
+        <rect x="-160" y="-16" width="320" height="26" rx="6" fill="rgba(6, 12, 22, 0.9)" stroke="rgba(90, 232, 255, 0.45)" stroke-width="1.2" />
+        <text x="0" y="2" text-anchor="middle" font-family="'Cinzel', 'Georgia', serif" font-size="12" font-weight="bold" fill="#a5f3fc" letter-spacing="2">MALADEN — THE 9 DOMAINS</text>
       </g>
 
-      <!-- Ornamental Border Frame -->
-      <rect x="12" y="12" width="976" height="976" fill="none" stroke="rgba(90, 232, 255, 0.25)" stroke-width="1.2" />
-      <rect x="18" y="18" width="964" height="964" fill="none" stroke="rgba(122, 135, 255, 0.18)" stroke-width="1.8" />
+      <!-- Map Outer Border -->
+      <rect x="8" y="8" width="984" height="984" fill="none" stroke="rgba(90, 232, 255, 0.25)" stroke-width="1.2" />
+      <rect x="14" y="14" width="972" height="972" fill="none" stroke="rgba(122, 135, 255, 0.2)" stroke-width="2" />
     </svg>
     `;
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent.trim())}`;
@@ -294,76 +422,81 @@
       imageSource: createProceduralFantasyMapSvg(),
       isDefault: true,
       regions: [
-        {
-          id: 'reg_giaslan',
-          name: 'Giaslan',
-          color: '#7a87ff',
-          desc: 'Frigid northern mountain realm of astrologers and precise Chroma magic, ruled from Chillspire.',
-          points: [
-            [960, 200], [980, 420], [920, 520], [820, 480], [780, 360], [800, 220], [890, 150]
-          ]
-        },
+        // ROW 1: North (Leaflet y: 670 - 1000)
         {
           id: 'reg_alden',
           name: 'Domain of Alden',
           color: '#5ae8ff',
-          desc: 'Arid land of inventors, engineering marvels, and rigid imperial control, anchored by Laregola.',
+          desc: 'Arid northern empire of builders, inventors, and metalworking, anchored by Laregola.',
           points: [
-            [920, 520], [940, 720], [880, 840], [740, 820], [720, 680], [760, 540], [820, 480]
-          ]
-        },
-        {
-          id: 'reg_hemwood',
-          name: 'Hemwood',
-          color: '#f43f5e',
-          desc: 'Dim forest domain under growing geothermal heat, centered on the Hell Sigil and Moonstead.',
-          points: [
-            [780, 360], [820, 480], [760, 540], [650, 520], [620, 420], [680, 320]
+            [1000, 0], [1000, 335], [670, 335], [670, 0]
           ]
         },
         {
           id: 'reg_klabats',
           name: 'Klabats',
           color: '#f59e0b',
-          desc: 'Warlike western badlands and deserts of flow warriors, breath discipline, and combat mastery.',
+          desc: 'Warlike northern desert badlands of flow warriors, breath discipline, and combat mastery.',
           points: [
-            [680, 80], [700, 260], [640, 340], [520, 320], [400, 300], [420, 100], [550, 60]
+            [1000, 335], [1000, 665], [670, 665], [670, 335]
           ]
         },
         {
           id: 'reg_dynestea',
           name: 'Dynestea',
           color: '#10b981',
-          desc: 'The verdant crossroads of all Maladen climates, rich in natural resources and prime magic.',
+          desc: 'The lush northeast crossroads of prime magic, abundant in natural resources and reverent of nature.',
           points: [
-            [650, 520], [720, 680], [620, 680], [500, 660], [450, 540], [480, 380], [620, 420]
+            [1000, 665], [1000, 1000], [670, 1000], [670, 665]
+          ]
+        },
+
+        // ROW 2: Middle (Leaflet y: 335 - 670)
+        {
+          id: 'reg_giaslan',
+          name: 'Giaslan',
+          color: '#7a87ff',
+          desc: 'Frigid mountain realm of astrologers and Chroma magic, centered on Viserion’s Peak and Chillspire.',
+          points: [
+            [670, 0], [670, 335], [335, 335], [335, 0]
           ]
         },
         {
           id: 'reg_altasar',
           name: 'Altasar',
           color: '#eab308',
-          desc: 'Wealthy grassland democracy of soul magic, proud research, tiered Droland, and The Spire.',
+          desc: 'Wealthy central grassland democracy of soul magic, tiered waterways in Droland, and The Spire.',
           points: [
-            [740, 820], [720, 920], [580, 940], [460, 880], [450, 720], [500, 660], [620, 680], [720, 680]
+            [670, 335], [670, 665], [335, 665], [335, 335]
           ]
         },
         {
           id: 'reg_cirrusia',
           name: 'Cirrusia',
           color: '#38bdf8',
-          desc: 'Cloud-ocean sky realm of floating islands, shifting ecosystems, sky-vines, and violent storms.',
+          desc: 'Eastern cloud-ocean sky realm of floating islands, sky-vines, and shifting storms.',
           points: [
-            [450, 360], [450, 540], [380, 600], [240, 560], [140, 480], [160, 340], [300, 300]
+            [670, 665], [670, 1000], [335, 1000], [335, 665]
+          ]
+        },
+
+        // ROW 3: South (Leaflet y: 0 - 335)
+        {
+          id: 'reg_hemwood',
+          name: 'Hemwood',
+          color: '#f43f5e',
+          desc: 'Dim forest domain under growing geothermal heat, centered on the Hell Sigil and Moonstead.',
+          points: [
+            [335, 0], [335, 335], [0, 335], [0, 0]
           ]
         },
         {
           id: 'reg_caybluff',
           name: 'Caybluff',
           color: '#a855f7',
-          desc: 'Starlit high plateau of Chroma sorcery, sheer cliffs, and the partially submerged capital Portale.',
+          desc: 'Starlit high plateau of sheer cliffs, Mount Solare, the Caybluff Fissure, and the submerged capital Portale.',
           points: [
-            [460, 880], [450, 720], [380, 600], [240, 560], [160, 620], [120, 760], [220, 880], [340, 900]
+            [335, 335], [335, 665], [0, 665], [0, 335]
           ]
         },
         {
@@ -372,21 +505,21 @@
           color: '#2563eb',
           desc: 'Vast aquatic ocean domain permanently transformed by the historic presence of the sea lord Aquiel.',
           points: [
-            [580, 940], [720, 920], [780, 990], [240, 990], [120, 960], [220, 880], [340, 900], [460, 880]
+            [335, 665], [335, 1000], [0, 1000], [0, 665]
           ]
         }
       ],
       officialLocations: [
-        // Giaslan
+        // --- GIASLAN (Inkarnate Detailed) ---
         {
           id: 'loc_viserions_peak',
           codexId: 'location-viserions-peak',
           name: "Viserion's Peak",
           category: 'Location',
           region: 'Giaslan',
-          x: 350,
-          y: 880,
-          summary: 'A brutal northern height of strange cliffs, jagged ice, localized blizzards, and a hidden Canthian door.'
+          x: 165,
+          y: 535,
+          summary: 'A brutal northern peak of strange cliffs, jagged ice, localized blizzards, and a hidden Canthian door.'
         },
         {
           id: 'loc_chillspire',
@@ -394,99 +527,141 @@
           name: 'Chillspire',
           category: 'Settlement',
           region: 'Giaslan',
-          x: 370,
-          y: 870,
-          summary: 'The capital of Giaslan, built across Viserion’s Peak where astrologers study constellations.'
-        },
-
-        // Alden
-        {
-          id: 'loc_laregola',
-          codexId: 'domain-alden',
-          name: 'Laregola',
-          category: 'Settlement',
-          region: 'Domain of Alden',
-          x: 700,
-          y: 820,
-          summary: 'The fortified imperial capital of Alden, showcasing immense engineering and rigid order.'
-        },
-        {
-          id: 'loc_troldith',
-          codexId: 'stories-troldith-and-the-malaise',
-          name: 'Troldith',
-          category: 'Location',
-          region: 'Domain of Alden',
-          x: 560,
-          y: 760,
-          summary: 'A settlement in West Alden named by Caelum as a place where the party can learn more about the Malaise.'
+          x: 165,
+          y: 505,
+          summary: 'The capital citadel of Giaslan, nestled in the saddle of Viserion’s Peak where astrologers study constellations.'
         },
         {
           id: 'loc_gialden_strip',
           codexId: 'domain-alden',
-          name: 'The Gialden Strip',
+          name: 'Gialden Strip',
           category: 'Location',
-          region: 'Domain of Alden',
-          x: 500,
-          y: 800,
-          summary: 'Mountain surplus corridor rich in metal, shared between Alden and Giaslan.'
-        },
-
-        // Hemwood
-        {
-          id: 'loc_moonstead',
-          codexId: 'domain-hemwood',
-          name: 'Moonstead',
-          category: 'Settlement',
-          region: 'Hemwood',
-          x: 420,
-          y: 700,
-          summary: 'The shadowed forest capital of Hemwood, formerly democratic and now gripped by tyranny.'
+          region: 'Giaslan',
+          x: 165,
+          y: 645,
+          summary: 'The rugged mountain corridor dividing Giaslan and Alden, rich in mineral deposits and shared outposts.'
         },
         {
-          id: 'loc_hell_sigil',
-          codexId: 'domain-hemwood',
-          name: 'The Hell Sigil',
+          id: 'loc_oresalt_mines',
+          codexId: 'domain-giaslan',
+          name: 'Oresalt Mines',
           category: 'Dungeon',
-          region: 'Hemwood',
-          x: 460,
-          y: 720,
-          summary: 'An ancient summoning circle and seal radiating unnatural heat throughout the domain.'
+          region: 'Giaslan',
+          x: 100,
+          y: 620,
+          summary: 'Crystalline subterranean excavations where miners carve prized salt deposits and mineral veins.'
         },
-
-        // Klabats
         {
-          id: 'loc_klabats',
-          codexId: 'domain-klabats',
-          name: 'Klabats War Encampment',
+          id: 'loc_saltmound_camp',
+          codexId: 'domain-giaslan',
+          name: 'Saltmound Camp',
           category: 'Settlement',
-          region: 'Klabats',
-          x: 190,
-          y: 540,
-          summary: 'Scattered tribal kingdoms of flow warriors dedicated to meditative breath discipline and battle.'
+          region: 'Giaslan',
+          x: 100,
+          y: 590,
+          summary: 'Hardy frontier mining camp supporting the workers and caravans of the northern salt basins.'
         },
-
-        // Dynestea
         {
-          id: 'loc_dynestea',
-          codexId: 'domain-dynestea',
-          name: 'Heart of Dynestea',
+          id: 'loc_froslan_lake',
+          codexId: 'domain-giaslan',
+          name: 'Froslan Lake',
           category: 'Location',
-          region: 'Dynestea',
-          x: 520,
-          y: 560,
-          summary: 'The fertile continental crossroads where green forests, deserts, and mountain air converge.'
+          region: 'Giaslan',
+          x: 255,
+          y: 595,
+          summary: 'An ice-sheathed glacial lake in northeast Giaslan with an ancient stone tower solitary on its central isle.'
+        },
+        {
+          id: 'loc_alba',
+          codexId: 'domain-giaslan',
+          name: 'Alba',
+          category: 'Settlement',
+          region: 'Giaslan',
+          x: 305,
+          y: 485,
+          summary: 'Eastern border settlement perched upon snowy ridges overlooking the passage into central Altasar.'
+        },
+        {
+          id: 'loc_snowden',
+          codexId: 'domain-giaslan',
+          name: 'Snowden',
+          category: 'Settlement',
+          region: 'Giaslan',
+          x: 170,
+          y: 360,
+          summary: 'Southern foothill township bordered by dense pine timberlands at the edge of the Hemwood wild.'
+        },
+        {
+          id: 'loc_alsico',
+          codexId: 'domain-giaslan',
+          name: 'Alsico',
+          category: 'Settlement',
+          region: 'Giaslan',
+          x: 115,
+          y: 400,
+          summary: 'Sheltered valley village known for ice-forged crafts and warm hearths amidst permanent frost.'
+        },
+        {
+          id: 'loc_tulin',
+          codexId: 'domain-giaslan',
+          name: 'Tulin',
+          category: 'Settlement',
+          region: 'Giaslan',
+          x: 165,
+          y: 445,
+          summary: 'A central crossroads haven south of Chillspire, gathering travelers traversing the mountain passes.'
+        },
+        {
+          id: 'loc_saltwater_camp',
+          codexId: 'domain-giaslan',
+          name: 'Saltwater Camp',
+          category: 'Settlement',
+          region: 'Giaslan',
+          x: 250,
+          y: 395,
+          summary: 'Staging encampment for harvesters and traders working the mineral-rich waters of Saltwater Lake.'
+        },
+        {
+          id: 'loc_saltwater_lake',
+          codexId: 'domain-giaslan',
+          name: 'Saltwater Lake',
+          category: 'Location',
+          region: 'Giaslan',
+          x: 250,
+          y: 360,
+          summary: 'A dense, high-salinity glacial lake surrounded by craggy bluffs and reflective brine flats.'
+        },
+        {
+          id: 'loc_camlenius_plaza',
+          codexId: 'domain-giaslan',
+          name: 'Camlenius Plaza',
+          category: 'Location',
+          region: 'Giaslan',
+          x: 70,
+          y: 485,
+          summary: 'Historic stone pavilion on the western steppe commemorating ancient astrological pacts.'
+        },
+        {
+          id: 'loc_shadewood_grove',
+          codexId: 'domain-giaslan',
+          name: 'Shadewood Grove',
+          category: 'Location',
+          region: 'Giaslan',
+          x: 205,
+          y: 495,
+          summary: 'An eerie stand of dark petrified pines on the eastern flank of Viserion’s Peak where spirits linger.'
         },
 
-        // Altasar
+        // --- ALTASAR (Inkarnate Detailed) ---
         {
           id: 'loc_spire',
           codexId: 'domain-altasar',
           name: 'The Spire',
           category: 'Quest',
           region: 'Altasar',
-          x: 760,
-          y: 560,
-          summary: 'The ancient monolithic Spire rising over Altasar’s heartland, radiating mysterious power.'
+          x: 475,
+          y: 565,
+          summary: 'The ancient monolithic Spire rising high over Altasar’s heartland, radiating mysterious cosmic soul energy.'
         },
         {
           id: 'loc_droland',
@@ -494,9 +669,9 @@
           name: 'Droland',
           category: 'Settlement',
           region: 'Altasar',
-          x: 820,
-          y: 630,
-          summary: 'Wealthy soul-magic capital of Altasar with tiered districts, gondolas, and underground waterways.'
+          x: 500,
+          y: 505,
+          summary: 'Wealthy soul-magic capital of Altasar with tiered stone districts, gondolas, and underground waterways.'
         },
         {
           id: 'loc_orville',
@@ -504,31 +679,71 @@
           name: 'Orville',
           category: 'Settlement',
           region: 'Altasar',
-          x: 700,
-          y: 490,
-          summary: 'A modest craft and merchant town in southwest Altasar, lately disturbed by missing children.'
+          x: 445,
+          y: 410,
+          summary: 'A modest craft and merchant town in southwest Altasar, recently disturbed by missing children.'
+        },
+        {
+          id: 'loc_talsancea_falls',
+          codexId: 'domain-altasar',
+          name: 'Talsancea Falls',
+          category: 'Location',
+          region: 'Altasar',
+          x: 450,
+          y: 525,
+          summary: 'Spectacular tiered cascades descending from the western foothills into Altasar’s primary river network.'
+        },
+        {
+          id: 'loc_mirage_bay',
+          codexId: 'domain-altasar',
+          name: 'Mirage Bay',
+          category: 'Location',
+          region: 'Altasar',
+          x: 400,
+          y: 610,
+          summary: 'A shimmering inland lake basin whose deceptive light-bending surface confuses unguided travelers.'
+        },
+        {
+          id: 'loc_knotwood_forest',
+          codexId: 'domain-altasar',
+          name: 'Knotwood Forest',
+          category: 'Location',
+          region: 'Altasar',
+          x: 565,
+          y: 525,
+          summary: 'Dense ancient woodland bordering eastern lakes, famous for resilient timber and hidden soul-relic groves.'
         },
 
-        // Caybluff
+        // --- CAYBLUFF (Inkarnate Detailed) ---
+        {
+          id: 'loc_solare',
+          codexId: 'location-mount-solare',
+          name: 'Mount Solare',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 500,
+          y: 65,
+          summary: 'A treacherous, remote mountain lair dominating southern Caybluff where high peril promises exceptional rewards.'
+        },
         {
           id: 'loc_portale',
           codexId: 'settlement-portale',
           name: 'Portale',
           category: 'Settlement',
           region: 'Caybluff',
-          x: 850,
-          y: 340,
+          x: 610,
+          y: 230,
           summary: 'Waterside capital of Caybluff featuring extensive underwater districts built with Cirrusian and Alden aid.'
         },
         {
-          id: 'loc_fog_basin',
-          codexId: 'location-caybluff-fog-basin',
-          name: 'Caybluff Fog Basin',
+          id: 'loc_ocean_wall',
+          codexId: 'location-ocean-wall',
+          name: 'The Ocean Wall',
           category: 'Location',
           region: 'Caybluff',
-          x: 820,
-          y: 270,
-          summary: 'Hidden cavern region reached via ascending river cave; holds ancient Canthian ruins and a baby leviathan.'
+          x: 635,
+          y: 240,
+          summary: 'The violent natural barrier shielding Portale from open waters; houses the Eschaton Caelum.'
         },
         {
           id: 'loc_waveside',
@@ -536,8 +751,8 @@
           name: 'Waveside',
           category: 'Settlement',
           region: 'Caybluff',
-          x: 750,
-          y: 180,
+          x: 650,
+          y: 160,
           summary: 'Southern coastal settlement of sandstone architecture concealing a hidden Unwound facility.'
         },
         {
@@ -546,31 +761,171 @@
           name: 'The Caybluff Fissure',
           category: 'Location',
           region: 'Caybluff',
-          x: 840,
-          y: 220,
+          x: 575,
+          y: 240,
           summary: 'A colossal ravine revealing a sideways horizon into which fallen objects plummet endlessly.'
         },
         {
-          id: 'loc_solare',
-          codexId: 'location-mount-solare',
-          name: 'Mount Solare',
+          id: 'loc_fog_basin',
+          codexId: 'location-caybluff-fog-basin',
+          name: 'Caybluff Fog Basin',
           category: 'Location',
           region: 'Caybluff',
-          x: 680,
-          y: 240,
-          summary: 'A treacherous, remote mountain lair where high peril promises exceptional rewards.'
+          x: 530,
+          y: 200,
+          summary: 'Hidden cavern region reached via ascending river cave; holds ancient Canthian ruins and a baby leviathan.'
+        },
+        {
+          id: 'loc_mount_pheltil',
+          codexId: 'domain-caybluff',
+          name: 'Mount Pheltil',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 440,
+          y: 285,
+          summary: 'Stout northern crag marking the western gate of the Montepass crossing from Altasar.'
+        },
+        {
+          id: 'loc_mount_famil',
+          codexId: 'domain-caybluff',
+          name: 'Mount Famil',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 515,
+          y: 275,
+          summary: 'Companion peak standing sentinel over the northern approaches to the Dust Basin.'
+        },
+        {
+          id: 'loc_montepass',
+          codexId: 'domain-caybluff',
+          name: 'Montepass',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 480,
+          y: 280,
+          summary: 'Winding elevated mountain pass that provides safe overland transit between Altasar and Caybluff.'
+        },
+        {
+          id: 'loc_dust_basin',
+          codexId: 'domain-caybluff',
+          name: 'Dust Basin',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 550,
+          y: 300,
+          summary: 'Arid depression beneath the northern peaks prone to sudden swirling silt storms.'
+        },
+        {
+          id: 'loc_forkinarod',
+          codexId: 'domain-caybluff',
+          name: 'Forkinarod',
+          category: 'Location',
+          region: 'Caybluff',
+          x: 430,
+          y: 225,
+          summary: 'Crucial highway junction where road networks branch toward the fissure and southern plateaus.'
+        },
+        {
+          id: 'loc_epilegos_split',
+          codexId: 'domain-caybluff',
+          name: "Epilego's Split",
+          category: 'Location',
+          region: 'Caybluff',
+          x: 405,
+          y: 180,
+          summary: 'A dramatic geological fault canyon carved deep into the western sandstone tablelands.'
+        },
+        {
+          id: 'loc_solasta',
+          codexId: 'domain-caybluff',
+          name: 'Solasta',
+          category: 'Settlement',
+          region: 'Caybluff',
+          x: 465,
+          y: 105,
+          summary: 'High mountain enclave nestled in the shadow of Mount Solare, inhabited by austere ascetics.'
+        },
+        {
+          id: 'loc_siracol',
+          codexId: 'domain-caybluff',
+          name: 'Siracol',
+          category: 'Settlement',
+          region: 'Caybluff',
+          x: 555,
+          y: 140,
+          summary: 'Eastern plateau waystation serving travelers before they ascend toward the sun-drenched heights.'
         },
 
-        // Laytide
+        // --- SURROUNDING 6 DOMAINS (Primary Canon Anchors) ---
         {
-          id: 'loc_ocean_wall',
-          codexId: 'location-ocean-wall',
-          name: 'The Ocean Wall',
+          id: 'loc_laregola',
+          codexId: 'domain-alden',
+          name: 'Laregola',
+          category: 'Settlement',
+          region: 'Domain of Alden',
+          x: 180,
+          y: 850,
+          summary: 'The fortified imperial capital of Alden, showcasing immense engineering and rigid order.'
+        },
+        {
+          id: 'loc_troldith',
+          codexId: 'stories-troldith-and-the-malaise',
+          name: 'Troldith',
           category: 'Location',
-          region: 'Laytide',
-          x: 920,
-          y: 350,
-          summary: 'The violent natural barrier shielding Portale from open waters; houses the Eschaton Caelum.'
+          region: 'Domain of Alden',
+          x: 80,
+          y: 800,
+          summary: 'A settlement in West Alden named by Caelum as a place where the party can learn more about the Malaise.'
+        },
+        {
+          id: 'loc_klabats',
+          codexId: 'domain-klabats',
+          name: 'Klabats War Encampments',
+          category: 'Settlement',
+          region: 'Klabats',
+          x: 500,
+          y: 820,
+          summary: 'Scattered tribal kingdoms of flow warriors dedicated to meditative breath discipline and battle.'
+        },
+        {
+          id: 'loc_dynestea',
+          codexId: 'domain-dynestea',
+          name: 'Heart of Dynestea',
+          category: 'Location',
+          region: 'Dynestea',
+          x: 820,
+          y: 820,
+          summary: 'The lush northeast crossroads where prime magic and ancient old-growth forests thrive.'
+        },
+        {
+          id: 'loc_cirrusia_isles',
+          codexId: 'domain-cirrusia',
+          name: 'Cirrusian Sky Isles',
+          category: 'Location',
+          region: 'Cirrusia',
+          x: 820,
+          y: 500,
+          summary: 'Floating islands drifting on cloud oceans that rotate their positions with celestial winds.'
+        },
+        {
+          id: 'loc_moonstead',
+          codexId: 'domain-hemwood',
+          name: 'Moonstead',
+          category: 'Settlement',
+          region: 'Hemwood',
+          x: 160,
+          y: 180,
+          summary: 'The shadowed forest capital of Hemwood, formerly democratic and now gripped by dark geothermal heat.'
+        },
+        {
+          id: 'loc_hell_sigil',
+          codexId: 'domain-hemwood',
+          name: 'The Hell Sigil',
+          category: 'Dungeon',
+          region: 'Hemwood',
+          x: 190,
+          y: 150,
+          summary: 'An ancient summoning circle and seal radiating unnatural heat throughout the southern woods.'
         },
         {
           id: 'loc_aquiel',
@@ -578,40 +933,15 @@
           name: 'Sunken Domain of Aquiel',
           category: 'Location',
           region: 'Laytide',
-          x: 940,
-          y: 440,
-          summary: 'The aquatic ocean expanse of Laytide, home to leviathans and sea dragons.'
-        },
-
-        // Cirrusia
-        {
-          id: 'loc_cirrusia_isles',
-          codexId: 'domain-cirrusia',
-          name: 'Cirrusian Sky Isles',
-          category: 'Location',
-          region: 'Cirrusia',
-          x: 440,
-          y: 290,
-          summary: 'Floating islands drifting on cloud oceans that rotate their positions every few days.'
-        },
-        {
-          id: 'loc_sky_vines',
-          codexId: 'domain-cirrusia',
-          name: 'Sky-Vines Ascent',
-          category: 'Location',
-          region: 'Cirrusia',
-          x: 480,
-          y: 360,
-          summary: 'Vast ascending botanical tendrils that bridge the cloud sea to the high floating islands.'
+          x: 850,
+          y: 180,
+          summary: 'The aquatic ocean expanse of Laytide, home to ancient sea lords, leviathans, and sunken monuments.'
         }
       ],
       playerPins: []
     }
   ];
 
-  /* ========================================================================
-     5. CAMPAIGN MAP ENGINE
-     ======================================================================== */
   class CampaignMapEngine {
     constructor() {
       this.maps = [];
@@ -700,24 +1030,25 @@
     }
 
     loadStorage() {
-      const STORAGE_KEY = 'o_codex_cartography_v2';
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      const STORAGE_KEY = 'o_codex_cartography_v3';
+      let stored = null;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
         try {
-          const data = JSON.parse(stored);
-          this.maps = data.maps || [];
-          this.activeMapId = data.activeMapId || 'map_surface_default';
+          stored = JSON.parse(raw);
+          this.maps = stored.maps || [];
+          this.activeMapId = stored.activeMapId || (this.maps[0] ? this.maps[0].id : null);
         } catch (e) {
           console.warn('Could not parse stored map data, loading defaults.', e);
         }
       }
 
-      // Seamless migration from v1 if v2 does not exist yet
+      // Seamless migration from v2 or v1 if v3 does not exist yet
       if (!stored) {
-        const v1 = localStorage.getItem('o_codex_cartography_v1');
-        if (v1) {
+        const prevKey = localStorage.getItem('o_codex_cartography_v2') || localStorage.getItem('o_codex_cartography_v1');
+        if (prevKey) {
           try {
-            const oldData = JSON.parse(v1);
+            const oldData = JSON.parse(prevKey);
             const oldPins = oldData.maps?.[0]?.playerPins || [];
             if (oldPins.length > 0) {
               DEFAULT_MAPS[0].playerPins = oldPins;
@@ -731,8 +1062,8 @@
         this.saveStorage();
       }
 
-      // If user's stored default map has the old placeholder regions, auto-upgrade to canon Maladen layout
-      if (this.maps[0] && this.maps[0].isDefault && (this.maps[0].regions || []).length <= 3) {
+      // If user's stored default map has the old placeholder regions or outdated pins, auto-upgrade to 3x3 layout
+      if (this.maps[0] && this.maps[0].isDefault && ((this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40)) {
         const existingPlayerPins = this.maps[0].playerPins || [];
         this.maps[0] = JSON.parse(JSON.stringify(DEFAULT_MAPS[0]));
         this.maps[0].playerPins = existingPlayerPins;
@@ -741,7 +1072,7 @@
     }
 
     saveStorage() {
-      const STORAGE_KEY = 'o_codex_cartography_v2';
+      const STORAGE_KEY = 'o_codex_cartography_v3';
       try {
         const payload = {
           maps: this.maps,
