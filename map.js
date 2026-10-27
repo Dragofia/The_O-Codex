@@ -286,6 +286,11 @@
       this.startPointMarker = null;
       this.isDroppingPin = false;
       this.pendingPinCoords = null;
+      this.activeEditingRegionId = null;
+      this.isEditingVertices = false;
+      this.isRedrawingRegionId = null;
+      this.vertexMarkers = [];
+      this.backupEditingPoints = null;
 
       // Leaflet references
       this.map = null;
@@ -502,6 +507,12 @@
       const titleEl = document.getElementById('map-current-title');
       if (titleEl) titleEl.textContent = activeMap.title;
 
+      // Update Territories button label with count
+      const terrLabel = document.getElementById('map-territories-label');
+      if (terrLabel) {
+        terrLabel.textContent = `Territories (${(activeMap.regions || []).length})`;
+      }
+
       // Populate map list dropdown
       const listEl = document.getElementById('map-selector-list');
       if (listEl) {
@@ -538,9 +549,33 @@
           fillColor: reg.color || '#5ae8ff',
           fillOpacity: this.bordersVisible ? 0.15 : 0,
           dashArray: '3, 4',
-          interactive: false
-        }).addTo(this.map);
+          interactive: true
+        });
 
+        // Click to inspect / edit territory
+        polygon.on('click', (e) => {
+          if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          L.DomEvent.stopPropagation(e);
+          this.openEditTerritoryModal(reg.id);
+        });
+
+        polygon.on('mouseover', () => {
+          if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          polygon.setStyle({
+            weight: 3.5,
+            fillOpacity: 0.28
+          });
+        });
+
+        polygon.on('mouseout', () => {
+          if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          polygon.setStyle({
+            weight: this.bordersVisible ? 2 : 0,
+            fillOpacity: this.bordersVisible ? 0.15 : 0
+          });
+        });
+
+        polygon.addTo(this.map);
         this.regionPolygonLayers.set(reg.id, polygon);
       });
     }
@@ -800,6 +835,24 @@
         return;
       }
 
+      // If redrawing an existing territory's shape
+      if (this.isRedrawingRegionId) {
+        const activeMap = this.getActiveMap();
+        const reg = (activeMap.regions || []).find(r => r.id === this.isRedrawingRegionId);
+        if (reg) {
+          reg.points = [...this.drawingPoints];
+          this.saveStorage();
+          this.exitTerritoryDrawMode();
+          this.drawingPoints = [];
+          this.isRedrawingRegionId = null;
+          this.renderRegions();
+          this.renderHeaderUI();
+          alert(`Successfully updated boundaries for "${reg.name}"!`);
+          return;
+        }
+        this.isRedrawingRegionId = null;
+      }
+
       this.exitTerritoryDrawMode();
       this.openSaveTerritoryModal();
     }
@@ -807,6 +860,12 @@
     cancelTerritoryDraw() {
       this.exitTerritoryDrawMode();
       this.drawingPoints = [];
+      this.closeModal('save-territory-modal');
+
+      if (this.isRedrawingRegionId) {
+        this.isRedrawingRegionId = null;
+        this.renderRegions();
+      }
     }
 
     exitTerritoryDrawMode() {
@@ -863,7 +922,225 @@
       this.drawingPoints = [];
 
       this.renderRegions();
+      this.renderHeaderUI();
       this.closeModal('save-territory-modal');
+    }
+
+    // Territory Editing & Management
+    openEditTerritoryModal(regionId) {
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === regionId);
+      if (!reg) return;
+
+      this.activeEditingRegionId = regionId;
+      const modal = document.getElementById('edit-territory-modal');
+      if (!modal) return;
+
+      document.getElementById('edit-territory-modal-title').textContent = `Edit "${reg.name}"`;
+      document.getElementById('edit-territory-name').value = reg.name || '';
+      document.getElementById('edit-territory-color').value = reg.color || '#5ae8ff';
+      document.getElementById('edit-territory-desc').value = reg.desc || '';
+      document.getElementById('edit-territory-meta').textContent = `${(reg.points || []).length} boundary vertices · ID: ${reg.id}`;
+
+      modal.classList.remove('hidden');
+    }
+
+    saveEditTerritory() {
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === this.activeEditingRegionId);
+      if (!reg) return;
+
+      const name = document.getElementById('edit-territory-name').value.trim();
+      if (!name) {
+        alert('Please enter a valid territory name.');
+        return;
+      }
+
+      reg.name = name;
+      reg.color = document.getElementById('edit-territory-color').value || '#5ae8ff';
+      reg.desc = document.getElementById('edit-territory-desc').value.trim();
+
+      this.saveStorage();
+      this.renderRegions();
+      this.renderHeaderUI();
+      this.closeModal('edit-territory-modal');
+      this.renderTerritoriesManagerList();
+    }
+
+    deleteTerritory(regionId) {
+      const targetId = regionId || this.activeEditingRegionId;
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === targetId);
+      if (!reg) return;
+
+      if (confirm(`Are you sure you want to delete the territory "${reg.name}"? This action cannot be undone.`)) {
+        activeMap.regions = activeMap.regions.filter(r => r.id !== targetId);
+        this.saveStorage();
+        this.renderRegions();
+        this.renderHeaderUI();
+        this.closeModal('edit-territory-modal');
+        this.renderTerritoriesManagerList();
+      }
+    }
+
+    startMovingVertices(regionId) {
+      const targetId = regionId || this.activeEditingRegionId;
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === targetId);
+      if (!reg || !reg.points || reg.points.length === 0) return;
+
+      this.closeModal('edit-territory-modal');
+      this.closeModal('manage-territories-modal');
+
+      this.isEditingVertices = true;
+      this.activeEditingRegionId = targetId;
+      this.backupEditingPoints = JSON.parse(JSON.stringify(reg.points));
+      this.clearVertexMarkers();
+
+      document.getElementById('vertex-move-banner')?.classList.remove('hidden');
+
+      // Create draggable handle for each vertex
+      reg.points.forEach((pt, idx) => {
+        const marker = L.marker([pt[0], pt[1]], {
+          draggable: true,
+          zIndexOffset: 2500,
+          icon: L.divIcon({
+            className: 'custom-vertex-handle-marker',
+            html: `
+              <div class="vertex-handle-dot" title="Drag to move vertex ${idx + 1}">
+                <span class="vertex-handle-core" style="background: ${reg.color || '#5ae8ff'};"></span>
+              </div>
+            `,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          })
+        }).addTo(this.map);
+
+        marker.on('drag', (e) => {
+          const newY = Math.round(Math.max(0, Math.min(1000, e.latlng.lat)));
+          const newX = Math.round(Math.max(0, Math.min(1000, e.latlng.lng)));
+          reg.points[idx] = [newY, newX];
+
+          const polyLayer = this.regionPolygonLayers.get(reg.id);
+          if (polyLayer) {
+            polyLayer.setLatLngs(reg.points);
+          }
+        });
+
+        this.vertexMarkers.push(marker);
+      });
+    }
+
+    finishMovingVertices() {
+      this.saveStorage();
+      this.clearVertexMarkers();
+      this.isEditingVertices = false;
+      this.backupEditingPoints = null;
+      document.getElementById('vertex-move-banner')?.classList.add('hidden');
+      this.renderRegions();
+      this.renderHeaderUI();
+    }
+
+    cancelMovingVertices() {
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === this.activeEditingRegionId);
+      if (reg && this.backupEditingPoints) {
+        reg.points = this.backupEditingPoints;
+      }
+      this.clearVertexMarkers();
+      this.isEditingVertices = false;
+      this.backupEditingPoints = null;
+      document.getElementById('vertex-move-banner')?.classList.add('hidden');
+      this.renderRegions();
+    }
+
+    clearVertexMarkers() {
+      this.vertexMarkers.forEach(m => this.map.removeLayer(m));
+      this.vertexMarkers = [];
+    }
+
+    startRedrawTerritory(regionId) {
+      const targetId = regionId || this.activeEditingRegionId;
+      this.closeModal('edit-territory-modal');
+      this.closeModal('manage-territories-modal');
+      this.isRedrawingRegionId = targetId;
+
+      // Temporarily remove the existing polygon visual layer
+      const poly = this.regionPolygonLayers.get(targetId);
+      if (poly) {
+        this.map.removeLayer(poly);
+      }
+
+      this.startTerritoryDrawMode();
+    }
+
+    openManageTerritoriesModal() {
+      this.renderTerritoriesManagerList();
+      document.getElementById('manage-territories-modal')?.classList.remove('hidden');
+    }
+
+    renderTerritoriesManagerList() {
+      const listEl = document.getElementById('territories-manager-list');
+      if (!listEl) return;
+
+      const activeMap = this.getActiveMap();
+      const regions = activeMap.regions || [];
+
+      if (regions.length === 0) {
+        listEl.innerHTML = `
+          <div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            No territories defined yet on this map layer. Click "+ Draw New Territory" below to create one!
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = '';
+      regions.forEach(reg => {
+        const item = document.createElement('div');
+        item.className = 'territory-item-card';
+        item.innerHTML = `
+          <div class="territory-item-info">
+            <span class="territory-color-pill" style="background-color: ${escapeHtml(reg.color || '#5ae8ff')}; color: ${escapeHtml(reg.color || '#5ae8ff')};"></span>
+            <div class="territory-item-text">
+              <span class="territory-item-name">${escapeHtml(reg.name)}</span>
+              <span class="territory-item-meta">${(reg.points || []).length} vertices${reg.desc ? ' · ' + escapeHtml(reg.desc) : ''}</span>
+            </div>
+          </div>
+          <div class="territory-item-actions">
+            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-edit-reg" title="Edit territory settings">Edit</button>
+            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-move-reg" title="Move & drag boundary points">Move</button>
+            <button type="button" class="territory-btn-mini territory-btn-mini--delete btn-del-reg" title="Delete territory">✕</button>
+          </div>
+        `;
+
+        item.querySelector('.territory-item-info').addEventListener('click', () => {
+          this.closeModal('manage-territories-modal');
+          this.openEditTerritoryModal(reg.id);
+          const poly = this.regionPolygonLayers.get(reg.id);
+          if (poly) {
+            this.map.fitBounds(poly.getBounds(), { padding: [40, 40], maxZoom: 1 });
+          }
+        });
+
+        item.querySelector('.btn-edit-reg').addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.closeModal('manage-territories-modal');
+          this.openEditTerritoryModal(reg.id);
+        });
+
+        item.querySelector('.btn-move-reg').addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.startMovingVertices(reg.id);
+        });
+
+        item.querySelector('.btn-del-reg').addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.deleteTerritory(reg.id);
+        });
+
+        listEl.appendChild(item);
+      });
     }
 
     // Feature A: Copy & Paste Data Between Maps
@@ -1022,6 +1299,7 @@
       });
       document.getElementById('map-settings-btn')?.addEventListener('click', () => this.openEditMapModal());
       document.getElementById('map-copy-data-btn')?.addEventListener('click', () => this.openCopyDataModal());
+      document.getElementById('map-territories-btn')?.addEventListener('click', () => this.openManageTerritoriesModal());
 
       // Wire Toolbar Tools
       document.getElementById('map-tool-pin')?.addEventListener('click', () => this.startPinDropMode());
@@ -1034,21 +1312,92 @@
       document.getElementById('drawing-cancel-btn')?.addEventListener('click', () => this.cancelTerritoryDraw());
       document.getElementById('pin-drop-cancel-btn')?.addEventListener('click', () => this.exitPinDropMode());
 
+      // Wire Vertex Move Banner Actions
+      document.getElementById('vertex-move-done-btn')?.addEventListener('click', () => this.finishMovingVertices());
+      document.getElementById('vertex-move-cancel-btn')?.addEventListener('click', () => this.cancelMovingVertices());
+
       // Wire Modals
       document.getElementById('save-new-pin-btn')?.addEventListener('click', () => this.saveNewPin());
       document.getElementById('cancel-new-pin-btn')?.addEventListener('click', () => this.closeModal('create-pin-modal'));
 
+      // Save Territory Modal
       document.getElementById('save-new-territory-btn')?.addEventListener('click', () => this.saveNewTerritory());
       document.getElementById('cancel-new-territory-btn')?.addEventListener('click', () => this.cancelTerritoryDraw());
+      document.getElementById('close-save-territory-btn')?.addEventListener('click', () => this.cancelTerritoryDraw());
 
+      // Edit Territory Modal
+      document.getElementById('save-edit-territory-btn')?.addEventListener('click', () => this.saveEditTerritory());
+      document.getElementById('cancel-edit-territory-btn')?.addEventListener('click', () => this.closeModal('edit-territory-modal'));
+      document.getElementById('close-edit-territory-btn')?.addEventListener('click', () => this.closeModal('edit-territory-modal'));
+      document.getElementById('delete-territory-btn')?.addEventListener('click', () => this.deleteTerritory());
+      document.getElementById('edit-territory-move-pts-btn')?.addEventListener('click', () => this.startMovingVertices());
+      document.getElementById('edit-territory-redraw-btn')?.addEventListener('click', () => this.startRedrawTerritory());
+
+      // Manage All Territories Modal
+      document.getElementById('close-manage-territories-btn')?.addEventListener('click', () => this.closeModal('manage-territories-modal'));
+      document.getElementById('done-manage-territories-btn')?.addEventListener('click', () => this.closeModal('manage-territories-modal'));
+      document.getElementById('territories-manager-new-btn')?.addEventListener('click', () => {
+        this.closeModal('manage-territories-modal');
+        this.startTerritoryDrawMode();
+      });
+
+      // Copy Data Modal
       document.getElementById('execute-copy-data-btn')?.addEventListener('click', () => this.executeCopyData());
       document.getElementById('cancel-copy-data-btn')?.addEventListener('click', () => this.closeModal('copy-map-data-modal'));
 
+      // Edit Map Modal
       document.getElementById('save-edit-map-btn')?.addEventListener('click', () => this.saveEditMap());
       document.getElementById('cancel-edit-map-btn')?.addEventListener('click', () => this.closeModal('edit-map-modal'));
 
+      // Create Map Modal
       document.getElementById('save-new-map-btn')?.addEventListener('click', () => this.saveNewMap());
       document.getElementById('cancel-new-map-btn')?.addEventListener('click', () => this.closeModal('create-map-modal'));
+
+      // Modal backdrop clicks to close
+      const modalBackdrops = [
+        { id: 'create-pin-modal', onCancel: () => this.closeModal('create-pin-modal') },
+        { id: 'save-territory-modal', onCancel: () => this.cancelTerritoryDraw() },
+        { id: 'edit-territory-modal', onCancel: () => this.closeModal('edit-territory-modal') },
+        { id: 'manage-territories-modal', onCancel: () => this.closeModal('manage-territories-modal') },
+        { id: 'copy-map-data-modal', onCancel: () => this.closeModal('copy-map-data-modal') },
+        { id: 'edit-map-modal', onCancel: () => this.closeModal('edit-map-modal') },
+        { id: 'create-map-modal', onCancel: () => this.closeModal('create-map-modal') }
+      ];
+
+      modalBackdrops.forEach(({ id, onCancel }) => {
+        const modal = document.getElementById(id);
+        const backdrop = modal?.querySelector('.modal__backdrop');
+        backdrop?.addEventListener('click', onCancel);
+      });
+
+      // Escape key handler for active map workflows
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (this.isDrawingRegion) {
+            this.cancelTerritoryDraw();
+            return;
+          }
+          if (this.isEditingVertices) {
+            this.cancelMovingVertices();
+            return;
+          }
+          if (this.isDroppingPin) {
+            this.exitPinDropMode();
+            return;
+          }
+          for (const { id, onCancel } of modalBackdrops) {
+            const m = document.getElementById(id);
+            if (m && !m.classList.contains('hidden')) {
+              onCancel();
+              return;
+            }
+          }
+          const drawer = document.getElementById('map-pin-drawer');
+          if (drawer && !drawer.classList.contains('is-collapsed')) {
+            this.closePinDrawer();
+          }
+        }
+      });
 
       // Outside click handler for map dropdown
       document.addEventListener('click', (e) => {

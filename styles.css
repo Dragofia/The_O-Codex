@@ -2401,6 +2401,187 @@ body.map-mode-active {
   100% { transform: scale(2.2); opacity: 0; }
 }
 
+/* ============================================================================
+   TERRITORY MANAGEMENT & EDITING STYLES
+   ============================================================================ */
+.modal__form-actions--split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between !important;
+  width: 100%;
+}
+
+.territory-boundary-actions {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.territory-action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.85rem;
+  font-family: var(--body-font);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: rgba(90, 232, 255, 0.08);
+  border: 1px solid rgba(90, 232, 255, 0.25);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.territory-action-chip:hover {
+  color: var(--text-main);
+  background: rgba(90, 232, 255, 0.16);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(90, 232, 255, 0.25);
+}
+
+.territories-manager-container {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  margin-top: 1rem;
+}
+
+.territories-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.territory-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 18, 30, 0.9);
+  border: 1px solid rgba(90, 232, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.territory-item-card:hover {
+  border-color: rgba(90, 232, 255, 0.45);
+  background: rgba(14, 25, 42, 0.95);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.territory-item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.territory-color-pill {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.territory-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.territory-item-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.territory-item-meta {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.territory-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.75rem;
+}
+
+.territory-btn-mini {
+  padding: 0.35rem 0.65rem;
+  font-family: var(--body-font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.territory-btn-mini--edit {
+  color: var(--accent);
+  background: rgba(90, 232, 255, 0.1);
+  border-color: rgba(90, 232, 255, 0.25);
+}
+
+.territory-btn-mini--edit:hover {
+  background: rgba(90, 232, 255, 0.2);
+  border-color: var(--accent);
+}
+
+.territory-btn-mini--delete {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.territory-btn-mini--delete:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: #ef4444;
+}
+
+/* Draggable vertex handles for moving territory points */
+.custom-vertex-handle-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.vertex-handle-dot {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.vertex-handle-dot:active {
+  cursor: grabbing;
+}
+
+.vertex-handle-core {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 0 20px rgba(90, 232, 255, 0.7);
+  transition: transform 0.15s ease;
+}
+
+.vertex-handle-dot:hover .vertex-handle-core {
+  transform: scale(1.35);
+  box-shadow: 0 0 18px #ffffff, 0 0 28px rgba(90, 232, 255, 1);
+}
+
 /* Responsive Map Mode */
 @media (max-width: 768px) {
   .app-mode-bar {
