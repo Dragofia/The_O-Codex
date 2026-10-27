@@ -419,7 +419,7 @@
       id: 'map_surface_default',
       title: 'Maladen — The Surface World',
       subtitle: 'Domains, Settlements & Relic Locations',
-      imageSource: createProceduralFantasyMapSvg(),
+      imageSource: 'assets/maps/maladen_composite.svg',
       isDefault: true,
       regions: [
         // ROW 1: North (Leaflet y: 670 - 1000)
@@ -1030,7 +1030,7 @@
     }
 
     loadStorage() {
-      const STORAGE_KEY = 'o_codex_cartography_v3';
+      const STORAGE_KEY = 'o_codex_cartography_v4';
       let stored = null;
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -1045,7 +1045,7 @@
 
       // Seamless migration from v2 or v1 if v3 does not exist yet
       if (!stored) {
-        const prevKey = localStorage.getItem('o_codex_cartography_v2') || localStorage.getItem('o_codex_cartography_v1');
+        const prevKey = localStorage.getItem('o_codex_cartography_v3') || localStorage.getItem('o_codex_cartography_v2') || localStorage.getItem('o_codex_cartography_v1');
         if (prevKey) {
           try {
             const oldData = JSON.parse(prevKey);
@@ -1063,7 +1063,7 @@
       }
 
       // If user's stored default map has the old placeholder regions or outdated pins, auto-upgrade to 3x3 layout
-      if (this.maps[0] && this.maps[0].isDefault && ((this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40)) {
+      if (this.maps[0] && this.maps[0].isDefault && (!this.maps[0].imageSource.includes('maladen_composite') || (this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40)) {
         const existingPlayerPins = this.maps[0].playerPins || [];
         this.maps[0] = JSON.parse(JSON.stringify(DEFAULT_MAPS[0]));
         this.maps[0].playerPins = existingPlayerPins;
@@ -1072,7 +1072,7 @@
     }
 
     saveStorage() {
-      const STORAGE_KEY = 'o_codex_cartography_v3';
+      const STORAGE_KEY = 'o_codex_cartography_v4';
       try {
         const payload = {
           maps: this.maps,
