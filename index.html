@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -24,6 +24,11 @@
         <span class="mode-tab__icon">⚔️</span>
         <span class="mode-tab__label">Characters</span>
         <span class="mode-tab__badge">Soon</span>
+      </button>
+      <div class="mode-bar-separator" aria-hidden="true"></div>
+      <button type="button" class="mode-tab mode-tab--dm" id="dm-mode-toggle" title="Toggle Dungeon Master Mode (Ctrl+Shift+D)">
+        <span class="mode-tab__icon" id="dm-toggle-icon">🛡️</span>
+        <span class="mode-tab__label" id="dm-toggle-label">Player</span>
       </button>
     </div>
     <div class="mode-bar-handle" aria-hidden="true">
@@ -379,16 +384,48 @@
             <option value="Note">Note / Discovery</option>
           </select>
         </label>
-        <label class="form-field">
-          <span>Link to O-Codex Entry (Optional)</span>
-          <select id="new-pin-codex-link">
-            <option value="">None (Standalone Pin)</option>
-          </select>
-        </label>
+        <div class="form-field">
+          <label for="new-pin-codex-search">
+            <span>Link to O-Codex Entry (Optional)</span>
+          </label>
+          <div class="pin-link-combobox" id="pin-link-combobox">
+            <div class="pin-link-input-wrapper" id="pin-link-input-wrapper">
+              <span class="pin-link-icon" aria-hidden="true">🔍</span>
+              <input
+                id="new-pin-codex-search"
+                type="search"
+                autocomplete="off"
+                placeholder="Search entries with typo matching (e.g. Aquiel, Alden)..."
+                aria-autocomplete="list"
+              >
+              <button id="pin-link-clear-btn" type="button" class="pin-link-clear hidden" title="Clear search">✕</button>
+            </div>
+
+            <!-- Hidden input that stores the selected entry ID -->
+            <input type="hidden" id="new-pin-codex-link" value="">
+
+            <!-- Chosen Entry Chip Badge -->
+            <div id="pin-link-selected-badge" class="pin-selected-chip hidden">
+              <span class="pin-selected-dot"></span>
+              <span id="pin-selected-category" class="pin-chip-category">Settlement</span>
+              <strong id="pin-selected-title" class="pin-chip-title">Aquiel Statue</strong>
+              <button type="button" id="pin-selected-remove-btn" class="pin-chip-remove" title="Unlink entry">✕</button>
+            </div>
+
+            <!-- Autocomplete Suggestions Popover -->
+            <div id="pin-link-suggestions" class="pin-suggestions-dropdown hidden" role="listbox"></div>
+          </div>
+        </div>
         <label class="form-field">
           <span>Notes & Description</span>
           <textarea id="new-pin-notes" rows="3" placeholder="Add tactical notes, secrets, or lore description..."></textarea>
         </label>
+        <div id="new-pin-secret-wrapper" class="form-field hidden">
+          <label class="checkbox-field">
+            <input type="checkbox" id="new-pin-is-secret">
+            <span>🔒 DM Secret Pin (Hidden from players)</span>
+          </label>
+        </div>
       </div>
       <div class="modal__form-actions">
         <button id="cancel-new-pin-btn" type="button" class="ghost-button">Cancel</button>
@@ -489,6 +526,27 @@
           <button id="cancel-edit-territory-btn" type="button" class="ghost-button">Cancel</button>
           <button id="save-edit-territory-btn" type="button" class="cta-button">Save Changes</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2BB. Read-Only Territory Lore Modal (For Players) -->
+  <div id="view-territory-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__actions">
+        <button id="close-view-territory-btn" class="modal__close" type="button" aria-label="Close dialog">Close</button>
+      </div>
+      <div class="modal__header">
+        <p class="modal__category" id="view-territory-category">Domain Territory</p>
+        <h2 id="view-territory-name">Domain Realm</h2>
+        <p class="modal__summary" id="view-territory-meta">Established Realm Boundaries</p>
+      </div>
+      <div class="map-form-body">
+        <div id="view-territory-desc" class="territory-lore-prose"></div>
+      </div>
+      <div class="modal__form-actions">
+        <button id="done-view-territory-btn" type="button" class="cta-button" style="width: 100%;">Done</button>
       </div>
     </div>
   </div>
@@ -645,10 +703,13 @@
     </article>
   </template>
 
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
   <!-- Leaflet Map JS CDN -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- Core Scripts -->
-  <script src="script.js?v=5" defer></script>
-  <script src="map.js?v=4" defer></script>
+  <script src="script.js?v=6" defer></script>
+  <script src="map.js?v=5" defer></script>
 </body>
 </html>

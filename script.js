@@ -41,12 +41,156 @@ const state = {
   activeTags: new Set(),
   selectedEntryId: null,
   isHelpOpen: false,
-  appMode: "codex"
+  appMode: "codex",
+  isDmMode: false,
+  playerName: "Adventurer"
 };
 
 let viewTransitionTimer = null;
 
 const elements = {};
+
+// ============================================================================
+// DOM TOAST NOTIFICATIONS (Non-blocking replacement for native alert & confirm)
+// ============================================================================
+window.showToast = function(message, type = "info", duration = 3200) {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    container.setAttribute("aria-live", "polite");
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `codex-toast codex-toast--${type}`;
+
+  const iconMap = {
+    dm: "👑",
+    info: "ℹ️",
+    success: "✓",
+    warning: "⚠️",
+    error: "✕"
+  };
+  const icon = iconMap[type] || "✨";
+
+  toast.innerHTML = `
+    <span class="toast-icon" aria-hidden="true">${icon}</span>
+    <span class="toast-message">${escapeHtml(message)}</span>
+  `;
+
+  container.appendChild(toast);
+
+  const removeToast = () => {
+    toast.classList.add("is-hiding");
+    setTimeout(() => toast.remove(), 220);
+  };
+
+  const timer = setTimeout(removeToast, duration);
+  toast.addEventListener("click", () => {
+    clearTimeout(timer);
+    removeToast();
+  });
+};
+
+// ============================================================================
+// ACCESS CONTROL & PERSISTENCE (DM MODE & PLAYER IDENTITY)
+// ============================================================================
+function initAccessControl() {
+  const params = new URLSearchParams(window.location.search);
+  let urlCleanNeeded = false;
+
+  // 1. Process DM URL flag (?dm=true, ?dm=1, ?dm=false, etc.)
+  if (params.has("dm")) {
+    const dmVal = (params.get("dm") || "").toLowerCase();
+    const isDm = dmVal === "true" || dmVal === "1" || dmVal === "";
+    localStorage.setItem("o_codex_dm_mode", isDm ? "true" : "false");
+    params.delete("dm");
+    urlCleanNeeded = true;
+  }
+
+  // 2. Process Player Identity (?player=Name)
+  if (params.has("player")) {
+    const pVal = params.get("player");
+    if (pVal && pVal.trim()) {
+      localStorage.setItem("o_codex_player_name", pVal.trim());
+    }
+    params.delete("player");
+    urlCleanNeeded = true;
+  }
+
+  // 3. Scrub sensitive URL params without triggering a reload
+  if (urlCleanNeeded) {
+    const newSearch = params.toString() ? `?${params.toString()}` : "";
+    const cleanUrl = `${window.location.pathname}${newSearch}${window.location.hash}`;
+    try {
+      window.history.replaceState(null, "", cleanUrl);
+    } catch {
+      // Fallback if sandboxed
+    }
+  }
+
+  // 4. Load persisted preferences
+  state.isDmMode = localStorage.getItem("o_codex_dm_mode") === "true";
+  state.playerName = localStorage.getItem("o_codex_player_name") || "Adventurer";
+
+  updateDmModeUI();
+
+  // 5. Global Keyboard Shortcut: Ctrl + Shift + D (or Cmd + Shift + D on macOS)
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "D" || e.key === "d")) {
+      e.preventDefault();
+      window.toggleDmMode();
+    }
+  });
+}
+
+window.isDmMode = function() {
+  return Boolean(state.isDmMode);
+};
+
+window.setDmMode = function(enabled, notify = true) {
+  state.isDmMode = Boolean(enabled);
+  localStorage.setItem("o_codex_dm_mode", state.isDmMode ? "true" : "false");
+  updateDmModeUI();
+
+  if (window.mapEngine && typeof window.mapEngine.updateDmModeUI === "function") {
+    window.mapEngine.updateDmModeUI();
+  }
+
+  if (notify) {
+    if (state.isDmMode) {
+      window.showToast("👑 Dungeon Master Mode Enabled — Map tools, boundaries, and secrets unlocked.", "dm");
+    } else {
+      window.showToast("🛡️ Player Mode Active — DM tools and secrets hidden.", "info");
+    }
+  }
+};
+
+window.toggleDmMode = function() {
+  window.setDmMode(!state.isDmMode);
+};
+
+function updateDmModeUI() {
+  const toggleBtn = document.getElementById("dm-mode-toggle");
+  const toggleIcon = document.getElementById("dm-toggle-icon");
+  const toggleLabel = document.getElementById("dm-toggle-label");
+
+  if (toggleBtn) {
+    if (state.isDmMode) {
+      toggleBtn.classList.add("is-dm-active");
+      toggleBtn.title = "Dungeon Master Mode is Active. Click or press Ctrl+Shift+D to switch to Player Mode.";
+      if (toggleIcon) toggleIcon.textContent = "👑";
+      if (toggleLabel) toggleLabel.textContent = "DM Active";
+    } else {
+      toggleBtn.classList.remove("is-dm-active");
+      toggleBtn.title = "Player Mode. Click or press Ctrl+Shift+D to switch to Dungeon Master Mode.";
+      if (toggleIcon) toggleIcon.textContent = "🛡️";
+      if (toggleLabel) toggleLabel.textContent = "Player";
+    }
+  }
+}
 
 function initElements() {
   elements.appModeBar = document.getElementById("app-mode-bar");
@@ -54,6 +198,7 @@ function initElements() {
   elements.modeTabCodex = document.getElementById("mode-tab-codex");
   elements.modeTabMap = document.getElementById("mode-tab-map");
   elements.modeTabCharacters = document.getElementById("mode-tab-characters");
+  elements.dmModeToggle = document.getElementById("dm-mode-toggle");
   elements.modalViewOnMap = document.getElementById("modal-view-on-map");
   elements.siteTitle = document.getElementById("site-title");
   elements.siteSubtitle = document.getElementById("site-subtitle");
@@ -101,6 +246,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   initElements();
+  initAccessControl();
   window.state = state;
   window.openModal = openModal;
   bindEvents();
@@ -243,7 +389,11 @@ function bindEvents() {
   });
 
   elements.modeTabCharacters?.addEventListener("click", () => {
-    alert("Character Sheets mode is in development and coming in a future update!");
+    window.showToast("Character Sheets mode is in development and coming in a future update!", "info");
+  });
+
+  elements.dmModeToggle?.addEventListener("click", () => {
+    window.toggleDmMode();
   });
 
   // Mobile/touch pull-down handle toggle
@@ -809,6 +959,47 @@ function getSearchScore(entry, rawQuery) {
 
   return score;
 }
+
+window.searchCodexEntries = function(rawQuery, limit = 6) {
+  if (!state.worldData || !Array.isArray(state.worldData.entries)) {
+    return [];
+  }
+
+  const query = String(rawQuery ?? "").trim();
+  if (!query) {
+    const prioCategories = new Set(["settlements", "domains", "locations", "quests", "eschatons", "lore"]);
+    const samples = state.worldData.entries.filter(e => prioCategories.has(String(e.category || "").toLowerCase()));
+    return (samples.length > 0 ? samples : state.worldData.entries)
+      .slice(0, limit)
+      .map(entry => ({
+        id: entry.id,
+        name: getEntryTitle(entry),
+        category: entry.category,
+        summary: entry.summary || ""
+      }));
+  }
+
+  const scored = [];
+  for (const entry of state.worldData.entries) {
+    const score = getSearchScore(entry, query);
+    if (score > 0) {
+      scored.push({
+        id: entry.id,
+        name: getEntryTitle(entry),
+        category: entry.category,
+        summary: entry.summary || "",
+        score: score
+      });
+    }
+  }
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.name.localeCompare(b.name);
+  });
+
+  return scored.slice(0, limit);
+};
 
 function getSuggestedTags() {
   const query = normalizeText(state.query);

@@ -2582,6 +2582,375 @@ body.map-mode-active {
   box-shadow: 0 0 18px #ffffff, 0 0 28px rgba(90, 232, 255, 1);
 }
 
+/* ============================================================================
+   PIN CODEX LINK AUTOCOMPLETE COMBOBOX
+   ============================================================================ */
+.pin-link-combobox {
+  position: relative;
+  width: 100%;
+}
+
+.pin-link-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.pin-link-icon {
+  position: absolute;
+  left: 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.pin-link-input-wrapper input {
+  width: 100%;
+  padding: 0.65rem 2.2rem 0.65rem 2.3rem !important;
+  font-family: var(--body-font);
+  font-size: 0.88rem;
+  color: var(--text-main);
+  background: var(--bg-panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pin-link-input-wrapper input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(90, 232, 255, 0.25);
+}
+
+.pin-link-clear {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+  transition: color 0.15s ease;
+}
+
+.pin-link-clear:hover {
+  color: var(--accent);
+}
+
+/* Autocomplete Floating Dropdown */
+.pin-suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: rgba(6, 12, 22, 0.98);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(90, 232, 255, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(90, 232, 255, 0.2);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem 0;
+}
+
+.pin-suggestion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.95rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(90, 232, 255, 0.08);
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.pin-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.pin-suggestion-item:hover,
+.pin-suggestion-item.is-focused {
+  background: rgba(90, 232, 255, 0.14);
+}
+
+.pin-suggestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pin-suggestion-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.pin-suggestion-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  background: rgba(90, 232, 255, 0.15);
+  border: 1px solid rgba(90, 232, 255, 0.3);
+  border-radius: 6px;
+  color: var(--accent);
+}
+
+.pin-suggestion-snippet {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.pin-suggestion-standalone {
+  padding: 0.65rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(90, 232, 255, 0.15);
+  cursor: pointer;
+  background: rgba(4, 8, 16, 0.5);
+  transition: all 0.15s ease;
+}
+
+.pin-suggestion-standalone:hover {
+  color: var(--text-main);
+  background: rgba(90, 232, 255, 0.1);
+}
+
+/* Selected Link Chip */
+.pin-selected-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  background: rgba(90, 232, 255, 0.12);
+  border: 1px solid rgba(90, 232, 255, 0.45);
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(90, 232, 255, 0.15);
+  animation: chip-pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes chip-pop-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.pin-selected-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
+}
+
+.pin-chip-category {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.pin-chip-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.pin-chip-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.pin-chip-remove:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ============================================================================
+   DM MODE & ACCESS CONTROL STYLES
+   ============================================================================ */
+.mode-bar-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(90, 232, 255, 0.22);
+  margin: 0 0.25rem;
+}
+
+.mode-tab--dm {
+  border-color: rgba(90, 232, 255, 0.25);
+  color: var(--text-soft);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-tab--dm:hover {
+  border-color: rgba(90, 232, 255, 0.5);
+  color: var(--text-main);
+}
+
+.mode-tab--dm.is-dm-active {
+  background: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.7) !important;
+  color: #fef08a !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4) !important;
+}
+
+.mode-tab--dm.is-dm-active:hover {
+  background: rgba(245, 158, 11, 0.28) !important;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.6) !important;
+}
+
+/* Toast Container & Notifications */
+.toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  pointer-events: none;
+  max-width: 440px;
+}
+
+.codex-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.15rem;
+  background: rgba(6, 12, 22, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(90, 232, 255, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8), 0 0 22px rgba(90, 232, 255, 0.18);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  animation: toast-slide-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.codex-toast.is-hiding {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+
+.codex-toast .toast-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.codex-toast .toast-message {
+  flex: 1;
+  font-family: var(--body-font);
+}
+
+.codex-toast--dm {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(245, 158, 11, 0.3);
+}
+
+.codex-toast--warning {
+  border-color: rgba(239, 68, 68, 0.65);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Two-Step Deletion Confirmation State */
+.drawer-delete-button.is-confirming,
+.territory-btn-mini--delete.is-confirming {
+  background: rgba(220, 38, 38, 0.9) !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.65) !important;
+  animation: danger-pulse 0.75s infinite alternate ease-in-out;
+}
+
+@keyframes danger-pulse {
+  from {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  to {
+    filter: brightness(1.25);
+    transform: scale(1.02);
+  }
+}
+
+/* Secret Pin Indicator */
+.custom-codex-map-marker.is-secret-marker .map-marker-body {
+  border-color: #c084fc !important;
+  box-shadow: 0 0 18px rgba(192, 132, 252, 0.8) !important;
+}
+
+.custom-codex-map-marker.is-secret-marker::after {
+  content: '🔒';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 11px;
+  line-height: 1;
+  background: #190e2b;
+  border: 1px solid #c084fc;
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.9);
+}
+
+.drawer-badge--secret {
+  background: rgba(192, 132, 252, 0.18) !important;
+  border: 1px solid rgba(192, 132, 252, 0.5) !important;
+  color: #e9d5ff !important;
+}
+
+/* Read-Only Territory Lore Modal */
+.territory-lore-prose {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  background: rgba(8, 16, 28, 0.5);
+  border: 1px solid rgba(90, 232, 255, 0.15);
+  border-radius: 10px;
+  padding: 1.15rem 1.25rem;
+  min-height: 80px;
+}
+
 /* Responsive Map Mode */
 @media (max-width: 768px) {
   .app-mode-bar {

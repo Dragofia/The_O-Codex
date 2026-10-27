@@ -169,20 +169,21 @@
     }
   };
 
-  function createMarkerIcon(category, isHighlighted = false) {
+  function createMarkerIcon(category, isHighlighted = false, isSecret = false) {
     const theme = PIN_THEMES[category] || PIN_THEMES.Location;
     const pulseHtml = isHighlighted ? '<div class="map-marker-pulse"></div>' : '';
+    const secretClass = isSecret ? ' is-secret-marker' : '';
     const html = `
       <div class="map-marker-wrapper" style="width: 32px; height: 32px;">
         ${pulseHtml}
-        <div class="map-marker-body" style="background: #060b14; border: 2px solid ${theme.color}; box-shadow: 0 0 12px ${theme.glow};">
-          <span style="color: ${theme.color}; display: flex; align-items: center; justify-content: center;">${theme.iconSvg}</span>
+        <div class="map-marker-body" style="background: #060b14; border: 2px solid ${isSecret ? '#c084fc' : theme.color}; box-shadow: 0 0 12px ${isSecret ? 'rgba(192, 132, 252, 0.8)' : theme.glow};">
+          <span style="color: ${isSecret ? '#c084fc' : theme.color}; display: flex; align-items: center; justify-content: center;">${theme.iconSvg}</span>
         </div>
       </div>
     `;
     return L.divIcon({
       html: html,
-      className: 'custom-codex-map-marker',
+      className: `custom-codex-map-marker${secretClass}`,
       iconSize: [32, 32],
       iconAnchor: [16, 16]
     });
@@ -302,6 +303,61 @@
       this.initLeaflet();
       this.setupDOM();
       this.renderAll();
+      this.updateDmModeUI();
+    }
+
+    isDmMode() {
+      if (typeof window.isDmMode === 'function') {
+        return window.isDmMode();
+      }
+      return localStorage.getItem('o_codex_dm_mode') === 'true';
+    }
+
+    getPlayerName() {
+      return localStorage.getItem('o_codex_player_name') || 'Adventurer';
+    }
+
+    updateDmModeUI() {
+      const isDm = this.isDmMode();
+
+      // 1. Draw Territory button (Toolbar)
+      const drawBtn = document.getElementById('map-tool-draw');
+      if (drawBtn) {
+        drawBtn.classList.toggle('hidden', !isDm);
+      }
+
+      // 2. Edit Map button (Header)
+      const editMapBtn = document.getElementById('map-settings-btn');
+      if (editMapBtn) {
+        editMapBtn.classList.toggle('hidden', !isDm);
+      }
+
+      // 3. Copy Data button (Header - DM only and only if multiple maps exist)
+      const copyDataBtn = document.getElementById('map-copy-data-btn');
+      if (copyDataBtn) {
+        copyDataBtn.classList.toggle('hidden', !isDm || (this.maps && this.maps.length <= 1));
+      }
+
+      // 4. New Map button in dropdown
+      const addNewMapBtn = document.getElementById('map-add-new-btn');
+      if (addNewMapBtn) {
+        addNewMapBtn.classList.toggle('hidden', !isDm);
+      }
+
+      // 5. Territory Manager list & Draw button
+      const drawNewTerritoryBtn = document.getElementById('territories-manager-new-btn');
+      if (drawNewTerritoryBtn) {
+        drawNewTerritoryBtn.classList.toggle('hidden', !isDm);
+      }
+
+      // 6. Re-render pins so secret pins appear or disappear
+      this.renderPins();
+
+      // 7. Refresh territory list if open
+      const manageModal = document.getElementById('manage-territories-modal');
+      if (manageModal && !manageModal.classList.contains('hidden')) {
+        this.renderTerritoriesManagerList();
+      }
     }
 
     loadStorage() {
@@ -487,6 +543,7 @@
       this.imageOverlay.bringToBack();
 
       this.renderAll();
+      this.updateDmModeUI();
       this.map.fitBounds([[0, 0], [1000, 1000]]);
     }
 
@@ -564,11 +621,15 @@
           interactive: true
         });
 
-        // Click to inspect / edit territory
+        // Click to inspect territory (DM Mode: Edit modal | Player Mode: Read-only lore view)
         polygon.on('click', (e) => {
           if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
           L.DomEvent.stopPropagation(e);
-          this.openEditTerritoryModal(reg.id);
+          if (this.isDmMode()) {
+            this.openEditTerritoryModal(reg.id);
+          } else {
+            this.openViewTerritoryModal(reg.id);
+          }
         });
 
         polygon.on('mouseover', () => {
@@ -602,18 +663,26 @@
         ...(activeMap.playerPins || []).map(p => ({ ...p, isOfficial: false }))
       ];
 
+      const isDm = this.isDmMode();
+
       allPins.forEach(pin => {
+        // Access Control: Hide secret pins from players completely
+        if (pin.isSecret && !isDm) {
+          return;
+        }
+
         const isHighlighted = (pin.codexId || pin.id) === this.currentHighlightedPinId;
         const marker = L.marker([pin.y, pin.x], {
-          icon: createMarkerIcon(pin.category, isHighlighted),
+          icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret),
           title: pin.name || pin.title
         });
 
+        const secretSuffix = pin.isSecret ? ' · 🔒 Secret' : '';
         // Hover tooltip
         marker.bindTooltip(`
           <div class="map-tooltip">
-            <strong>${escapeHtml(pin.name || pin.title)}</strong>
-            <span>${escapeHtml(pin.category || 'Location')}${pin.region ? ' · ' + escapeHtml(pin.region) : ''}</span>
+            <strong>${escapeHtml(pin.name || pin.title)}${pin.isSecret ? ' 🔒' : ''}</strong>
+            <span>${escapeHtml(pin.category || 'Location')}${pin.region ? ' · ' + escapeHtml(pin.region) : ''}${secretSuffix}</span>
           </div>
         `, {
           direction: 'top',
@@ -639,7 +708,18 @@
       if (!drawer) return;
 
       document.getElementById('drawer-pin-title').textContent = pin.name || pin.title;
-      document.getElementById('drawer-pin-category').textContent = pin.category || 'General';
+
+      const categoryBadge = document.getElementById('drawer-pin-category');
+      if (categoryBadge) {
+        if (pin.isSecret) {
+          categoryBadge.textContent = `${pin.category || 'General'} · 🔒 DM Secret`;
+          categoryBadge.className = 'drawer-badge drawer-badge--secret';
+        } else {
+          categoryBadge.textContent = pin.category || 'General';
+          categoryBadge.className = 'drawer-badge';
+        }
+      }
+
       document.getElementById('drawer-pin-coords').textContent = `X: ${pin.x} · Y: ${pin.y}`;
       document.getElementById('drawer-pin-summary').textContent = pin.summary || pin.note || 'No notes added.';
 
@@ -659,21 +739,46 @@
         }
       }
 
-      // Delete Pin Button (for player pins or DM)
+      // Delete Pin Button (DM or author only, with safe two-step inline confirmation)
       const deleteBtnContainer = document.getElementById('drawer-delete-action');
       if (deleteBtnContainer) {
         deleteBtnContainer.innerHTML = '';
-        const delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'drawer-delete-button';
-        delBtn.textContent = 'Delete Pin';
-        delBtn.addEventListener('click', () => {
-          if (confirm(`Delete pin "${pin.name || pin.title}"?`)) {
-            this.deletePin(pin.id);
-            this.closePinDrawer();
-          }
-        });
-        deleteBtnContainer.appendChild(delBtn);
+
+        const isDm = this.isDmMode();
+        const playerName = this.getPlayerName();
+        // Official locations can ONLY be deleted by the DM.
+        // Custom pins can be deleted by DM or the creating player.
+        const canDelete = isDm || (!pin.isOfficial && (!pin.author || pin.author === playerName));
+
+        if (canDelete) {
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'drawer-delete-button';
+          delBtn.textContent = pin.isOfficial ? 'Delete Official Location' : 'Delete Pin';
+
+          let isConfirming = false;
+          let confirmTimer = null;
+
+          delBtn.addEventListener('click', () => {
+            if (!isConfirming) {
+              isConfirming = true;
+              delBtn.classList.add('is-confirming');
+              delBtn.textContent = '⚠️ Click to Confirm Delete';
+              confirmTimer = setTimeout(() => {
+                isConfirming = false;
+                delBtn.classList.remove('is-confirming');
+                delBtn.textContent = pin.isOfficial ? 'Delete Official Location' : 'Delete Pin';
+              }, 4000);
+            } else {
+              clearTimeout(confirmTimer);
+              this.deletePin(pin.id);
+              this.closePinDrawer();
+              window.showToast?.(`Removed pin "${pin.name || pin.title}"`, 'info');
+            }
+          });
+
+          deleteBtnContainer.appendChild(delBtn);
+        }
       }
 
       drawer.classList.remove('is-collapsed');
@@ -723,25 +828,156 @@
       document.getElementById('new-pin-title').value = '';
       document.getElementById('new-pin-notes').value = '';
 
-      // Populate Codex Entry link options from active worldData
-      const linkSelect = document.getElementById('new-pin-codex-link');
-      if (linkSelect && window.state && window.state.worldData) {
-        linkSelect.innerHTML = '<option value="">None (Custom Standalone Pin)</option>';
-        window.state.worldData.entries.forEach(entry => {
-          const opt = document.createElement('option');
-          opt.value = entry.id;
-          opt.textContent = `${entry.name || entry.title} (${entry.category})`;
-          linkSelect.appendChild(opt);
-        });
+      // Reset combobox link state
+      this.clearPinCodexLink();
+
+      // Secret pin option (DM Only)
+      const secretWrapper = document.getElementById('new-pin-secret-wrapper');
+      const secretCheckbox = document.getElementById('new-pin-is-secret');
+      if (secretWrapper && secretCheckbox) {
+        secretWrapper.classList.toggle('hidden', !this.isDmMode());
+        secretCheckbox.checked = false;
       }
 
       modal.classList.remove('hidden');
     }
 
+    handlePinLinkSearch(rawQuery) {
+      const suggestionsEl = document.getElementById('pin-link-suggestions');
+      const clearBtn = document.getElementById('pin-link-clear-btn');
+      if (!suggestionsEl) return;
+
+      const query = String(rawQuery ?? '').trim();
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !query);
+      }
+
+      let matches = [];
+      if (typeof window.searchCodexEntries === 'function') {
+        matches = window.searchCodexEntries(query, 5);
+      } else if (window.state && window.state.worldData && Array.isArray(window.state.worldData.entries)) {
+        matches = window.state.worldData.entries.slice(0, 5).map(e => ({
+          id: e.id,
+          name: e.name || e.title,
+          category: e.category,
+          summary: e.summary || ''
+        }));
+      }
+
+      if (matches.length === 0 && query) {
+        suggestionsEl.innerHTML = `
+          <div style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.82rem; text-align: center;">
+            No matching lore entries found for "${escapeHtml(query)}".
+          </div>
+          <div class="pin-suggestion-standalone" id="pin-suggest-none">
+            Keep as custom standalone pin (No link)
+          </div>
+        `;
+        document.getElementById('pin-suggest-none')?.addEventListener('click', () => {
+          this.clearPinCodexLink();
+          this.hidePinLinkSuggestions();
+        });
+        suggestionsEl.classList.remove('hidden');
+        return;
+      }
+
+      suggestionsEl.innerHTML = '';
+      matches.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'pin-suggestion-item';
+        item.innerHTML = `
+          <div class="pin-suggestion-header">
+            <span class="pin-suggestion-name">${escapeHtml(entry.name)}</span>
+            <span class="pin-suggestion-badge">${escapeHtml(entry.category || 'Entry')}</span>
+          </div>
+          ${entry.summary ? `<span class="pin-suggestion-snippet">${escapeHtml(entry.summary)}</span>` : ''}
+        `;
+        item.addEventListener('click', () => {
+          this.selectPinCodexLink(entry);
+        });
+        suggestionsEl.appendChild(item);
+      });
+
+      // Always include standalone option at bottom
+      const standaloneOpt = document.createElement('div');
+      standaloneOpt.className = 'pin-suggestion-standalone';
+      standaloneOpt.textContent = 'None (Custom Standalone Pin)';
+      standaloneOpt.addEventListener('click', () => {
+        this.clearPinCodexLink();
+        this.hidePinLinkSuggestions();
+      });
+      suggestionsEl.appendChild(standaloneOpt);
+
+      suggestionsEl.classList.remove('hidden');
+    }
+
+    selectPinCodexLink(entry) {
+      const hiddenInput = document.getElementById('new-pin-codex-link');
+      const badge = document.getElementById('pin-link-selected-badge');
+      const categoryBadge = document.getElementById('pin-selected-category');
+      const titleBadge = document.getElementById('pin-selected-title');
+      const inputWrapper = document.getElementById('pin-link-input-wrapper');
+      const searchInput = document.getElementById('new-pin-codex-search');
+
+      if (hiddenInput) hiddenInput.value = entry.id;
+      if (categoryBadge) categoryBadge.textContent = entry.category || 'Entry';
+      if (titleBadge) titleBadge.textContent = entry.name;
+      if (badge) badge.classList.remove('hidden');
+      if (inputWrapper) inputWrapper.classList.add('hidden');
+      if (searchInput) searchInput.value = '';
+
+      this.hidePinLinkSuggestions();
+
+      // Auto-fill pin title if empty
+      const titleInput = document.getElementById('new-pin-title');
+      if (titleInput && !titleInput.value.trim()) {
+        titleInput.value = entry.name;
+      }
+
+      // Auto-select matching category
+      const categorySelect = document.getElementById('new-pin-category');
+      if (categorySelect && entry.category) {
+        const catMap = {
+          settlement: 'Settlement',
+          settlements: 'Settlement',
+          domain: 'Domain',
+          domains: 'Domain',
+          location: 'Location',
+          locations: 'Location',
+          quest: 'Quest',
+          quests: 'Quest',
+          dungeon: 'Dungeon',
+          dungeons: 'Dungeon'
+        };
+        const mapped = catMap[entry.category.toLowerCase()];
+        if (mapped) {
+          categorySelect.value = mapped;
+        }
+      }
+    }
+
+    clearPinCodexLink() {
+      const hiddenInput = document.getElementById('new-pin-codex-link');
+      const badge = document.getElementById('pin-link-selected-badge');
+      const inputWrapper = document.getElementById('pin-link-input-wrapper');
+      const searchInput = document.getElementById('new-pin-codex-search');
+      const clearBtn = document.getElementById('pin-link-clear-btn');
+
+      if (hiddenInput) hiddenInput.value = '';
+      if (badge) badge.classList.add('hidden');
+      if (inputWrapper) inputWrapper.classList.remove('hidden');
+      if (searchInput) searchInput.value = '';
+      if (clearBtn) clearBtn.classList.add('hidden');
+    }
+
+    hidePinLinkSuggestions() {
+      document.getElementById('pin-link-suggestions')?.classList.add('hidden');
+    }
+
     saveNewPin() {
       const title = document.getElementById('new-pin-title').value.trim();
       if (!title) {
-        alert('Please give the pin a name or title.');
+        window.showToast?.('Please give the pin a name or title.', 'warning');
         return;
       }
 
@@ -753,8 +989,12 @@
       const activeMap = this.getActiveMap();
       if (!activeMap.playerPins) activeMap.playerPins = [];
 
+      const isSecret = this.isDmMode() && Boolean(document.getElementById('new-pin-is-secret')?.checked);
+
       const newPin = {
         id: `pin_${Date.now()}`,
+        author: this.isDmMode() ? 'Dungeon Master' : this.getPlayerName(),
+        authorColor: this.isDmMode() ? '#f59e0b' : '#5ae8ff',
         name: title,
         title: title,
         category: category,
@@ -763,6 +1003,8 @@
         note: notes,
         summary: notes,
         codexId: codexId,
+        isOfficial: false,
+        isSecret: isSecret,
         createdAt: Date.now()
       };
 
@@ -770,10 +1012,16 @@
       this.saveStorage();
       this.renderPins();
       this.closeModal('create-pin-modal');
+      window.showToast?.(isSecret ? `Created secret pin "${title}" 🔒` : `Placed pin "${title}"`, isSecret ? 'dm' : 'success');
     }
 
     // Territory Drawing Workflow
     startTerritoryDrawMode() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Drawing territory boundaries is restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       this.isDrawingRegion = true;
       this.drawingPoints = [];
       if (this.startPointMarker) {
@@ -827,7 +1075,7 @@
         if (this.drawingPoints.length >= 3) {
           this.finishTerritoryDraw();
         } else {
-          alert(`Please add at least 3 boundary points before closing the territory (currently ${this.drawingPoints.length}).`);
+          window.showToast?.(`Please add at least 3 boundary points before closing the territory (currently ${this.drawingPoints.length}).`, 'warning');
         }
       });
     }
@@ -843,7 +1091,7 @@
 
     finishTerritoryDraw() {
       if (this.drawingPoints.length < 3) {
-        alert('A territory requires at least 3 points. Click on the map to add points.');
+        window.showToast?.('A territory requires at least 3 points. Click on the map to add points.', 'warning');
         return;
       }
 
@@ -859,7 +1107,7 @@
           this.isRedrawingRegionId = null;
           this.renderRegions();
           this.renderHeaderUI();
-          alert(`Successfully updated boundaries for "${reg.name}"!`);
+          window.showToast?.(`Successfully updated boundaries for "${reg.name}"!`, 'success');
           return;
         }
         this.isRedrawingRegionId = null;
@@ -905,9 +1153,14 @@
     }
 
     saveNewTerritory() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can define realm territories.', 'warning');
+        return;
+      }
+
       const name = document.getElementById('new-territory-name').value.trim();
       if (!name) {
-        alert('Please enter a territory name.');
+        window.showToast?.('Please enter a territory name.', 'warning');
         return;
       }
       const color = document.getElementById('new-territory-color').value || '#5ae8ff';
@@ -936,10 +1189,16 @@
       this.renderRegions();
       this.renderHeaderUI();
       this.closeModal('save-territory-modal');
+      window.showToast?.(`Saved domain territory "${name}"!`, 'success');
     }
 
     // Territory Editing & Management
     openEditTerritoryModal(regionId) {
+      if (!this.isDmMode()) {
+        this.openViewTerritoryModal(regionId);
+        return;
+      }
+
       const activeMap = this.getActiveMap();
       const reg = (activeMap.regions || []).find(r => r.id === regionId);
       if (!reg) return;
@@ -954,17 +1213,54 @@
       document.getElementById('edit-territory-desc').value = reg.desc || '';
       document.getElementById('edit-territory-meta').textContent = `${(reg.points || []).length} boundary vertices · ID: ${reg.id}`;
 
+      // Reset delete confirmation button state
+      const delBtn = document.getElementById('delete-territory-btn');
+      if (delBtn) {
+        delBtn.classList.remove('is-confirming');
+        delBtn.textContent = 'Delete Territory';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    // Read-only Territory Lore Inspector (Safe for Players)
+    openViewTerritoryModal(regionId) {
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === regionId);
+      if (!reg) return;
+
+      const modal = document.getElementById('view-territory-modal');
+      if (!modal) return;
+
+      const nameEl = document.getElementById('view-territory-name');
+      const metaEl = document.getElementById('view-territory-meta');
+      const descEl = document.getElementById('view-territory-desc');
+      const catEl = document.getElementById('view-territory-category');
+
+      if (nameEl) nameEl.textContent = reg.name || 'Territory';
+      if (metaEl) metaEl.textContent = `${(reg.points || []).length} boundary vertices · Established Realm`;
+      if (catEl) {
+        catEl.textContent = 'Domain Realm';
+        catEl.style.color = reg.color || '#5ae8ff';
+      }
+      if (descEl) descEl.textContent = reg.desc || 'No historical lore or description recorded for this realm yet.';
+
       modal.classList.remove('hidden');
     }
 
     saveEditTerritory() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can modify territories.', 'warning');
+        return;
+      }
+
       const activeMap = this.getActiveMap();
       const reg = (activeMap.regions || []).find(r => r.id === this.activeEditingRegionId);
       if (!reg) return;
 
       const name = document.getElementById('edit-territory-name').value.trim();
       if (!name) {
-        alert('Please enter a valid territory name.');
+        window.showToast?.('Please enter a valid territory name.', 'warning');
         return;
       }
 
@@ -977,25 +1273,35 @@
       this.renderHeaderUI();
       this.closeModal('edit-territory-modal');
       this.renderTerritoriesManagerList();
+      window.showToast?.(`Updated territory "${reg.name}".`, 'success');
     }
 
     deleteTerritory(regionId) {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can delete territories.', 'warning');
+        return;
+      }
+
       const targetId = regionId || this.activeEditingRegionId;
       const activeMap = this.getActiveMap();
       const reg = (activeMap.regions || []).find(r => r.id === targetId);
       if (!reg) return;
 
-      if (confirm(`Are you sure you want to delete the territory "${reg.name}"? This action cannot be undone.`)) {
-        activeMap.regions = activeMap.regions.filter(r => r.id !== targetId);
-        this.saveStorage();
-        this.renderRegions();
-        this.renderHeaderUI();
-        this.closeModal('edit-territory-modal');
-        this.renderTerritoriesManagerList();
-      }
+      activeMap.regions = activeMap.regions.filter(r => r.id !== targetId);
+      this.saveStorage();
+      this.renderRegions();
+      this.renderHeaderUI();
+      this.closeModal('edit-territory-modal');
+      this.renderTerritoriesManagerList();
+      window.showToast?.(`Territory "${reg.name}" deleted.`, 'info');
     }
 
     startMovingVertices(regionId) {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can modify boundary vertices.', 'warning');
+        return;
+      }
+
       const targetId = regionId || this.activeEditingRegionId;
       const activeMap = this.getActiveMap();
       const reg = (activeMap.regions || []).find(r => r.id === targetId);
@@ -1072,6 +1378,11 @@
     }
 
     startRedrawTerritory(regionId) {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can redraw territory boundaries.', 'warning');
+        return;
+      }
+
       const targetId = regionId || this.activeEditingRegionId;
       this.closeModal('edit-territory-modal');
       this.closeModal('manage-territories-modal');
@@ -1097,11 +1408,25 @@
 
       const activeMap = this.getActiveMap();
       const regions = activeMap.regions || [];
+      const isDm = this.isDmMode();
+
+      // Adjust header summary based on DM mode
+      const summaryEl = document.querySelector('#manage-territories-modal .modal__summary');
+      if (summaryEl) {
+        summaryEl.textContent = isDm
+          ? 'Inspect, edit, adjust boundaries, or delete realm territories on this layer.'
+          : 'Browse established realm territories and domain lore on this map layer.';
+      }
+
+      const drawNewBtn = document.getElementById('territories-manager-new-btn');
+      if (drawNewBtn) {
+        drawNewBtn.classList.toggle('hidden', !isDm);
+      }
 
       if (regions.length === 0) {
         listEl.innerHTML = `
           <div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-            No territories defined yet on this map layer. Click "+ Draw New Territory" below to create one!
+            No territories defined yet on this map layer.${isDm ? ' Click "+ Draw New Territory" below to create one!' : ''}
           </div>
         `;
         return;
@@ -1111,6 +1436,15 @@
       regions.forEach(reg => {
         const item = document.createElement('div');
         item.className = 'territory-item-card';
+
+        const actionsHtml = isDm ? `
+          <div class="territory-item-actions">
+            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-edit-reg" title="Edit territory settings">Edit</button>
+            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-move-reg" title="Move & drag boundary points">Move</button>
+            <button type="button" class="territory-btn-mini territory-btn-mini--delete btn-del-reg" title="Delete territory">✕</button>
+          </div>
+        ` : '';
+
         item.innerHTML = `
           <div class="territory-item-info">
             <span class="territory-color-pill" style="background-color: ${escapeHtml(reg.color || '#5ae8ff')}; color: ${escapeHtml(reg.color || '#5ae8ff')};"></span>
@@ -1119,44 +1453,66 @@
               <span class="territory-item-meta">${(reg.points || []).length} vertices${reg.desc ? ' · ' + escapeHtml(reg.desc) : ''}</span>
             </div>
           </div>
-          <div class="territory-item-actions">
-            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-edit-reg" title="Edit territory settings">Edit</button>
-            <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-move-reg" title="Move & drag boundary points">Move</button>
-            <button type="button" class="territory-btn-mini territory-btn-mini--delete btn-del-reg" title="Delete territory">✕</button>
-          </div>
+          ${actionsHtml}
         `;
 
         item.querySelector('.territory-item-info').addEventListener('click', () => {
           this.closeModal('manage-territories-modal');
-          this.openEditTerritoryModal(reg.id);
+          if (isDm) {
+            this.openEditTerritoryModal(reg.id);
+          } else {
+            this.openViewTerritoryModal(reg.id);
+          }
           const poly = this.regionPolygonLayers.get(reg.id);
           if (poly) {
             this.map.fitBounds(poly.getBounds(), { padding: [40, 40], maxZoom: 1 });
           }
         });
 
-        item.querySelector('.btn-edit-reg').addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.closeModal('manage-territories-modal');
-          this.openEditTerritoryModal(reg.id);
-        });
+        if (isDm) {
+          item.querySelector('.btn-edit-reg')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.closeModal('manage-territories-modal');
+            this.openEditTerritoryModal(reg.id);
+          });
 
-        item.querySelector('.btn-move-reg').addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.startMovingVertices(reg.id);
-        });
+          item.querySelector('.btn-move-reg')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startMovingVertices(reg.id);
+          });
 
-        item.querySelector('.btn-del-reg').addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.deleteTerritory(reg.id);
-        });
+          const delMiniBtn = item.querySelector('.btn-del-reg');
+          let delMiniConfirming = false;
+          let delMiniTimer = null;
+          delMiniBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!delMiniConfirming) {
+              delMiniConfirming = true;
+              delMiniBtn.classList.add('is-confirming');
+              delMiniBtn.textContent = 'Del?';
+              delMiniTimer = setTimeout(() => {
+                delMiniConfirming = false;
+                delMiniBtn.classList.remove('is-confirming');
+                delMiniBtn.textContent = '✕';
+              }, 4000);
+            } else {
+              clearTimeout(delMiniTimer);
+              this.deleteTerritory(reg.id);
+            }
+          });
+        }
 
         listEl.appendChild(item);
       });
     }
 
-    // Feature A: Copy & Paste Data Between Maps
+    // Feature A: Copy & Paste Data Between Maps (DM Only)
     openCopyDataModal() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Copying map layers is restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       const modal = document.getElementById('copy-map-data-modal');
       if (!modal) return;
 
@@ -1177,10 +1533,15 @@
     }
 
     executeCopyData() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Copying map layers is restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       const sourceMapId = document.getElementById('copy-source-map-select')?.value;
       const sourceMap = this.maps.find(m => m.id === sourceMapId);
       if (!sourceMap) {
-        alert('Please select a valid source map.');
+        window.showToast?.('Please select a valid source map layer.', 'warning');
         return;
       }
 
@@ -1217,11 +1578,16 @@
       this.saveStorage();
       this.renderAll();
       this.closeModal('copy-map-data-modal');
-      alert(`Copied data from "${sourceMap.title}" into "${activeMap.title}"!`);
+      window.showToast?.(`Copied data from "${sourceMap.title}" into "${activeMap.title}"!`, 'success');
     }
 
-    // Feature B: Update Map Image
+    // Feature B: Update Map Image (DM Only)
     openEditMapModal() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Map layer settings are restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       const modal = document.getElementById('edit-map-modal');
       if (!modal) return;
 
@@ -1234,22 +1600,38 @@
     }
 
     saveEditMap() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can modify map layer settings.', 'warning');
+        return;
+      }
+
       const activeMap = this.getActiveMap();
       const title = document.getElementById('edit-map-title').value.trim();
       const subtitle = document.getElementById('edit-map-subtitle').value.trim();
       const imageUrl = document.getElementById('edit-map-image-url').value.trim();
 
-      if (title) activeMap.title = title;
+      if (!title) {
+        window.showToast?.('Map title cannot be blank.', 'warning');
+        return;
+      }
+
+      activeMap.title = title;
       activeMap.subtitle = subtitle;
       if (imageUrl) activeMap.imageSource = imageUrl;
 
       this.saveStorage();
       this.switchActiveMap(activeMap.id);
       this.closeModal('edit-map-modal');
+      window.showToast?.(`Updated map settings for "${activeMap.title}".`, 'success');
     }
 
-    // Create New Map Layer
+    // Create New Map Layer (DM Only)
     openCreateMapModal() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Creating new map layers is restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       const modal = document.getElementById('create-map-modal');
       if (!modal) return;
       document.getElementById('new-map-title').value = '';
@@ -1259,9 +1641,14 @@
     }
 
     saveNewMap() {
+      if (!this.isDmMode()) {
+        window.showToast?.('Creating new map layers is restricted to the Dungeon Master.', 'warning');
+        return;
+      }
+
       const title = document.getElementById('new-map-title').value.trim();
       if (!title) {
-        alert('Please give your new map layer a title.');
+        window.showToast?.('Please give your new map layer a title.', 'warning');
         return;
       }
       const subtitle = document.getElementById('new-map-subtitle').value.trim();
@@ -1282,6 +1669,7 @@
       this.saveStorage();
       this.switchActiveMap(newMap.id);
       this.closeModal('create-map-modal');
+      window.showToast?.(`Created new map layer "${title}"!`, 'success');
     }
 
     closeModal(modalId) {
@@ -1332,6 +1720,25 @@
       document.getElementById('save-new-pin-btn')?.addEventListener('click', () => this.saveNewPin());
       document.getElementById('cancel-new-pin-btn')?.addEventListener('click', () => this.closeModal('create-pin-modal'));
 
+      // Pin Modal Codex Link Combobox
+      const codexSearchInput = document.getElementById('new-pin-codex-search');
+      codexSearchInput?.addEventListener('input', (e) => this.handlePinLinkSearch(e.target.value));
+      codexSearchInput?.addEventListener('focus', (e) => this.handlePinLinkSearch(e.target.value));
+      document.getElementById('pin-link-clear-btn')?.addEventListener('click', () => {
+        if (codexSearchInput) codexSearchInput.value = '';
+        this.handlePinLinkSearch('');
+      });
+      document.getElementById('pin-selected-remove-btn')?.addEventListener('click', () => {
+        this.clearPinCodexLink();
+      });
+
+      // Outside click handler to hide combobox suggestions
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#pin-link-combobox')) {
+          this.hidePinLinkSuggestions();
+        }
+      });
+
       // Save Territory Modal
       document.getElementById('save-new-territory-btn')?.addEventListener('click', () => this.saveNewTerritory());
       document.getElementById('cancel-new-territory-btn')?.addEventListener('click', () => this.cancelTerritoryDraw());
@@ -1341,9 +1748,39 @@
       document.getElementById('save-edit-territory-btn')?.addEventListener('click', () => this.saveEditTerritory());
       document.getElementById('cancel-edit-territory-btn')?.addEventListener('click', () => this.closeModal('edit-territory-modal'));
       document.getElementById('close-edit-territory-btn')?.addEventListener('click', () => this.closeModal('edit-territory-modal'));
-      document.getElementById('delete-territory-btn')?.addEventListener('click', () => this.deleteTerritory());
+
+      let delTerritoryConfirming = false;
+      let delTerritoryTimer = null;
+      const delTerritoryBtn = document.getElementById('delete-territory-btn');
+      delTerritoryBtn?.addEventListener('click', () => {
+        if (!this.isDmMode()) {
+          window.showToast?.('Only the Dungeon Master can delete territories.', 'warning');
+          return;
+        }
+        if (!delTerritoryConfirming) {
+          delTerritoryConfirming = true;
+          delTerritoryBtn.classList.add('is-confirming');
+          delTerritoryBtn.textContent = '⚠️ Confirm Delete Territory?';
+          delTerritoryTimer = setTimeout(() => {
+            delTerritoryConfirming = false;
+            delTerritoryBtn.classList.remove('is-confirming');
+            delTerritoryBtn.textContent = 'Delete Territory';
+          }, 4000);
+        } else {
+          clearTimeout(delTerritoryTimer);
+          delTerritoryConfirming = false;
+          delTerritoryBtn.classList.remove('is-confirming');
+          delTerritoryBtn.textContent = 'Delete Territory';
+          this.deleteTerritory();
+        }
+      });
+
       document.getElementById('edit-territory-move-pts-btn')?.addEventListener('click', () => this.startMovingVertices());
       document.getElementById('edit-territory-redraw-btn')?.addEventListener('click', () => this.startRedrawTerritory());
+
+      // Read-Only Territory View Modal (Player)
+      document.getElementById('close-view-territory-btn')?.addEventListener('click', () => this.closeModal('view-territory-modal'));
+      document.getElementById('done-view-territory-btn')?.addEventListener('click', () => this.closeModal('view-territory-modal'));
 
       // Manage All Territories Modal
       document.getElementById('close-manage-territories-btn')?.addEventListener('click', () => this.closeModal('manage-territories-modal'));
@@ -1370,6 +1807,7 @@
         { id: 'create-pin-modal', onCancel: () => this.closeModal('create-pin-modal') },
         { id: 'save-territory-modal', onCancel: () => this.cancelTerritoryDraw() },
         { id: 'edit-territory-modal', onCancel: () => this.closeModal('edit-territory-modal') },
+        { id: 'view-territory-modal', onCancel: () => this.closeModal('view-territory-modal') },
         { id: 'manage-territories-modal', onCancel: () => this.closeModal('manage-territories-modal') },
         { id: 'copy-map-data-modal', onCancel: () => this.closeModal('copy-map-data-modal') },
         { id: 'edit-map-modal', onCancel: () => this.closeModal('edit-map-modal') },
