@@ -70,6 +70,14 @@
         }
 
         this.db = firebase.firestore();
+        
+        // Silently sign in anonymously to satisfy secure Firebase security rules
+        if (firebase.auth) {
+          firebase.auth().signInAnonymously().catch(authErr => {
+            console.warn('[CloudSync] Anonymous auth notification:', authErr);
+          });
+        }
+
         this.isReady = true;
         this.status = 'connected';
         this.updateUI();
