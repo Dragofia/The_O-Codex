@@ -26,9 +26,23 @@ window.resolveEntryLocation = function resolveEntryLocation(entry) {
             entry.details.Region || 
             entry.details.Homeland || 
             entry.details.Settlement || 
+            entry.details.Destination ||
+            entry.details.Target ||
             entry.details["Found In"] || 
             entry.details["Origin"] || null;
     }
+  }
+
+  // Check title / name for known landmarks or pins (e.g., "Mirage Bay Illusionist" -> Mirage Bay, "Mount Solare Expedition" -> Mount Solare)
+  const title = (entry.name || entry.title || "").toLowerCase();
+  if (!loc) {
+    if (title.includes("mirage bay")) loc = "Mirage Bay";
+    else if (title.includes("mount solare")) loc = "Mount Solare";
+    else if (title.includes("shadewood")) loc = "Shadewood Grove";
+    else if (title.includes("ocean wall")) loc = "The Ocean Wall";
+    else if (title.includes("viserion's peak") || title.includes("viserions peak")) loc = "Viserion's Peak";
+    else if (title.includes("fog basin") || title.includes("fog leviathan")) loc = "Caybluff Fog Basin";
+    else if (title.includes("troldith")) loc = "Troldith";
   }
 
   // Domain category
@@ -38,6 +52,11 @@ window.resolveEntryLocation = function resolveEntryLocation(entry) {
 
   // Settlement category
   if (!loc && (entry.category === "settlements" || String(entry.id).startsWith("settlement-"))) {
+    loc = entry.name || entry.title;
+  }
+
+  // Location category
+  if (!loc && (entry.category === "locations" || String(entry.id).startsWith("location-"))) {
     loc = entry.name || entry.title;
   }
 

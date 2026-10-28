@@ -869,7 +869,7 @@
         },
         {
           id: 'loc_troldith',
-          codexId: 'stories-troldith-and-the-malaise',
+          codexId: 'story-troldith-and-the-malaise',
           name: 'Troldith',
           category: 'Location',
           region: 'Domain of Alden',
@@ -2765,17 +2765,22 @@
         const specificLoc = locInfo?.location || entry?.location || entry?.details?.Location || entry?.details?.Settlement;
         const domainTarget = locInfo?.domain || entry?.domain || entry?.details?.Domain || entry?.details?.Homeland;
 
-        // Check if specificLoc matches an existing pin (e.g. Droland, Viserion's Peak, Portale)
-        if (specificLoc) {
-          const parentPin = allPins.find(p => p.name && specificLoc.toLowerCase().includes(p.name.toLowerCase()));
-          if (parentPin) {
-            window.mapEngine.map.flyTo([parentPin.y, parentPin.x], 1.2, { duration: 1 });
-            window.mapEngine.openPinDrawer(parentPin);
-            if (typeof window.showToast === 'function') {
-              window.showToast(`📍 Located at ${parentPin.name} — ${entryName}`, 'info');
-            }
-            return;
+        // Check if specificLoc or entryName matches an existing pin (e.g. Droland, Viserion's Peak, Portale, Mirage Bay, Shadewood Grove, Mount Solare, Troldith)
+        const pinCandidate = allPins.find(p => {
+          const pName = p.name.toLowerCase();
+          if (specificLoc && (specificLoc.toLowerCase().includes(pName) || pName.includes(specificLoc.toLowerCase()))) return true;
+          if (entryName && (entryName.toLowerCase().includes(pName) || pName.includes(entryName.toLowerCase()))) return true;
+          if (p.codexId === entryId) return true;
+          return false;
+        });
+
+        if (pinCandidate) {
+          window.mapEngine.map.flyTo([pinCandidate.y, pinCandidate.x], 1.2, { duration: 1 });
+          window.mapEngine.openPinDrawer(pinCandidate);
+          if (typeof window.showToast === 'function') {
+            window.showToast(`📍 Located at ${pinCandidate.name} — ${entryName}`, 'info');
           }
+          return;
         }
 
         // 3. Domain territory highlight (NO PIN ADDED)
