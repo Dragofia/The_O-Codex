@@ -6,14 +6,15 @@
 (function () {
   const FIREBASE_CONFIG_KEY = 'o_codex_firebase_config';
 
-  // Default placeholder config. User can paste keys directly here or in the DM Settings modal.
+  // Campaign Firebase configuration for zero-setup multi-device syncing
   window.FIREBASE_CONFIG = window.FIREBASE_CONFIG || {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyBuq5a8bOe3P1ML9tvffldnAfBvytFCtEM",
+    authDomain: "the-o-codex.firebaseapp.com",
+    projectId: "the-o-codex",
+    storageBucket: "the-o-codex.firebasestorage.app",
+    messagingSenderId: "927807791399",
+    appId: "1:927807791399:web:1ac540e90e1a49462f0902",
+    measurementId: "G-0LJ6YEYVX5"
   };
 
   class CampaignCloudSync {
