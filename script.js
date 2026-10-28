@@ -1,3 +1,57 @@
+
+const CANON_DOMAINS = [
+  { id: 'reg_alden', name: 'Alden', fullName: 'Domain of Alden' },
+  { id: 'reg_klabats', name: 'Klabats', fullName: 'Klabats' },
+  { id: 'reg_dynestea', name: 'Dynestea', fullName: 'Dynestea' },
+  { id: 'reg_giaslan', name: 'Giaslan', fullName: 'Giaslan' },
+  { id: 'reg_altasar', name: 'Altasar', fullName: 'Altasar' },
+  { id: 'reg_cirrusia', name: 'Cirrusia', fullName: 'Cirrusia' },
+  { id: 'reg_hemwood', name: 'Hemwood', fullName: 'Hemwood' },
+  { id: 'reg_caybluff', name: 'Caybluff', fullName: 'Caybluff' },
+  { id: 'reg_laytide', name: 'Laytide', fullName: 'Laytide' }
+];
+
+window.resolveEntryLocation = function resolveEntryLocation(entry) {
+  if (!entry) return null;
+
+  let domain = entry.domain || null;
+  let loc = entry.location || entry.region || entry.homeland || entry.settlement || null;
+
+  if (entry.details && typeof entry.details === "object") {
+    if (!domain) {
+      domain = entry.details.Domain || entry.details.domain || null;
+    }
+    if (!loc) {
+      loc = entry.details.Location || 
+            entry.details.Region || 
+            entry.details.Homeland || 
+            entry.details.Settlement || 
+            entry.details["Found In"] || 
+            entry.details["Origin"] || null;
+    }
+  }
+
+  // Domain category
+  if (!domain && (entry.category === "domains" || String(entry.id).startsWith("domain-"))) {
+    domain = entry.name || entry.title;
+  }
+
+  // Settlement category
+  if (!loc && (entry.category === "settlements" || String(entry.id).startsWith("settlement-"))) {
+    loc = entry.name || entry.title;
+  }
+
+  // If loc mentions a canon domain name, extract domain if missing
+  if (!domain && loc) {
+    const match = CANON_DOMAINS.find(d => loc.toLowerCase().includes(d.name.toLowerCase()));
+    if (match) domain = match.name;
+  }
+
+  if (!domain && !loc) return null;
+
+  return { domain, location: loc };
+};
+
 const DATA_URL = "world-data.json";
 const COMPLETE_CODEX_PREVIEW_LIMIT = 8;
 const VIEW_TRANSITION_OUT_MS = 110;
@@ -200,6 +254,7 @@ function initElements() {
   elements.modeTabCharacters = document.getElementById("mode-tab-characters");
   elements.dmModeToggle = document.getElementById("dm-mode-toggle");
   elements.modalViewOnMap = document.getElementById("modal-view-on-map");
+  elements.modalLocationBadge = document.getElementById("modal-location-badge");
   elements.siteTitle = document.getElementById("site-title");
   elements.siteSubtitle = document.getElementById("site-subtitle");
   elements.helpButton = document.getElementById("help-button");
@@ -408,13 +463,14 @@ function bindEvents() {
     }
   });
 
-  // Entry Modal View On Map
+  // Entry Modal View On Map (Smart location routing without requiring pins)
   if (elements.modalViewOnMap) {
     elements.modalViewOnMap.addEventListener("click", () => {
       const currentId = state.selectedEntryId;
+      const entry = state.worldData?.entries?.find(e => e.id === currentId);
       closeModal({ syncUrl: false });
-      if (window.CodexMapBridge && currentId) {
-        window.CodexMapBridge.navigateToPin(currentId);
+      if (window.CodexMapBridge && (entry || currentId)) {
+        window.CodexMapBridge.navigateToLocation(entry || currentId);
       } else {
         window.setAppMode("map");
       }
@@ -1604,8 +1660,34 @@ function openModal(entryId, options = {}) {
 
   renderDetailPairs(detailPairs);
 
+  const locInfo = window.resolveEntryLocation ? window.resolveEntryLocation(entry) : null;
+
+  // Render clickable Location Badge in modal header
+  if (elements.modalLocationBadge) {
+    if (locInfo && (locInfo.domain || locInfo.location)) {
+      elements.modalLocationBadge.classList.remove("hidden");
+      const displayText = locInfo.location && locInfo.domain && !locInfo.location.toLowerCase().includes(locInfo.domain.toLowerCase())
+        ? `${locInfo.location} · ${locInfo.domain}`
+        : (locInfo.location || `Domain: ${locInfo.domain}`);
+
+      elements.modalLocationBadge.innerHTML = `<span class="loc-pin-icon" aria-hidden="true">📍</span> <span>${displayText}</span> <span class="loc-subtext">↗ View on Map</span>`;
+      elements.modalLocationBadge.onclick = () => {
+        closeModal({ syncUrl: false });
+        if (window.CodexMapBridge) {
+          window.CodexMapBridge.navigateToLocation(entry);
+        } else {
+          window.setAppMode("map");
+        }
+      };
+    } else {
+      elements.modalLocationBadge.classList.add("hidden");
+      elements.modalLocationBadge.onclick = null;
+    }
+  }
+
   if (elements.modalViewOnMap) {
     const isMappableCategory = ["settlement", "settlements", "domain", "domains", "location", "locations", "quest", "quests", "eschaton", "eschatons"].includes(String(entry.category || "").toLowerCase());
+    const hasLocationRef = Boolean(locInfo && (locInfo.domain || locInfo.location));
     let hasLocationPin = false;
     if (window.mapEngine && window.mapEngine.maps) {
       for (const m of window.mapEngine.maps) {
@@ -1619,7 +1701,7 @@ function openModal(entryId, options = {}) {
         }
       }
     }
-    elements.modalViewOnMap.classList.toggle("hidden", !(isMappableCategory || hasLocationPin));
+    elements.modalViewOnMap.classList.toggle("hidden", !(isMappableCategory || hasLocationPin || hasLocationRef));
   }
 
   if (modalCloseTimer) {

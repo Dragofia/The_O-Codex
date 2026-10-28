@@ -1298,6 +1298,55 @@
       }
     }
 
+    highlightDomainRegion(domainNameOrId) {
+      const activeMap = this.getActiveMap();
+      if (!activeMap || !activeMap.regions) return null;
+
+      const term = String(domainNameOrId).toLowerCase().replace('domain of ', '').trim();
+      const reg = activeMap.regions.find(r => 
+        r.id.toLowerCase() === term || 
+        r.id.toLowerCase() === `reg_${term}` ||
+        r.name.toLowerCase().includes(term) ||
+        term.includes(r.name.toLowerCase())
+      );
+
+      if (!reg) return null;
+
+      const layer = this.regionPolygonLayers.get(reg.id);
+      if (layer) {
+        layer.bringToFront();
+        const originalColor = reg.color || '#5ae8ff';
+        
+        // Animated temporary golden highlight
+        layer.setStyle({
+          color: '#f59e0b',
+          weight: 4.5,
+          fillColor: '#f59e0b',
+          fillOpacity: 0.38,
+          dashArray: null
+        });
+
+        setTimeout(() => {
+          layer.setStyle({
+            color: originalColor,
+            weight: this.bordersVisible ? 2 : 0,
+            fillColor: originalColor,
+            fillOpacity: this.bordersVisible ? 0.15 : 0,
+            dashArray: '3, 4'
+          });
+        }, 3500);
+      }
+
+      let avgY = 500;
+      let avgX = 500;
+      if (reg.points && reg.points.length > 0) {
+        avgY = reg.points.reduce((sum, p) => sum + p[0], 0) / reg.points.length;
+        avgX = reg.points.reduce((sum, p) => sum + p[1], 0) / reg.points.length;
+      }
+
+      return { reg, center: [avgY, avgX] };
+    }
+
     renderRegions() {
       this.regionPolygonLayers.forEach(layer => this.map.removeLayer(layer));
       this.regionPolygonLayers.clear();
@@ -2018,6 +2067,43 @@
       }
       if (descEl) descEl.textContent = reg.desc || 'No historical lore or description recorded for this realm yet.';
 
+      // Dynamic list of Codex entries associated with this domain
+      const entriesSection = document.getElementById('view-territory-entries-section');
+      const entriesList = document.getElementById('view-territory-entries-list');
+      if (entriesSection && entriesList) {
+        entriesList.innerHTML = '';
+        const allEntries = window.state?.worldData?.entries || [];
+        const domainKey = reg.name.toLowerCase().replace('domain of ', '').trim();
+
+        const linkedEntries = allEntries.filter(e => {
+          if (e.id === `domain-${domainKey}` || e.id === `domain-${reg.id.replace('reg_', '')}`) return false;
+          const loc = window.resolveEntryLocation ? window.resolveEntryLocation(e) : null;
+          if (loc?.domain && loc.domain.toLowerCase().includes(domainKey)) return true;
+          if (loc?.location && loc.location.toLowerCase().includes(domainKey)) return true;
+          if (e.domain && e.domain.toLowerCase().includes(domainKey)) return true;
+          return false;
+        });
+
+        if (linkedEntries.length > 0) {
+          entriesSection.classList.remove('hidden');
+          linkedEntries.forEach(item => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'territory-entry-chip';
+            chip.innerHTML = `<span>📖</span> <span>${escapeHtml(item.name || item.title)}</span>`;
+            chip.addEventListener('click', () => {
+              this.closeModal('view-territory-modal');
+              if (window.CodexMapBridge) {
+                window.CodexMapBridge.navigateToCodex(item.id);
+              }
+            });
+            entriesList.appendChild(chip);
+          });
+        } else {
+          entriesSection.classList.add('hidden');
+        }
+      }
+
       modal.classList.remove('hidden');
     }
 
@@ -2639,8 +2725,8 @@
      6. BIDIRECTIONAL CODEX-MAP BRIDGE
      ======================================================================== */
   window.CodexMapBridge = {
-    // Navigate from Codex -> Map pin
-    navigateToPin(codexId) {
+    // Navigate from Codex -> Map location (smart routing: pin, parent pin, or domain highlight without pin)
+    navigateToLocation(entryOrId) {
       if (window.setAppMode) {
         window.setAppMode('map');
       }
@@ -2649,38 +2735,82 @@
         if (!window.mapEngine) return;
         window.mapEngine.invalidateSize();
 
-        // Search for pin with this codexId across maps
-        let targetMap = null;
-        let targetPin = null;
+        let entry = null;
+        const entryId = typeof entryOrId === 'string' ? entryOrId : entryOrId?.id;
+        if (typeof entryOrId === 'object') {
+          entry = entryOrId;
+        } else if (window.state?.worldData?.entries) {
+          entry = window.state.worldData.entries.find(e => e.id === entryId || (e.name && e.name.toLowerCase() === entryId.toLowerCase()));
+        }
 
-        for (const m of window.mapEngine.maps) {
-          const match = [
-            ...(m.officialLocations || []),
-            ...(m.playerPins || [])
-          ].find(p => p.codexId === codexId || (p.name && p.name.toLowerCase() === codexId.toLowerCase()));
+        const entryName = entry?.name || entry?.title || entryId || 'Entry';
 
-          if (match) {
-            targetMap = m;
-            targetPin = match;
-            break;
+        // 1. Direct pin match
+        const activeMap = window.mapEngine.getActiveMap();
+        const allPins = [
+          ...(activeMap.officialLocations || []),
+          ...(activeMap.playerPins || [])
+        ];
+
+        let targetPin = allPins.find(p => p.codexId === entryId || (p.name && p.name.toLowerCase() === entryName.toLowerCase()));
+
+        if (targetPin) {
+          window.mapEngine.map.flyTo([targetPin.y, targetPin.x], 1.2, { duration: 1 });
+          window.mapEngine.openPinDrawer(targetPin);
+          return;
+        }
+
+        // 2. Resolve location / domain reference
+        const locInfo = window.resolveEntryLocation ? window.resolveEntryLocation(entry) : null;
+        const specificLoc = locInfo?.location || entry?.location || entry?.details?.Location || entry?.details?.Settlement;
+        const domainTarget = locInfo?.domain || entry?.domain || entry?.details?.Domain || entry?.details?.Homeland;
+
+        // Check if specificLoc matches an existing pin (e.g. Droland, Viserion's Peak, Portale)
+        if (specificLoc) {
+          const parentPin = allPins.find(p => p.name && specificLoc.toLowerCase().includes(p.name.toLowerCase()));
+          if (parentPin) {
+            window.mapEngine.map.flyTo([parentPin.y, parentPin.x], 1.2, { duration: 1 });
+            window.mapEngine.openPinDrawer(parentPin);
+            if (typeof window.showToast === 'function') {
+              window.showToast(`📍 Located at ${parentPin.name} — ${entryName}`, 'info');
+            }
+            return;
           }
         }
 
-        if (targetMap && targetMap.id !== window.mapEngine.activeMapId) {
-          window.mapEngine.switchActiveMap(targetMap.id);
+        // 3. Domain territory highlight (NO PIN ADDED)
+        const targetDomain = domainTarget || specificLoc || (entry?.category === 'domains' ? entryName : null);
+        if (targetDomain) {
+          const result = window.mapEngine.highlightDomainRegion(targetDomain);
+          if (result) {
+            window.mapEngine.map.flyTo(result.center, 0.75, { duration: 1.2 });
+            
+            const hudName = document.getElementById('map-region-hud-name');
+            const hudDesc = document.getElementById('map-region-hud-desc');
+            const hudEl = document.getElementById('map-region-hud');
+            if (hudName) hudName.textContent = result.reg.name;
+            if (hudDesc) hudDesc.textContent = `📍 ${entryName} is located within ${result.reg.name}.`;
+            if (hudEl) hudEl.classList.remove('hidden');
+
+            if (typeof window.showToast === 'function') {
+              window.showToast(`📍 ${entryName} is located in ${result.reg.name}`, 'info');
+            }
+            return;
+          }
         }
 
-        if (targetPin) {
-          window.mapEngine.map.flyTo([targetPin.y, targetPin.x], 1, { duration: 1 });
-          window.mapEngine.openPinDrawer(targetPin);
-        } else {
-          // If no specific pin exists yet, open map at center
-          window.mapEngine.map.flyTo([500, 500], 0, { duration: 0.8 });
+        // Fallback: Center of map
+        window.mapEngine.map.flyTo([500, 500], 0, { duration: 0.8 });
+        if (typeof window.showToast === 'function') {
+          window.showToast(`Showing Maladen World Map for ${entryName}`, 'info');
         }
       }, 250);
     },
 
-    // Navigate from Map pin -> Codex entry
+    navigateToPin(codexId) {
+      this.navigateToLocation(codexId);
+    },
+
     navigateToCodex(codexId) {
       if (window.setAppMode) {
         window.setAppMode('codex');
