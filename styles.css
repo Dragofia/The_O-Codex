@@ -3089,3 +3089,71 @@ body.map-mode-active {
   box-shadow: 0 0 10px rgba(90, 232, 255, 0.25);
   transform: translateY(-1px);
 }
+
+
+/* Cloud Sync Status Badge */
+#map-cloud-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sync-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.sync--connected .sync-status-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.sync--unconfigured .sync-status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+.sync--error .sync-status-dot {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+/* Firebase Modal Styling */
+.firebase-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(90, 232, 255, 0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.firebase-help-text {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.firebase-help-text a {
+  color: #5ae8ff;
+  text-decoration: underline;
+}
+
+/* Stealth / Invisible Pin Marker Effect */
+.custom-codex-map-marker.is-stealth-marker .map-marker-body {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.9), 0 0 26px rgba(168, 85, 247, 0.7) !important;
+  animation: stealth-pulse-anim 2s infinite ease-in-out;
+}
+
+@keyframes stealth-pulse-anim {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(56, 189, 248, 0.9); }
+  50% { transform: scale(1.15); box-shadow: 0 0 24px rgba(168, 85, 247, 1); }
+}

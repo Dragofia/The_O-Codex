@@ -391,10 +391,10 @@
     }
   };
 
-  function createMarkerIcon(category, isHighlighted = false, isSecret = false) {
+  function createMarkerIcon(category, isHighlighted = false, isSecret = false, isStealth = false) {
     const theme = PIN_THEMES[category] || PIN_THEMES.Location;
     const pulseHtml = isHighlighted ? '<div class="map-marker-pulse"></div>' : '';
-    const secretClass = isSecret ? ' is-secret-marker' : '';
+    const secretClass = isSecret ? ' is-secret-marker' : (isStealth ? ' is-stealth-marker' : '');
     const html = `
       <div class="map-marker-wrapper" style="width: 32px; height: 32px;">
         ${pulseHtml}
@@ -956,6 +956,8 @@
       this.startPointMarker = null;
       this.isDroppingPin = false;
       this.pendingPinCoords = null;
+      this.activeTransientPinId = null;
+      this.pendingLinkedEntry = null;
       this.activeEditingRegionId = null;
       this.isEditingVertices = false;
       this.isRedrawingRegionId = null;
@@ -1017,6 +1019,13 @@
       const drawNewTerritoryBtn = document.getElementById('territories-manager-new-btn');
       if (drawNewTerritoryBtn) {
         drawNewTerritoryBtn.classList.toggle('hidden', !isDm);
+      }
+
+      // 5B. Cloud Sync Button (Header - DM only)
+      const cloudSyncBtn = document.getElementById('map-cloud-sync-btn');
+      if (cloudSyncBtn) {
+        cloudSyncBtn.classList.toggle('hidden', !isDm);
+        if (window.CampaignCloudSync) window.CampaignCloudSync.updateUI();
       }
 
       // 6. Re-render pins so secret pins appear or disappear and draggability syncs
@@ -1266,6 +1275,86 @@
       this.map.fitBounds([[0, 0], [1000, 1000]]);
     }
 
+    syncCloudPins(cloudPins) {
+      if (!Array.isArray(cloudPins)) return;
+      const activeMap = this.getActiveMap();
+      if (!activeMap) return;
+
+      activeMap.playerPins = cloudPins;
+      this.saveStorage();
+      this.renderPins();
+      console.log(`[CloudSync] Synced ${cloudPins.length} player pins from Firebase!`);
+    }
+
+    openFirebaseModal() {
+      const modal = document.getElementById('firebase-settings-modal');
+      if (!modal) return;
+
+      const input = document.getElementById('firebase-config-input');
+      const bannerText = document.getElementById('firebase-status-text');
+      const dot = modal.querySelector('.sync-status-dot');
+
+      if (window.CampaignCloudSync) {
+        const config = window.CampaignCloudSync.getConfig();
+        if (input && config) {
+          input.value = JSON.stringify(config, null, 2);
+        } else if (input) {
+          input.value = '';
+        }
+
+        if (bannerText) {
+          if (window.CampaignCloudSync.status === 'connected') {
+            bannerText.textContent = 'Cloud Sync: Active & Connected to Firebase Firestore ✓';
+            dot?.style.setProperty('background', '#10b981');
+          } else if (window.CampaignCloudSync.status === 'error') {
+            bannerText.textContent = 'Cloud Sync: Error connecting. Check your API keys and project settings.';
+            dot?.style.setProperty('background', '#ef4444');
+          } else {
+            bannerText.textContent = 'Cloud Sync: Not configured. Operating in local storage mode.';
+            dot?.style.setProperty('background', '#f59e0b');
+          }
+        }
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    saveFirebaseConfigFromModal() {
+      const input = document.getElementById('firebase-config-input');
+      const raw = input ? input.value.trim() : '';
+      if (!raw) {
+        window.showToast?.('Please paste a valid Firebase config object.', 'warning');
+        return;
+      }
+
+      try {
+        let configObj = null;
+        if (raw.startsWith('{')) {
+          configObj = JSON.parse(raw);
+        } else {
+          // Allow loose JS object syntax
+          configObj = Function(`return (${raw});`)();
+        }
+
+        if (window.CampaignCloudSync) {
+          window.CampaignCloudSync.saveConfig(configObj);
+          this.closeModal('firebase-settings-modal');
+          window.showToast?.('Connected to Firebase! Live syncing active.', 'success');
+        }
+      } catch (err) {
+        window.showToast?.('Invalid config format. Please paste valid JSON/JS config.', 'warning');
+        console.error('Config parse error:', err);
+      }
+    }
+
+    disconnectFirebase() {
+      if (window.CampaignCloudSync) {
+        window.CampaignCloudSync.clearConfig();
+        this.closeModal('firebase-settings-modal');
+        window.showToast?.('Disconnected Firebase. Operating in local storage mode.', 'info');
+      }
+    }
+
     invalidateSize() {
       if (this.map) {
         this.map.invalidateSize();
@@ -1439,9 +1528,15 @@
           return;
         }
 
+        // Stealth / Invisible Pin: Hidden unless directly navigated from its Codex entry!
+        if (pin.isStealth && this.activeTransientPinId !== pin.id) {
+          return;
+        }
+
         const isHighlighted = (pin.codexId || pin.id) === this.currentHighlightedPinId;
+        const isRevealedStealth = pin.isStealth && this.activeTransientPinId === pin.id;
         const marker = L.marker([pin.y, pin.x], {
-          icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret),
+          icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret, isRevealedStealth),
           title: pin.name || pin.title,
           draggable: isDm
         });
@@ -1599,6 +1694,9 @@
         drawer.classList.add('is-collapsed');
       }
       this.currentHighlightedPinId = null;
+      if (this.activeTransientPinId) {
+        this.activeTransientPinId = null;
+      }
       this.renderPins();
     }
 
@@ -1611,6 +1709,7 @@
         activeMap.playerPins = activeMap.playerPins.filter(p => p.id !== pinId);
       }
       this.saveStorage();
+      if (window.CampaignCloudSync) window.CampaignCloudSync.pushPins(activeMap.playerPins || []);
       this.renderPins();
     }
 
@@ -1632,6 +1731,7 @@
       targetPin.x = newX;
       targetPin.y = newY;
       this.saveStorage();
+      if (window.CampaignCloudSync && !targetPin.isOfficial) window.CampaignCloudSync.pushPins(activeMap.playerPins || []);
 
       // If drawer is currently open for this pin, update coordinates readout
       if (this.currentHighlightedPinId === (targetPin.codexId || targetPin.id)) {
@@ -1660,6 +1760,25 @@
     }
 
     // Pin Dropping Workflow
+    startEntryPinDropMode(entry) {
+      this.isDroppingPin = true;
+      this.pendingLinkedEntry = entry;
+      this.setMarkerDraggingEnabled(false);
+      const canvas = document.getElementById('campaign-map-canvas');
+      if (canvas) canvas.classList.add('cursor-crosshair');
+      const banner = document.getElementById('pin-drop-banner');
+      if (banner) {
+        const textEl = banner.querySelector('span');
+        if (textEl) {
+          textEl.textContent = `👑 Click map to drop pin for "${entry.name || entry.title}" (Press Esc to cancel)`;
+        }
+        banner.classList.remove('hidden');
+      }
+      if (typeof window.showToast === 'function') {
+        window.showToast(`👑 Click anywhere on the map to place a pin for "${entry.name || entry.title}"`, 'dm');
+      }
+    }
+
     startPinDropMode() {
       this.isDroppingPin = true;
       this.setMarkerDraggingEnabled(false);
@@ -1670,6 +1789,7 @@
 
     exitPinDropMode() {
       this.isDroppingPin = false;
+      this.pendingLinkedEntry = null;
       this.setMarkerDraggingEnabled(true);
       const canvas = document.getElementById('campaign-map-canvas');
       if (canvas) canvas.classList.remove('cursor-crosshair');
@@ -1693,6 +1813,25 @@
       if (secretWrapper && secretCheckbox) {
         secretWrapper.classList.toggle('hidden', !this.isDmMode());
         secretCheckbox.checked = false;
+      }
+
+      // Stealth / Invisible pin option (DM Only)
+      const stealthWrapper = document.getElementById('new-pin-stealth-wrapper');
+      const stealthCheckbox = document.getElementById('new-pin-is-stealth');
+      if (stealthWrapper && stealthCheckbox) {
+        stealthWrapper.classList.toggle('hidden', !this.isDmMode());
+        stealthCheckbox.checked = false;
+      }
+
+      // Pre-fill if initiated from a specific Codex entry
+      if (this.pendingLinkedEntry) {
+        const entry = this.pendingLinkedEntry;
+        const titleInput = document.getElementById('new-pin-title');
+        const notesInput = document.getElementById('new-pin-notes');
+        if (titleInput) titleInput.value = entry.name || entry.title || '';
+        if (notesInput) notesInput.value = entry.summary || '';
+        this.selectPinCodexLink(entry);
+        this.pendingLinkedEntry = null;
       }
 
       modal.classList.remove('hidden');
@@ -1846,6 +1985,7 @@
       if (!activeMap.playerPins) activeMap.playerPins = [];
 
       const isSecret = this.isDmMode() && Boolean(document.getElementById('new-pin-is-secret')?.checked);
+      const isStealth = this.isDmMode() && Boolean(document.getElementById('new-pin-is-stealth')?.checked);
 
       const newPin = {
         id: `pin_${Date.now()}`,
@@ -1861,14 +2001,22 @@
         codexId: codexId,
         isOfficial: false,
         isSecret: isSecret,
+        isStealth: isStealth,
         createdAt: Date.now()
       };
 
       activeMap.playerPins.push(newPin);
       this.saveStorage();
+      if (window.CampaignCloudSync) {
+        window.CampaignCloudSync.pushPins(activeMap.playerPins);
+      }
       this.renderPins();
       this.closeModal('create-pin-modal');
-      window.showToast?.(isSecret ? `Created secret pin "${title}" 🔒` : `Placed pin "${title}"`, isSecret ? 'dm' : 'success');
+      
+      let msg = `Placed pin "${title}"`;
+      if (isStealth) msg = `Created invisible entry pin "${title}" 👻 (Only shows from Codex entry)`;
+      else if (isSecret) msg = `Created secret pin "${title}" 🔒`;
+      window.showToast?.(msg, isSecret || isStealth ? 'dm' : 'success');
     }
 
     // Territory Drawing Workflow
@@ -2598,6 +2746,13 @@
       document.getElementById('map-copy-data-btn')?.addEventListener('click', () => this.openCopyDataModal());
       document.getElementById('map-territories-btn')?.addEventListener('click', () => this.openManageTerritoriesModal());
 
+      // Cloud Sync Button & Modal
+      document.getElementById('map-cloud-sync-btn')?.addEventListener('click', () => this.openFirebaseModal());
+      document.getElementById('save-firebase-btn')?.addEventListener('click', () => this.saveFirebaseConfigFromModal());
+      document.getElementById('cancel-firebase-btn')?.addEventListener('click', () => this.closeModal('firebase-settings-modal'));
+      document.getElementById('close-firebase-modal-btn')?.addEventListener('click', () => this.closeModal('firebase-settings-modal'));
+      document.getElementById('disconnect-firebase-btn')?.addEventListener('click', () => this.disconnectFirebase());
+
       // Wire Toolbar Tools
       document.getElementById('map-tool-pin')?.addEventListener('click', () => this.startPinDropMode());
       document.getElementById('map-tool-draw')?.addEventListener('click', () => this.startTerritoryDrawMode());
@@ -2708,7 +2863,8 @@
         { id: 'manage-territories-modal', onCancel: () => this.closeModal('manage-territories-modal') },
         { id: 'copy-map-data-modal', onCancel: () => this.closeModal('copy-map-data-modal') },
         { id: 'edit-map-modal', onCancel: () => this.closeModal('edit-map-modal') },
-        { id: 'create-map-modal', onCancel: () => this.closeModal('create-map-modal') }
+        { id: 'create-map-modal', onCancel: () => this.closeModal('create-map-modal') },
+        { id: 'firebase-settings-modal', onCancel: () => this.closeModal('firebase-settings-modal') }
       ];
 
       modalBackdrops.forEach(({ id, onCancel }) => {
@@ -2811,9 +2967,16 @@
         });
 
         if (pinCandidate) {
+          if (pinCandidate.isStealth) {
+            window.mapEngine.activeTransientPinId = pinCandidate.id;
+            window.mapEngine.renderPins();
+            if (typeof window.showToast === 'function') {
+              window.showToast(`👻 Revealed invisible pin: "${pinCandidate.name}"`, 'info');
+            }
+          }
           window.mapEngine.map.flyTo([pinCandidate.y, pinCandidate.x], 1.2, { duration: 1 });
           window.mapEngine.openPinDrawer(pinCandidate);
-          if (typeof window.showToast === 'function') {
+          if (!pinCandidate.isStealth && typeof window.showToast === 'function') {
             window.showToast(`📍 Located at ${pinCandidate.name} — ${entryName}`, 'info');
           }
           return;

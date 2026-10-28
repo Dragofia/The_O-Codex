@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -149,6 +149,11 @@
           <span>Copy Data</span>
         </button>
 
+        <button id="map-cloud-sync-btn" class="map-action-button sync--unconfigured hidden" type="button" title="Firebase Cloud Sync Settings">
+          <span class="sync-status-dot" aria-hidden="true"></span>
+          <span class="sync-status-label">Connect Cloud</span>
+        </button>
+
       </div>
 
       <!-- Floating Map Toolbar (Top Right) -->
@@ -227,6 +232,10 @@
 
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal__actions">
+        <button id="modal-place-pin" class="modal__action-button hidden" type="button" aria-label="Place pin on map for this entry">
+          <span class="map-icon" aria-hidden="true">📍</span>
+          <span class="pin-label">Place Pin on Map</span>
+        </button>
         <button id="modal-view-on-map" class="modal__action-button hidden" type="button" aria-label="View location on world map">
           <span class="map-icon" aria-hidden="true">🗺️</span>
           <span class="map-label">View on Map</span>
@@ -423,6 +432,12 @@
           <label class="checkbox-field">
             <input type="checkbox" id="new-pin-is-secret">
             <span>🔒 DM Secret Pin (Hidden from players)</span>
+          </label>
+        </div>
+        <div id="new-pin-stealth-wrapper" class="form-field hidden">
+          <label class="checkbox-field">
+            <input type="checkbox" id="new-pin-is-stealth">
+            <span>👻 Invisible / Entry-Only Pin (Only appears when viewed from its Codex entry)</span>
           </label>
         </div>
       </div>
@@ -706,13 +721,60 @@
     </article>
   </template>
 
+
+  <!-- Firebase Cloud Sync Settings Modal -->
+  <div id="firebase-settings-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__dialog modal__dialog--map-form" role="dialog" aria-modal="true">
+      <div class="modal__actions">
+        <button id="close-firebase-modal-btn" class="modal__close" type="button" aria-label="Close dialog">Close</button>
+      </div>
+      <div class="modal__header">
+        <p class="modal__category">Cross-Device Persistence</p>
+        <h2>☁️ Firebase Cloud Sync</h2>
+        <p class="modal__summary">Sync custom player markers, DM moved pins, and stealth pins across all devices in real time.</p>
+      </div>
+      <div class="map-form-body">
+        <div id="firebase-status-banner" class="firebase-status-banner">
+          <span class="sync-status-dot"></span>
+          <span id="firebase-status-text">Cloud Sync: Not configured. Operating in local storage mode.</span>
+        </div>
+        
+        <label class="form-field">
+          <span>Firebase Project Config (JSON or JS Object)</span>
+          <textarea id="firebase-config-input" rows="7" placeholder='Paste your Firebase config object here:
+{
+  "apiKey": "AIzaSy...",
+  "projectId": "my-codex-campaign",
+  ...
+}'></textarea>
+        </label>
+        
+        <p class="firebase-help-text">
+          💡 <strong>How to get this free (2 mins):</strong> Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">Firebase Console</a>, create a free project ("Spark Plan"), add a Web App, and enable Firestore Database (Test Mode). Copy the <code>firebaseConfig</code> object and paste it above!
+        </p>
+      </div>
+      <div class="modal__form-actions" style="justify-content: space-between;">
+        <button id="disconnect-firebase-btn" type="button" class="ghost-button" style="color: #f87171;">Disconnect</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="cancel-firebase-btn" type="button" class="ghost-button">Close</button>
+          <button id="save-firebase-btn" type="button" class="cta-button">Save & Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Leaflet Map JS CDN -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Firebase Cloud Sync (Compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-sync.js?v=1" defer></script>
   <!-- Core Scripts -->
-  <script src="script.js?v=10" defer></script>
-  <script src="map.js?v=11" defer></script>
+  <script src="script.js?v=11" defer></script>
+  <script src="map.js?v=12" defer></script>
 </body>
 </html>

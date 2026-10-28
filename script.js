@@ -274,6 +274,7 @@ function initElements() {
   elements.dmModeToggle = document.getElementById("dm-mode-toggle");
   elements.modalViewOnMap = document.getElementById("modal-view-on-map");
   elements.modalLocationBadge = document.getElementById("modal-location-badge");
+  elements.modalPlacePin = document.getElementById("modal-place-pin");
   elements.siteTitle = document.getElementById("site-title");
   elements.siteSubtitle = document.getElementById("site-subtitle");
   elements.helpButton = document.getElementById("help-button");
@@ -434,6 +435,10 @@ window.setAppMode = function(mode, options = {}) {
       stage.classList.add("mode--codex");
     }
     document.body.classList.remove("map-mode-active");
+    if (window.mapEngine && window.mapEngine.activeTransientPinId) {
+      window.mapEngine.activeTransientPinId = null;
+      window.mapEngine.renderPins();
+    }
     tabMap?.classList.remove("is-active");
     tabCodex?.classList.add("is-active");
 
@@ -481,6 +486,24 @@ function bindEvents() {
       elements.appModeBar.classList.remove("is-expanded");
     }
   });
+
+  
+  // Entry Modal Place Pin On Map (DM Only)
+  if (elements.modalPlacePin) {
+    elements.modalPlacePin.addEventListener("click", () => {
+      const currentId = state.selectedEntryId;
+      const entry = state.worldData?.entries?.find(e => e.id === currentId);
+      closeModal({ syncUrl: false });
+      if (window.setAppMode) {
+        window.setAppMode("map");
+      }
+      setTimeout(() => {
+        if (window.mapEngine && entry) {
+          window.mapEngine.startEntryPinDropMode(entry);
+        }
+      }, 260);
+    });
+  }
 
   // Entry Modal View On Map (Smart location routing without requiring pins)
   if (elements.modalViewOnMap) {
@@ -1702,6 +1725,10 @@ function openModal(entryId, options = {}) {
       elements.modalLocationBadge.classList.add("hidden");
       elements.modalLocationBadge.onclick = null;
     }
+  }
+
+  if (elements.modalPlacePin) {
+    elements.modalPlacePin.classList.toggle("hidden", !isDmMode());
   }
 
   if (elements.modalViewOnMap) {
