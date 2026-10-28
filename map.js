@@ -523,7 +523,7 @@
         },
         {
           id: 'loc_chillspire',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Chillspire',
           category: 'Settlement',
           region: 'Giaslan',
@@ -533,7 +533,7 @@
         },
         {
           id: 'loc_gialden_strip',
-          codexId: 'domain-alden',
+          codexId: null,
           name: 'Gialden Strip',
           category: 'Location',
           region: 'Giaslan',
@@ -543,7 +543,7 @@
         },
         {
           id: 'loc_oresalt_mines',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Oresalt Mines',
           category: 'Dungeon',
           region: 'Giaslan',
@@ -553,7 +553,7 @@
         },
         {
           id: 'loc_saltmound_camp',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Saltmound Camp',
           category: 'Settlement',
           region: 'Giaslan',
@@ -563,7 +563,7 @@
         },
         {
           id: 'loc_froslan_lake',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Froslan Lake',
           category: 'Location',
           region: 'Giaslan',
@@ -573,7 +573,7 @@
         },
         {
           id: 'loc_alba',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Alba',
           category: 'Settlement',
           region: 'Giaslan',
@@ -583,7 +583,7 @@
         },
         {
           id: 'loc_snowden',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Snowden',
           category: 'Settlement',
           region: 'Giaslan',
@@ -593,7 +593,7 @@
         },
         {
           id: 'loc_alsico',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Alsico',
           category: 'Settlement',
           region: 'Giaslan',
@@ -603,7 +603,7 @@
         },
         {
           id: 'loc_tulin',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Tulin',
           category: 'Settlement',
           region: 'Giaslan',
@@ -613,7 +613,7 @@
         },
         {
           id: 'loc_saltwater_camp',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Saltwater Camp',
           category: 'Settlement',
           region: 'Giaslan',
@@ -623,7 +623,7 @@
         },
         {
           id: 'loc_saltwater_lake',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Saltwater Lake',
           category: 'Location',
           region: 'Giaslan',
@@ -633,7 +633,7 @@
         },
         {
           id: 'loc_camlenius_plaza',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Camlenius Plaza',
           category: 'Location',
           region: 'Giaslan',
@@ -643,7 +643,7 @@
         },
         {
           id: 'loc_shadewood_grove',
-          codexId: 'domain-giaslan',
+          codexId: null,
           name: 'Shadewood Grove',
           category: 'Location',
           region: 'Giaslan',
@@ -655,7 +655,7 @@
         // --- ALTASAR (Inkarnate Detailed) ---
         {
           id: 'loc_spire',
-          codexId: 'domain-altasar',
+          codexId: null,
           name: 'The Spire',
           category: 'Quest',
           region: 'Altasar',
@@ -685,7 +685,7 @@
         },
         {
           id: 'loc_talsancea_falls',
-          codexId: 'domain-altasar',
+          codexId: null,
           name: 'Talsancea Falls',
           category: 'Location',
           region: 'Altasar',
@@ -695,7 +695,7 @@
         },
         {
           id: 'loc_mirage_bay',
-          codexId: 'domain-altasar',
+          codexId: null,
           name: 'Mirage Bay',
           category: 'Location',
           region: 'Altasar',
@@ -705,7 +705,7 @@
         },
         {
           id: 'loc_knotwood_forest',
-          codexId: 'domain-altasar',
+          codexId: null,
           name: 'Knotwood Forest',
           category: 'Location',
           region: 'Altasar',
@@ -757,7 +757,7 @@
         },
         {
           id: 'loc_fissure',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'The Caybluff Fissure',
           category: 'Location',
           region: 'Caybluff',
@@ -777,7 +777,7 @@
         },
         {
           id: 'loc_mount_pheltil',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Mount Pheltil',
           category: 'Location',
           region: 'Caybluff',
@@ -787,7 +787,7 @@
         },
         {
           id: 'loc_mount_famil',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Mount Famil',
           category: 'Location',
           region: 'Caybluff',
@@ -797,7 +797,7 @@
         },
         {
           id: 'loc_montepass',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Montepass',
           category: 'Location',
           region: 'Caybluff',
@@ -807,7 +807,7 @@
         },
         {
           id: 'loc_dust_basin',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Dust Basin',
           category: 'Location',
           region: 'Caybluff',
@@ -817,7 +817,7 @@
         },
         {
           id: 'loc_forkinarod',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Forkinarod',
           category: 'Location',
           region: 'Caybluff',
@@ -827,7 +827,7 @@
         },
         {
           id: 'loc_epilegos_split',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: "Epilego's Split",
           category: 'Location',
           region: 'Caybluff',
@@ -837,7 +837,7 @@
         },
         {
           id: 'loc_solasta',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Solasta',
           category: 'Settlement',
           region: 'Caybluff',
@@ -847,7 +847,7 @@
         },
         {
           id: 'loc_siracol',
-          codexId: 'domain-caybluff',
+          codexId: null,
           name: 'Siracol',
           category: 'Settlement',
           region: 'Caybluff',
@@ -859,7 +859,7 @@
         // --- SURROUNDING 6 DOMAINS (Primary Canon Anchors) ---
         {
           id: 'loc_laregola',
-          codexId: 'domain-alden',
+          codexId: null,
           name: 'Laregola',
           category: 'Settlement',
           region: 'Domain of Alden',
@@ -879,7 +879,7 @@
         },
         {
           id: 'loc_klabats',
-          codexId: 'domain-klabats',
+          codexId: null,
           name: 'Klabats War Encampments',
           category: 'Settlement',
           region: 'Klabats',
@@ -889,7 +889,7 @@
         },
         {
           id: 'loc_dynestea',
-          codexId: 'domain-dynestea',
+          codexId: null,
           name: 'Heart of Dynestea',
           category: 'Location',
           region: 'Dynestea',
@@ -899,7 +899,7 @@
         },
         {
           id: 'loc_cirrusia_isles',
-          codexId: 'domain-cirrusia',
+          codexId: null,
           name: 'Cirrusian Sky Isles',
           category: 'Location',
           region: 'Cirrusia',
@@ -909,7 +909,7 @@
         },
         {
           id: 'loc_moonstead',
-          codexId: 'domain-hemwood',
+          codexId: null,
           name: 'Moonstead',
           category: 'Settlement',
           region: 'Hemwood',
@@ -919,7 +919,7 @@
         },
         {
           id: 'loc_hell_sigil',
-          codexId: 'domain-hemwood',
+          codexId: null,
           name: 'The Hell Sigil',
           category: 'Dungeon',
           region: 'Hemwood',
@@ -929,7 +929,7 @@
         },
         {
           id: 'loc_aquiel',
-          codexId: 'domain-laytide',
+          codexId: null,
           name: 'Sunken Domain of Aquiel',
           category: 'Location',
           region: 'Laytide',
@@ -1060,6 +1060,31 @@
 
       if (!this.maps || this.maps.length === 0) {
         this.maps = JSON.parse(JSON.stringify(DEFAULT_MAPS));
+        this.saveStorage();
+      }
+
+      // Sanitize official pins: ensure only pins with direct corresponding entries have codexId
+      if (this.maps && this.maps[0] && this.maps[0].officialLocations) {
+        const DIRECT_MAP = {
+          'loc_viserions_peak': 'location-viserions-peak',
+          'loc_droland': 'settlement-droland',
+          'loc_orville': 'settlement-orville',
+          'loc_solare': 'location-mount-solare',
+          'loc_portale': 'settlement-portale',
+          'loc_ocean_wall': 'location-ocean-wall',
+          'loc_waveside': 'settlement-waveside',
+          'loc_fog_basin': 'location-caybluff-fog-basin',
+          'loc_troldith': 'story-troldith-and-the-malaise'
+        };
+        this.maps[0].officialLocations.forEach(p => {
+          if (p.isOfficial !== false) {
+            if (DIRECT_MAP[p.id]) {
+              p.codexId = DIRECT_MAP[p.id];
+            } else if (p.codexId && (p.codexId.startsWith('domain-') || !Object.values(DIRECT_MAP).includes(p.codexId))) {
+              p.codexId = null;
+            }
+          }
+        });
         this.saveStorage();
       }
 
@@ -1496,19 +1521,30 @@
       document.getElementById('drawer-pin-coords').textContent = `X: ${pin.x} · Y: ${pin.y}`;
       document.getElementById('drawer-pin-summary').textContent = pin.summary || pin.note || 'No notes added.';
 
-      // Codex linking CTA
+      // Codex linking CTA (strictly render ONLY if pin directly corresponds to an entry)
       const codexActionContainer = document.getElementById('drawer-codex-action');
       if (codexActionContainer) {
         codexActionContainer.innerHTML = '';
         if (pin.codexId) {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'drawer-cta-button';
-          btn.innerHTML = `<span>Open in O-Codex</span> <span>↗</span>`;
-          btn.addEventListener('click', () => {
-            window.CodexMapBridge.navigateToCodex(pin.codexId);
-          });
-          codexActionContainer.appendChild(btn);
+          const allEntries = window.state?.worldData?.entries || [];
+          const targetEntry = allEntries.find(e => e.id === pin.codexId);
+          
+          // Verify it's an actual entry and not a generic domain fallback
+          const isDirectEntry = targetEntry && (
+            targetEntry.category !== 'domains' || 
+            (targetEntry.name && targetEntry.name.toLowerCase() === (pin.name || '').toLowerCase())
+          );
+
+          if (isDirectEntry) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'drawer-cta-button';
+            btn.innerHTML = `<span>Open in O-Codex</span> <span>↗</span>`;
+            btn.addEventListener('click', () => {
+              window.CodexMapBridge.navigateToCodex(pin.codexId);
+            });
+            codexActionContainer.appendChild(btn);
+          }
         }
       }
 
