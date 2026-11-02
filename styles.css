@@ -3165,11 +3165,12 @@ body.map-mode-active {
   position: fixed;
   bottom: 1.25rem;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0);
+  opacity: 1;
   z-index: 1250;
   max-width: calc(100vw - 2rem);
   pointer-events: none;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
 }
 
 .quickbar-shell {
@@ -3611,18 +3612,22 @@ body.map-mode-active {
    PHASE 2: TACTICAL MAP ENHANCEMENTS
    ======================================================================== */
 
-/* When Map Mode is active: hide the bottom Codex Quick-Bar */
+/* When Map Mode is active: Quick-Bar descends down below the bottom of the screen */
 body.map-mode-active .quickbar-dock {
-  display: none !important;
+  transform: translate(-50%, calc(100% + 2.5rem)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-/* 1. Map Category Filter Bar (Docked at Bottom Center, replacing the Quick-Bar!) */
+/* 1. Map Category Filter Bar (Fixed at bottom center, initially lowered down in Codex mode) */
 .map-filter-bar {
-  position: absolute;
+  position: fixed;
   bottom: 1.25rem;
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 1200;
+  transform: translate(-50%, calc(100% + 2.5rem));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1250;
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -3635,7 +3640,14 @@ body.map-mode-active .quickbar-dock {
   max-width: calc(100vw - 3rem);
   overflow-x: auto;
   scrollbar-width: none;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+/* When Map Mode is active: Map Filter Bar rises up from below the bottom into view! */
+body.map-mode-active .map-filter-bar {
+  transform: translate(-50%, 0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .map-filter-bar::-webkit-scrollbar {

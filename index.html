@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -178,39 +178,6 @@
         <button id="map-toggle-borders-btn" class="map-tool-btn is-active" type="button" title="Toggle territory borders visibility">
           <span class="map-tool-icon" aria-hidden="true">👁️</span>
           <span>Borders</span>
-        </button>
-      </div>
-
-      <!-- Floating Map Category Filter Bar (Top Center) -->
-      <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
-        <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
-          <span>All</span>
-          <span class="filter-count" id="count-all">0</span>
-        </button>
-        <button class="map-filter-pill is-active" data-category="Settlement" type="button" title="Toggle Settlements & Cities">
-          <span class="filter-dot" style="background: #f59e0b;" aria-hidden="true"></span>
-          <span>Settlements</span>
-          <span class="filter-count" id="count-settlement">0</span>
-        </button>
-        <button class="map-filter-pill is-active" data-category="Dungeon" type="button" title="Toggle Dungeons, Hazards & Ruins">
-          <span class="filter-dot" style="background: #ef4444;" aria-hidden="true"></span>
-          <span>Dungeons</span>
-          <span class="filter-count" id="count-dungeon">0</span>
-        </button>
-        <button class="map-filter-pill is-active" data-category="Location" type="button" title="Toggle Geographic Landmarks">
-          <span class="filter-dot" style="background: #10b981;" aria-hidden="true"></span>
-          <span>Landmarks</span>
-          <span class="filter-count" id="count-location">0</span>
-        </button>
-        <button class="map-filter-pill is-active" data-category="Quest" type="button" title="Toggle Spires & Quest Objectives">
-          <span class="filter-dot" style="background: #a855f7;" aria-hidden="true"></span>
-          <span>Quests</span>
-          <span class="filter-count" id="count-quest">0</span>
-        </button>
-        <button class="map-filter-pill is-active" data-category="Player" type="button" title="Toggle Custom Player Pins">
-          <span class="filter-dot" style="background: #5ae8ff;" aria-hidden="true"></span>
-          <span>Player Pins</span>
-          <span class="filter-count" id="count-player">0</span>
         </button>
       </div>
 
@@ -842,6 +809,39 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Tactical Map Pin Filter Bar Dock (Swaps with Quick-Bar in Map Mode) -->
+  <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
+    <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
+      <span>All</span>
+      <span class="filter-count" id="count-all">0</span>
+    </button>
+    <button class="map-filter-pill is-active" data-category="Settlement" type="button" title="Toggle Settlements & Cities">
+      <span class="filter-dot" style="background: #f59e0b;" aria-hidden="true"></span>
+      <span>Settlements</span>
+      <span class="filter-count" id="count-settlement">0</span>
+    </button>
+    <button class="map-filter-pill is-active" data-category="Dungeon" type="button" title="Toggle Dungeons, Hazards & Ruins">
+      <span class="filter-dot" style="background: #ef4444;" aria-hidden="true"></span>
+      <span>Dungeons</span>
+      <span class="filter-count" id="count-dungeon">0</span>
+    </button>
+    <button class="map-filter-pill is-active" data-category="Location" type="button" title="Toggle Geographic Landmarks">
+      <span class="filter-dot" style="background: #10b981;" aria-hidden="true"></span>
+      <span>Landmarks</span>
+      <span class="filter-count" id="count-location">0</span>
+    </button>
+    <button class="map-filter-pill is-active" data-category="Quest" type="button" title="Toggle Spires & Quest Objectives">
+      <span class="filter-dot" style="background: #a855f7;" aria-hidden="true"></span>
+      <span>Quests</span>
+      <span class="filter-count" id="count-quest">0</span>
+    </button>
+    <button class="map-filter-pill is-active" data-category="Player" type="button" title="Toggle Custom Player Pins">
+      <span class="filter-dot" style="background: #5ae8ff;" aria-hidden="true"></span>
+      <span>Player Pins</span>
+      <span class="filter-count" id="count-player">0</span>
+    </button>
   </div>
 
   <!-- Persistent Quick-Bar Dock -->
