@@ -510,6 +510,10 @@
       if (this.characters.some(c => c.id === id)) {
         this.activeCharId = id;
         localStorage.setItem(ACTIVE_CHAR_KEY, id);
+        const active = this.getActiveCharacter();
+        if (active && active.name) {
+          localStorage.setItem('o_codex_active_char_name', active.name);
+        }
         this.renderRosterBar();
         this.renderCurrentSheet();
         this.renderRollTracker();
@@ -528,6 +532,10 @@
 
     init() {
       this.initDOM();
+      const active = this.getActiveCharacter();
+      if (active && active.name) {
+        localStorage.setItem('o_codex_active_char_name', active.name);
+      }
       this.renderRosterBar();
       this.renderCurrentSheet();
       this.renderRollTracker();
@@ -1159,7 +1167,10 @@
                 <span class="divion-badge-type">${escapeHtml(div.type || 'Manifest')}</span>
                 <span class="divion-badge-rank">${escapeHtml(div.rank || 'Tier I')}</span>
               </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="divion" data-index="${index}" title="Remove Divion">✕</button>` : ''}
+              <div style="display: flex; gap: 0.35rem; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-xs divion-channel-btn" data-index="${index}" title="Channel Flow and announce to party">✨ Channel</button>
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="divion" data-index="${index}" title="Remove Divion">✕</button>` : ''}
+              </div>
             </div>
             <div class="divion-cost"><strong>Cost:</strong> ${escapeHtml(div.cost || 'None')}</div>
             <div class="divion-manifest"><strong>Manifestation:</strong> ${escapeHtml(div.manifestEffect || '')}</div>
@@ -1177,6 +1188,19 @@
         </div>
         <div class="char-cards-grid">${divionsHtml}</div>
       `;
+
+      // Handlers
+      container.querySelectorAll('.divion-channel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const div = char.divions[idx];
+          if (div && window.DiceRoller) {
+            const intScore = char.stats?.int || 10;
+            const intMod = Math.floor((intScore - 10) / 2);
+            window.DiceRoller.roll('1d20', `Channel: ${div.name}`, char.name, 'normal', intMod);
+          }
+        });
+      });
 
       if (this.isEditMode) {
         container.querySelector('#btn-add-divion')?.addEventListener('click', () => {

@@ -198,77 +198,173 @@
        CORE ROLL EVALUATION
        ======================================================================== */
     executeCurrentRoll(label = 'Dice Roll') {
-      const charName = localStorage.getItem('o_codex_active_char_name') || localStorage.getItem('o_codex_player_name') || 'Adventurer';
+      const labelInput = document.getElementById('dice-label-input');
+      const customLabel = labelInput ? labelInput.value.trim() : '';
+      const finalLabel = customLabel || label || 'Dice Roll';
+
+      let charName = '';
+      if (window.CharacterSheet && typeof window.CharacterSheet.getActiveCharacter === 'function') {
+        const char = window.CharacterSheet.getActiveCharacter();
+        if (char && char.name) charName = char.name;
+      }
+      if (!charName) {
+        charName = localStorage.getItem('o_codex_active_char_name') || localStorage.getItem('o_codex_player_name') || 'Adventurer';
+      }
+
       return this.roll({
         formula: this.currentFormula,
         modifier: this.currentModifier,
         advantage: this.advantageMode,
-        label,
+        label: finalLabel,
         charName
       });
     }
 
-    roll(options = {}) {
-      const {
-        formula = '1d20',
-        modifier = 0,
-        advantage = 'normal',
-        label = 'Check',
-        charName = (localStorage.getItem('o_codex_active_char_name') || 'Adventurer')
-      } = options;
+    /**
+     * Universal Polymorphic Dice Roller:
+     * Accepts either:
+     *  - Object: { formula, modifier, advantage, label, charName }
+     *  - Positional: roll(formula, label, charName, advantage, modifier)
+     *  - Positional shorthand: roll(formula, label, charName, modifier)
+     */
+    roll(formulaOrOptions = '1d20', label = 'Dice Roll', charName = '', advantage = 'normal', modifier = 0) {
+      let formula = '1d20';
+      let mod = 0;
+      let adv = 'normal';
+      let lbl = 'Dice Roll';
+      let roller = '';
+
+      if (formulaOrOptions && typeof formulaOrOptions === 'object') {
+        formula = formulaOrOptions.formula || '1d20';
+        mod = typeof formulaOrOptions.modifier === 'number'
+          ? formulaOrOptions.modifier
+          : (parseInt(formulaOrOptions.modifier, 10) || 0);
+        adv = formulaOrOptions.advantage || 'normal';
+        lbl = formulaOrOptions.label || 'Dice Roll';
+        roller = formulaOrOptions.charName || formulaOrOptions.roller || '';
+      } else {
+        formula = typeof formulaOrOptions === 'string' ? formulaOrOptions : '1d20';
+        lbl = (typeof label === 'string' && label) ? label : 'Dice Roll';
+        roller = (typeof charName === 'string') ? charName : '';
+
+        if (typeof advantage === 'number') {
+          mod = advantage;
+          adv = 'normal';
+        } else if (typeof advantage === 'string') {
+          if (advantage === 'advantage' || advantage === 'disadvantage') {
+            adv = advantage;
+            mod = typeof modifier === 'number' ? modifier : (parseInt(modifier, 10) || 0);
+          } else {
+            const parsed = parseInt(advantage, 10);
+            if (!isNaN(parsed) && advantage !== 'normal') {
+              mod = parsed;
+              adv = 'normal';
+            } else {
+              adv = advantage;
+              mod = typeof modifier === 'number' ? modifier : (parseInt(modifier, 10) || 0);
+            }
+          }
+        } else {
+          mod = typeof modifier === 'number' ? modifier : (parseInt(modifier, 10) || 0);
+        }
+      }
+
+      // Automatically determine roller name from active character if omitted
+      if (!roller) {
+        if (window.CharacterSheet && typeof window.CharacterSheet.getActiveCharacter === 'function') {
+          const char = window.CharacterSheet.getActiveCharacter();
+          if (char && char.name) roller = char.name;
+        }
+        if (!roller) {
+          roller = localStorage.getItem('o_codex_active_char_name') || localStorage.getItem('o_codex_player_name') || 'Adventurer';
+        }
+      }
 
       this.playDiceSound();
 
-      let rolls = [];
+      // Normalize formula: e.g. "2d4+4", "1d8+3", "2d6-1", "1d20"
+      let clean = String(formula || '1d20').replace(/\s+/g, '');
+      if (!clean.startsWith('+') && !clean.startsWith('-')) {
+        clean = '+' + clean;
+      }
+
+      const termRegex = /([+-])(?:(\d*)d(\d+)|(\d+))/gi;
+      let match;
+      const diceGroups = [];
+      let constantMod = 0;
+
+      while ((match = termRegex.exec(clean)) !== null) {
+        const sign = match[1] === '-' ? -1 : 1;
+        if (match[3] !== undefined) {
+          const count = match[2] ? parseInt(match[2], 10) : 1;
+          const sides = parseInt(match[3], 10);
+          diceGroups.push({ sign, count, sides });
+        } else if (match[4] !== undefined) {
+          constantMod += sign * parseInt(match[4], 10);
+        }
+      }
+
+      // If no dice terms found in formula, default to 1d20
+      if (diceGroups.length === 0) {
+        diceGroups.push({ sign: 1, count: 1, sides: 20 });
+      }
+
+      const totalMod = constantMod + mod;
       let total = 0;
+      let rolls = [];
       let isCrit = false;
       let isFumble = false;
       let detailsText = '';
 
-      if (formula.includes('d20') && (advantage === 'advantage' || advantage === 'disadvantage')) {
+      const isD20Single = diceGroups.length === 1 && diceGroups[0].count === 1 && diceGroups[0].sides === 20;
+
+      if (isD20Single && (adv === 'advantage' || adv === 'disadvantage')) {
         const r1 = Math.floor(Math.random() * 20) + 1;
         const r2 = Math.floor(Math.random() * 20) + 1;
-        const chosen = advantage === 'advantage' ? Math.max(r1, r2) : Math.min(r1, r2);
-        const dropped = advantage === 'advantage' ? Math.min(r1, r2) : Math.max(r1, r2);
+        const chosen = adv === 'advantage' ? Math.max(r1, r2) : Math.min(r1, r2);
+        const dropped = adv === 'advantage' ? Math.min(r1, r2) : Math.max(r1, r2);
 
         rolls = [r1, r2];
-        total = chosen + modifier;
+        total = chosen + totalMod;
         isCrit = chosen === 20;
         isFumble = chosen === 1;
 
-        detailsText = `[${chosen}] (dropped ${dropped})` + (modifier !== 0 ? ` ${modifier >= 0 ? '+' : '-'} ${Math.abs(modifier)}` : '');
+        detailsText = `[${chosen}] (dropped ${dropped})` + (totalMod !== 0 ? ` ${totalMod > 0 ? '+' : '-'} ${Math.abs(totalMod)}` : '');
       } else {
-        // Standard formula parsing: e.g. "2d6+1d4"
-        const parts = formula.split('+');
-        let diceBreakdowns = [];
+        const diceBreakdowns = [];
+        let diceSum = 0;
 
-        parts.forEach(part => {
-          const match = part.trim().match(/^(\d*)d(\d+)$/i);
-          if (match) {
-            const count = parseInt(match[1], 10) || 1;
-            const sides = parseInt(match[2], 10);
-            const partRolls = [];
-            for (let i = 0; i < count; i++) {
-              const val = Math.floor(Math.random() * sides) + 1;
-              partRolls.push(val);
-              rolls.push(val);
-              total += val;
-              if (sides === 20 && val === 20) isCrit = true;
-              if (sides === 20 && val === 1) isFumble = true;
-            }
-            diceBreakdowns.push(`d${sides}: [${partRolls.join(', ')}]`);
+        diceGroups.forEach(grp => {
+          const groupRolls = [];
+          let groupSum = 0;
+          for (let i = 0; i < grp.count; i++) {
+            const val = Math.floor(Math.random() * grp.sides) + 1;
+            groupRolls.push(val);
+            rolls.push(val);
+            groupSum += val * grp.sign;
+            if (grp.sides === 20 && val === 20) isCrit = true;
+            if (grp.sides === 20 && val === 1) isFumble = true;
           }
+          diceSum += groupSum;
+          const prefix = grp.sign === -1 ? '-' : '';
+          diceBreakdowns.push(`${prefix}${grp.count > 1 ? grp.count : ''}d${grp.sides}: [${groupRolls.join(', ')}]`);
         });
 
-        total += modifier;
-        detailsText = diceBreakdowns.join(' + ') + (modifier !== 0 ? ` ${modifier >= 0 ? '+' : '-'} ${Math.abs(modifier)}` : '');
+        total = diceSum + totalMod;
+        detailsText = diceBreakdowns.join(' + ') + (totalMod !== 0 ? ` ${totalMod > 0 ? '+' : '-'} ${Math.abs(totalMod)}` : '');
       }
+
+      // Canonical display formula: e.g. "2d4+4", "1d20+5", "1d20 (ADV)"
+      const diceFormulaPart = diceGroups.map(g => `${g.sign === -1 ? '-' : ''}${g.count}d${g.sides}`).join(' + ');
+      const modPart = totalMod !== 0 ? (totalMod > 0 ? `+${totalMod}` : `${totalMod}`) : '';
+      const advPart = (adv === 'advantage') ? ' (ADV)' : (adv === 'disadvantage' ? ' (DIS)' : '');
+      const displayFormula = `${diceFormulaPart}${modPart}${advPart}`;
 
       const rollResult = {
         id: `roll_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        roller: charName,
-        label,
-        formula: `${formula}${modifier !== 0 ? (modifier > 0 ? `+${modifier}` : modifier) : ''}${advantage !== 'normal' ? ` (${advantage})` : ''}`,
+        roller,
+        label: lbl,
+        formula: displayFormula,
         rolls,
         total,
         isCrit,
