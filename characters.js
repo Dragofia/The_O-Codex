@@ -444,6 +444,18 @@
       this.rollsTab = 'personal'; // 'personal' | 'everyone'
       this.debounceTimer = null;
       this.audioCtx = null;
+      this.bc = null;
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          this.bc = new BroadcastChannel('o_codex_party_channel');
+          this.bc.onmessage = (event) => {
+            if (event && event.data && event.data.type === 'PARTY_UPDATE' && Array.isArray(event.data.party)) {
+              this.onRemoteCharacters(event.data.party, false);
+            }
+          };
+        } catch (e) {}
+      }
 
       this.loadStorage();
     }
@@ -480,6 +492,12 @@
         console.error('[CharacterSheet] Error saving characters:', e);
       }
 
+      if (this.bc && broadcast) {
+        try {
+          this.bc.postMessage({ type: 'PARTY_UPDATE', party: this.characters });
+        } catch (e) {}
+      }
+
       if (broadcast && window.CampaignCloudSync && typeof window.CampaignCloudSync.pushCharacters === 'function') {
         clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
@@ -488,11 +506,11 @@
       }
     }
 
-    onRemoteCharacters(remoteParty) {
+    onRemoteCharacters(remoteParty, broadcast = false) {
       if (!Array.isArray(remoteParty) || remoteParty.length === 0) return;
 
       this.characters = remoteParty;
-      localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(this.characters));
+      this.saveStorage(broadcast);
 
       if (!this.characters.some(c => c.id === this.activeCharId) && this.characters.length > 0) {
         this.activeCharId = this.characters[0].id;
@@ -640,6 +658,7 @@
       document.getElementById('rolls-tab-everyone')?.addEventListener('click', () => {
         this.rollsTab = 'everyone';
         document.getElementById('rolls-tab-everyone')?.classList.add('is-active');
+        document.getElementById('rolls-tab-everyone')?.classList.remove('has-unread');
         document.getElementById('rolls-tab-personal')?.classList.remove('is-active');
         this.renderRollTracker();
       });
@@ -1641,12 +1660,22 @@
     }
 
     // 5. LEFT-SIDE ROLL TRACKER WINDOW (PERSONAL vs EVERYONE)
-    renderRollTracker() {
+    renderRollTracker(newRemoteRoll) {
       const feed = document.getElementById('char-rolls-feed');
       if (!feed) return;
 
       const char = this.getActiveCharacter();
       const allHistory = (window.DiceRoller && Array.isArray(window.DiceRoller.history)) ? window.DiceRoller.history : [];
+
+      if (newRemoteRoll && this.rollsTab === 'personal') {
+        const rName = (newRemoteRoll.roller || '').toLowerCase();
+        const isMine = rName === (char?.name || '').toLowerCase() || 
+                       rName === (char?.player || '').toLowerCase() || 
+                       rName === (localStorage.getItem('o_codex_player_name') || '').toLowerCase();
+        if (!isMine) {
+          document.getElementById('rolls-tab-everyone')?.classList.add('has-unread');
+        }
+      }
 
       let rolls = [];
       if (this.rollsTab === 'personal') {

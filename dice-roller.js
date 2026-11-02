@@ -21,6 +21,18 @@
       this.currentModifier = 0;
       this.advantageMode = 'normal'; // 'normal' | 'advantage' | 'disadvantage'
       this.audioCtx = null;
+      this.bc = null;
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          this.bc = new BroadcastChannel('o_codex_dice_channel');
+          this.bc.onmessage = (event) => {
+            if (event && event.data && event.data.type === 'DICE_ROLL' && event.data.roll) {
+              this.onRemoteRoll(event.data.roll);
+            }
+          };
+        } catch (e) {}
+      }
 
       this.loadStorage();
     }
@@ -390,6 +402,13 @@
 
       // Show floating party roll toast (suppressed when in Characters mode)
       this.showRollToast(rollResult);
+
+      // Broadcast to other open windows/tabs on the same browser instantly!
+      if (this.bc) {
+        try {
+          this.bc.postMessage({ type: 'DICE_ROLL', roll: rollResult });
+        } catch (e) {}
+      }
 
       // Broadcast to Firebase Firestore for real-time party sync!
       if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushDiceRoll === 'function') {
