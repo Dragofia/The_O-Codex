@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -290,6 +290,51 @@
           <section class="modal__section">
             <h3>Description</h3>
             <p id="modal-description" class="modal__description"></p>
+          </section>
+
+          <!-- Session & Player Dual Notes Widget -->
+          <section id="modal-notes-section" class="modal__section modal-notes-section">
+            <div class="notes-header">
+              <div class="notes-tabs">
+                <button type="button" class="notes-tab is-active" data-tab="personal">
+                  <span>📝 Personal Notes</span>
+                  <span class="notes-tab-indicator" id="notes-personal-indicator"></span>
+                </button>
+                <button type="button" class="notes-tab" data-tab="shared">
+                  <span>👥 Party Notes</span>
+                  <span class="notes-tab-indicator" id="notes-shared-indicator"></span>
+                </button>
+              </div>
+              <div class="notes-status-badge">
+                <span id="notes-status-icon">🔒</span>
+                <span id="notes-status-text">Private to you</span>
+              </div>
+            </div>
+
+            <div class="notes-editor-box">
+              <div class="notes-toolbar">
+                <div class="notes-format-tools">
+                  <button type="button" class="notes-tool-btn" data-action="bold" title="Bold text"><strong>B</strong></button>
+                  <button type="button" class="notes-tool-btn" data-action="italic" title="Italic text"><em>I</em></button>
+                  <button type="button" class="notes-tool-btn" data-action="heading" title="Heading"><strong>H</strong></button>
+                  <button type="button" class="notes-tool-btn" data-action="bullet" title="Bullet List">• List</button>
+                  <button type="button" class="notes-tool-btn" data-action="checkbox" title="Checkbox task">☑ Task</button>
+                  <button type="button" class="notes-tool-btn" data-action="timestamp" title="Insert session timestamp">⏱ Time</button>
+                </div>
+                <div class="notes-mode-toggle">
+                  <button type="button" class="notes-mode-btn is-active" data-mode="edit">Write</button>
+                  <button type="button" class="notes-mode-btn" data-mode="preview">Preview</button>
+                </div>
+              </div>
+
+              <textarea id="notes-textarea" class="notes-textarea" placeholder="Add private thoughts, secrets, quest leads, or session reminders..."></textarea>
+              <div id="notes-preview" class="notes-preview hidden"></div>
+
+              <div class="notes-footer">
+                <span class="notes-attribution" id="notes-attribution-label">Saved in your browser</span>
+                <span class="notes-save-status" id="notes-save-status">Saved ✓</span>
+              </div>
+            </div>
           </section>
         </div>
 
@@ -879,10 +924,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-sync.js?v=4" defer></script>
+  <script src="firebase-sync.js?v=5" defer></script>
   <!-- Core Scripts -->
   <script src="codex-linker.js?v=1" defer></script>
-  <script src="script.js?v=16" defer></script>
+  <script src="codex-notes.js?v=1" defer></script>
+  <script src="script.js?v=17" defer></script>
   <script src="quickbar.js?v=3" defer></script>
   <script src="map.js?v=14" defer></script>
   <script src="map-tactics.js?v=2" defer></script>

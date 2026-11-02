@@ -109,6 +109,10 @@
         this.unsubscribeParty();
         this.unsubscribeParty = null;
       }
+      if (this.unsubscribeNotes) {
+        this.unsubscribeNotes();
+        this.unsubscribeNotes = null;
+      }
       localStorage.removeItem(FIREBASE_CONFIG_KEY);
       this.isReady = false;
       this.db = null;
@@ -123,6 +127,9 @@
       }
       if (this.unsubscribeParty) {
         this.unsubscribeParty();
+      }
+      if (this.unsubscribeNotes) {
+        this.unsubscribeNotes();
       }
 
       try {
@@ -159,6 +166,22 @@
       } catch (e) {
         console.warn('[CloudSync] Could not attach party location listener:', e);
       }
+
+      try {
+        const notesRef = this.db.collection('codex_campaign').doc('party_notes');
+        this.unsubscribeNotes = notesRef.onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (window.CodexNotes && typeof window.CodexNotes.onRemoteNotes === 'function') {
+              window.CodexNotes.onRemoteNotes(data);
+            }
+          }
+        }, err => {
+          console.warn('[CloudSync] Party notes listener warning:', err);
+        });
+      } catch (e) {
+        console.warn('[CloudSync] Could not attach party notes listener:', e);
+      }
     }
 
     async pushPins(pins) {
@@ -189,6 +212,27 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push party location to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushNote(entryId, noteRecord) {
+      if (!this.isReady || !this.db || !entryId) return false;
+      try {
+        const docRef = this.db.collection('codex_campaign').doc('party_notes');
+        await docRef.set({
+          notes: {
+            [entryId]: {
+              ...noteRecord,
+              updatedAt: Date.now(),
+              updatedBy: localStorage.getItem('o_codex_player_name') || 'Adventurer'
+            }
+          },
+          updatedAt: Date.now()
+        }, { merge: true });
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push note to Firebase:', e);
         return false;
       }
     }
