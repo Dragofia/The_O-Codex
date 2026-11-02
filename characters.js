@@ -443,6 +443,7 @@
       this.isEditMode = false;   // Default: Play/View Mode (no typable boxes)
       this.rollsTab = 'personal'; // 'personal' | 'everyone'
       this.debounceTimer = null;
+      this.audioCtx = null;
 
       this.loadStorage();
     }
@@ -539,6 +540,69 @@
       this.renderRosterBar();
       this.renderCurrentSheet();
       this.renderRollTracker();
+    }
+
+    playHpSound(delta) {
+      try {
+        if (!this.audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.audioCtx = new AudioContext();
+        }
+        if (!this.audioCtx) return;
+        if (this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
+        }
+
+        const now = this.audioCtx.currentTime;
+        const isHeal = delta > 0;
+        const isBig = Math.abs(delta) >= 5;
+
+        if (isHeal) {
+          // Cheerful ascending blip/bloop
+          const tones = isBig ? [480, 640, 820] : [520, 680];
+          tones.forEach((freq, idx) => {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            const startTime = now + (idx * 0.05);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.15, startTime + 0.07);
+
+            gain.gain.setValueAtTime(0.09, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
+
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.09);
+          });
+        } else {
+          // Punchy descending blop/thud
+          const tones = isBig ? [240, 160, 110] : [220, 150];
+          tones.forEach((freq, idx) => {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            const startTime = now + (idx * 0.04);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.frequency.exponentialRampToValueAtTime(Math.max(60, freq * 0.6), startTime + 0.06);
+
+            gain.gain.setValueAtTime(0.12, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.07);
+
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.08);
+          });
+        }
+      } catch (e) {
+        // Audio policy error suppression
+      }
     }
 
     initDOM() {
@@ -866,7 +930,12 @@
 
         // Wire inputs in edit mode
         container.querySelector('#hp-edit-cur')?.addEventListener('change', (e) => {
-          vitals.hpCurrent = parseInt(e.target.value, 10) || 0;
+          const oldVal = vitals.hpCurrent;
+          const newVal = Math.max(0, parseInt(e.target.value, 10) || 0);
+          if (newVal !== oldVal) {
+            this.playHpSound(newVal - oldVal);
+          }
+          vitals.hpCurrent = newVal;
           this.saveStorage();
         });
         container.querySelector('#hp-edit-max')?.addEventListener('change', (e) => {
@@ -898,9 +967,17 @@
       // HP Steppers (Active in view mode)
       const setupHpBtn = (id, delta) => {
         container.querySelector(`#${id}`)?.addEventListener('click', () => {
+          this.playHpSound(delta);
           vitals.hpCurrent = Math.max(0, vitals.hpCurrent + delta);
           this.saveStorage();
           this.renderVitals(char);
+
+          // Visual pop on the HP value
+          const hpBox = container.querySelector('.hp-static-box');
+          if (hpBox) {
+            hpBox.classList.add(delta > 0 ? 'pulse-heal' : 'pulse-damage');
+            setTimeout(() => hpBox.classList.remove('pulse-heal', 'pulse-damage'), 300);
+          }
         });
       };
       setupHpBtn('hp-minus-5', -5);
