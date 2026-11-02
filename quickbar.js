@@ -69,23 +69,27 @@
       const category = entry.category || 'general';
 
       const existingIndex = this.history.findIndex(item => item.id === entry.id);
-      let isPinned = false;
 
       if (existingIndex !== -1) {
-        isPinned = Boolean(this.history[existingIndex].pinned);
-        this.history.splice(existingIndex, 1);
+        // Entry is already present in the Quick-Bar:
+        // Keep its slot position completely stable so 1-5 hotkey assignments don't swap around!
+        this.history[existingIndex].title = title;
+        this.history[existingIndex].category = category;
+        this.saveStorage();
+        this.render();
+        return;
       }
 
-      // Add to front of history
+      // Brand new entry: Add to front of history (slot 1)
       this.history.unshift({
         id: entry.id,
         title,
         category,
-        pinned: isPinned,
+        pinned: false,
         timestamp: Date.now()
       });
 
-      // Prune unpinned items exceeding limit
+      // Prune unpinned items exceeding limit (from the back)
       if (this.history.length > MAX_ITEMS) {
         for (let i = this.history.length - 1; i >= 0; i--) {
           if (!this.history[i].pinned) {
@@ -190,6 +194,7 @@
       }
 
       this.listEl.innerHTML = '';
+      let activePillEl = null;
       this.history.forEach((item, index) => {
         const isActive = window.state?.selectedEntryId === item.id;
         const pill = document.createElement('div');
@@ -197,6 +202,10 @@
         pill.setAttribute('role', 'button');
         pill.setAttribute('tabindex', '0');
         pill.title = `${item.title} (${item.category})\nClick to open${index < 5 ? ` [Hotkey: ${index + 1}]` : ''}`;
+
+        if (isActive) {
+          activePillEl = pill;
+        }
 
         const dotColor = this.getCategoryColor(item.category);
         const hotkeyBadge = index < 5 ? `<span class="quickbar-pill__key" aria-hidden="true">${index + 1}</span>` : '';
@@ -238,6 +247,10 @@
 
         this.listEl.appendChild(pill);
       });
+
+      if (activePillEl && typeof activePillEl.scrollIntoView === 'function') {
+        activePillEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
     }
 
     escapeHtml(str) {

@@ -1806,11 +1806,11 @@ function openModal(entryId, options = {}) {
   // Track in Quick-Bar & emit event
   try {
     window.dispatchEvent(new CustomEvent("codex:entry-opened", { detail: { entryId, entry } }));
+  } catch (err) {
+    console.warn("[Codex] Event dispatch warning:", err);
     if (window.QuickBar && typeof window.QuickBar.record === "function") {
       window.QuickBar.record(entry);
     }
-  } catch (err) {
-    console.warn("[Codex] Event dispatch warning:", err);
   }
 
   elements.modalCategory.textContent = category?.label ?? "Entry";
