@@ -2,15 +2,15 @@
  * The O-Codex — Party Character Sheet & Roster Manager
  * Complete campaign management for players and DM:
  *  - Full Party Roster (Pre-seeded with canon characters + custom creation)
+ *  - Dedicated Left-Side Live Roll Tracker (Personal vs Everyone)
+ *  - Clean View/Play Mode by default (no typable text box outlines)
+ *  - Click-Bonus-To-Roll (clicking +1 in Constitution automatically rolls check)
+ *  - "✏️ Edit Sheet" toggle for modifying stats, notes, items, and inventory
  *  - Interactive Vitals (HP steppers, Temp HP, AC, Speed, Initiative, Death Saves)
- *  - Six Core Ability Scores with one-click Check & Saving Throw rolling via DiceRoller
- *  - Weapon & Attack Actions with direct Roll Attack & Roll Damage buttons
- *  - Equipment & Armor tracker
- *  - Magic Items & Relics with attunement and charges
- *  - Feats & Traits tracker
- *  - DM Boons & Divine Blessings
+ *  - Weapons & Attack Actions with Roll Attack & Roll Damage buttons
  *  - Divions & Manifestations (O-Codex Canon Magic System)
- *  - Currency & Aether Gems tracker
+ *  - DM Boons & Divine Blessings
+ *  - Equipment, Magic Items (Attunement & Charges), Feats & Aether Gems
  *  - Real-time party cloud synchronization via Firebase Firestore
  */
 
@@ -440,6 +440,8 @@
       this.characters = [];
       this.activeCharId = null;
       this.activeTab = 'combat'; // 'combat' | 'divions' | 'boons' | 'equipment' | 'magic' | 'feats' | 'notes'
+      this.isEditMode = false;   // Default: Play/View Mode (no typable boxes)
+      this.rollsTab = 'personal'; // 'personal' | 'everyone'
       this.debounceTimer = null;
 
       this.loadStorage();
@@ -488,7 +490,6 @@
     onRemoteCharacters(remoteParty) {
       if (!Array.isArray(remoteParty) || remoteParty.length === 0) return;
 
-      // Merge remote changes
       this.characters = remoteParty;
       localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(this.characters));
 
@@ -498,10 +499,7 @@
 
       this.renderRosterBar();
       this.renderCurrentSheet();
-
-      if (typeof window.showToast === 'function') {
-        window.showToast('✨ Character Sheets synced from party cloud', 'info', 2000);
-      }
+      this.renderRollTracker();
     }
 
     getActiveCharacter() {
@@ -514,16 +512,31 @@
         localStorage.setItem(ACTIVE_CHAR_KEY, id);
         this.renderRosterBar();
         this.renderCurrentSheet();
+        this.renderRollTracker();
       }
+    }
+
+    toggleEditMode() {
+      this.isEditMode = !this.isEditMode;
+      const btn = document.getElementById('char-edit-toggle-btn');
+      if (btn) {
+        btn.textContent = this.isEditMode ? '✓ Done Editing' : '✏️ Edit Sheet';
+        btn.classList.toggle('is-editing-active', this.isEditMode);
+      }
+      this.renderCurrentSheet();
     }
 
     init() {
       this.initDOM();
       this.renderRosterBar();
       this.renderCurrentSheet();
+      this.renderRollTracker();
     }
 
     initDOM() {
+      // Edit Mode Toggle
+      document.getElementById('char-edit-toggle-btn')?.addEventListener('click', () => this.toggleEditMode());
+
       // "+ New Character" button
       document.getElementById('char-add-btn')?.addEventListener('click', () => this.createNewCharacter());
 
@@ -542,6 +555,39 @@
           this.activeTab = btn.dataset.tab;
           this.renderTabContent();
         });
+      });
+
+      // Left-Side Roll Tracker Tabs: Personal vs Everyone
+      document.getElementById('rolls-tab-personal')?.addEventListener('click', () => {
+        this.rollsTab = 'personal';
+        document.getElementById('rolls-tab-personal')?.classList.add('is-active');
+        document.getElementById('rolls-tab-everyone')?.classList.remove('is-active');
+        this.renderRollTracker();
+      });
+
+      document.getElementById('rolls-tab-everyone')?.addEventListener('click', () => {
+        this.rollsTab = 'everyone';
+        document.getElementById('rolls-tab-everyone')?.classList.add('is-active');
+        document.getElementById('rolls-tab-personal')?.classList.remove('is-active');
+        this.renderRollTracker();
+      });
+
+      // Quick d20 button in roll sidebar
+      document.getElementById('char-quick-d20-btn')?.addEventListener('click', () => {
+        const char = this.getActiveCharacter();
+        if (window.DiceRoller) {
+          window.DiceRoller.roll('1d20', 'Quick d20', char?.name || 'Adventurer');
+        }
+      });
+
+      // Open full tray drawer
+      document.getElementById('char-open-drawer-btn')?.addEventListener('click', () => {
+        window.DiceRoller?.toggleTray();
+      });
+
+      // Listen for dice roll events to live-update roll sidebar
+      window.addEventListener('diceroller:new-roll', () => {
+        this.renderRollTracker();
       });
     }
 
@@ -568,20 +614,14 @@
       const char = this.getActiveCharacter();
       if (!char) return;
 
-      // Populate Header Inputs
-      const nameInput = document.getElementById('char-name-input');
-      const playerInput = document.getElementById('char-player-input');
-      const classInput = document.getElementById('char-class-input');
-      const heritageInput = document.getElementById('char-heritage-input');
-      const alignInput = document.getElementById('char-align-input');
+      const editBtn = document.getElementById('char-edit-toggle-btn');
+      if (editBtn) {
+        editBtn.textContent = this.isEditMode ? '✓ Done Editing' : '✏️ Edit Sheet';
+        editBtn.classList.toggle('is-editing-active', this.isEditMode);
+      }
 
-      if (nameInput) nameInput.value = char.name || '';
-      if (playerInput) playerInput.value = char.player || '';
-      if (classInput) classInput.value = char.classLevel || '';
-      if (heritageInput) heritageInput.value = char.heritage || '';
-      if (alignInput) alignInput.value = char.alignment || '';
-
-      this.attachHeaderListeners();
+      // Render Persona
+      this.renderPersona(char);
 
       // Render Vitals & Combat Header
       this.renderVitals(char);
@@ -591,141 +631,305 @@
 
       // Render Active Tab Content
       this.renderTabContent();
+
+      // Render Left Roll Tracker
+      this.renderRollTracker();
     }
 
-    attachHeaderListeners() {
-      const char = this.getActiveCharacter();
-      if (!char) return;
+    // 1. PERSONA HEADER (VIEW vs EDIT)
+    renderPersona(char) {
+      const container = document.getElementById('char-persona-section');
+      if (!container) return;
 
-      const bindInput = (id, prop) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.oninput = (e) => {
-          char[prop] = e.target.value;
-          this.saveStorage();
-          if (prop === 'name') this.renderRosterBar();
+      if (!this.isEditMode) {
+        // CLEAN PLAY/VIEW MODE (No typing inputs, pure typography)
+        container.className = 'char-persona-card persona-view-mode';
+        container.innerHTML = `
+          <div class="persona-display-head">
+            <div class="persona-title-group">
+              <h2 class="persona-hero-name">${escapeHtml(char.name || 'Hero')}</h2>
+              <span class="persona-hero-class">${escapeHtml(char.classLevel || 'Adventurer')}</span>
+            </div>
+            <div class="persona-meta-pill">
+              <span class="meta-label">Player:</span>
+              <strong class="meta-val">${escapeHtml(char.player || 'Player')}</strong>
+            </div>
+          </div>
+          <div class="persona-display-sub">
+            <span class="persona-tag"><strong>Heritage:</strong> ${escapeHtml(char.heritage || 'Human')}</span>
+            <span class="persona-tag"><strong>Alignment:</strong> ${escapeHtml(char.alignment || 'Neutral')}</span>
+          </div>
+        `;
+      } else {
+        // EDIT MODE (Inputs with clear borders and values)
+        container.className = 'char-persona-card persona-edit-mode';
+        container.innerHTML = `
+          <div class="persona-row persona-row-primary">
+            <div class="persona-field persona-field-name">
+              <label for="char-name-input">Character Name</label>
+              <input type="text" id="char-name-input" class="persona-input persona-input-lg" value="${escapeHtml(char.name || '')}" placeholder="Character Name" />
+            </div>
+            <div class="persona-field persona-field-class">
+              <label for="char-class-input">Class & Level</label>
+              <input type="text" id="char-class-input" class="persona-input" value="${escapeHtml(char.classLevel || '')}" placeholder="e.g. Manifestor 5" />
+            </div>
+            <div class="persona-field persona-field-player">
+              <label for="char-player-input">Player Name</label>
+              <input type="text" id="char-player-input" class="persona-input" value="${escapeHtml(char.player || '')}" placeholder="Player or DM" />
+            </div>
+          </div>
+          <div class="persona-row persona-row-secondary">
+            <div class="persona-field">
+              <label for="char-heritage-input">Heritage / Race</label>
+              <input type="text" id="char-heritage-input" class="persona-input" value="${escapeHtml(char.heritage || '')}" placeholder="e.g. Human" />
+            </div>
+            <div class="persona-field">
+              <label for="char-align-input">Alignment</label>
+              <input type="text" id="char-align-input" class="persona-input" value="${escapeHtml(char.alignment || '')}" placeholder="e.g. Chaotic Good" />
+            </div>
+          </div>
+        `;
+
+        // Wire inputs in edit mode
+        const bind = (id, prop) => {
+          const el = container.querySelector(`#${id}`);
+          el?.addEventListener('input', (e) => {
+            char[prop] = e.target.value;
+            this.saveStorage();
+            if (prop === 'name') this.renderRosterBar();
+          });
         };
-      };
-
-      bindInput('char-name-input', 'name');
-      bindInput('char-player-input', 'player');
-      bindInput('char-class-input', 'classLevel');
-      bindInput('char-heritage-input', 'heritage');
-      bindInput('char-align-input', 'alignment');
+        bind('char-name-input', 'name');
+        bind('char-player-input', 'player');
+        bind('char-class-input', 'classLevel');
+        bind('char-heritage-input', 'heritage');
+        bind('char-align-input', 'alignment');
+      }
     }
 
+    // 2. VITALS STRIP (HP, AC, Speed, Initiative, Death Saves)
     renderVitals(char) {
+      const container = document.getElementById('char-vitals-section');
+      if (!container) return;
+
       const vitals = char.vitals || {
         hpCurrent: 10, hpMax: 10, hpTemp: 0, ac: 10, initiative: 0, speed: 30, profBonus: 2, deathSaves: { successes: 0, failures: 0 }
       };
 
-      // HP display & steppers
-      const hpCurEl = document.getElementById('char-hp-current');
-      const hpMaxEl = document.getElementById('char-hp-max');
-      const hpTempEl = document.getElementById('char-hp-temp');
-      const hpBarFill = document.getElementById('char-hp-bar-fill');
-
-      if (hpCurEl) hpCurEl.value = vitals.hpCurrent;
-      if (hpMaxEl) hpMaxEl.value = vitals.hpMax;
-      if (hpTempEl) hpTempEl.value = vitals.hpTemp || 0;
-
       const hpPercent = Math.min(100, Math.max(0, (vitals.hpCurrent / (vitals.hpMax || 1)) * 100));
-      if (hpBarFill) {
-        hpBarFill.style.width = `${hpPercent}%`;
-        hpBarFill.style.backgroundColor = hpPercent > 50 ? '#38bdf8' : (hpPercent > 25 ? '#f59e0b' : '#ef4444');
+      const hpColor = hpPercent > 50 ? '#38bdf8' : (hpPercent > 25 ? '#f59e0b' : '#ef4444');
+      const initMod = vitals.initiative || 0;
+      const initModStr = initMod >= 0 ? `+${initMod}` : `${initMod}`;
+
+      if (!this.isEditMode) {
+        // CLEAN PLAY/VIEW MODE
+        container.innerHTML = `
+          <!-- HP Card -->
+          <div class="vital-card vital-card-hp">
+            <div class="vital-card-header">
+              <span class="vital-label">Hit Points</span>
+              <span class="vital-sublabel">${vitals.hpTemp > 0 ? `+${vitals.hpTemp} Temp` : 'Current / Max'}</span>
+            </div>
+            <div class="hp-stepper-row">
+              <button type="button" class="hp-step-btn" id="hp-minus-5">-5</button>
+              <button type="button" class="hp-step-btn" id="hp-minus-1">-1</button>
+              <div class="hp-static-box">
+                <span class="hp-cur-bold">${vitals.hpCurrent}</span>
+                <span class="hp-slash">/</span>
+                <span class="hp-max-dim">${vitals.hpMax}</span>
+              </div>
+              <button type="button" class="hp-step-btn" id="hp-plus-1">+1</button>
+              <button type="button" class="hp-step-btn" id="hp-plus-5">+5</button>
+            </div>
+            <div class="hp-bar-track">
+              <div class="hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
+            </div>
+          </div>
+
+          <!-- AC -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Armor Class</span>
+            <div class="vital-big-static">${vitals.ac}</div>
+            <span class="vital-caption">Shield & Armor</span>
+          </div>
+
+          <!-- Initiative -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Initiative</span>
+            <div class="vital-big-static">${initModStr}</div>
+            <button type="button" class="btn btn-secondary btn-xs" id="char-roll-init-btn">🎲 Roll Init</button>
+          </div>
+
+          <!-- Speed -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Speed</span>
+            <div class="vital-big-static">${vitals.speed}<span class="vital-unit">ft</span></div>
+            <span class="vital-caption">Movement</span>
+          </div>
+
+          <!-- Proficiency -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Proficiency</span>
+            <div class="vital-big-static">+${vitals.profBonus}</div>
+            <span class="vital-caption">Bonus</span>
+          </div>
+
+          <!-- Death Saves -->
+          <div class="vital-card vital-card-death">
+            <span class="vital-label">Death Saves</span>
+            <div class="death-saves-row">
+              <span class="death-save-label">Succ:</span>
+              <input type="checkbox" id="death-succ-1" class="death-box death-succ" ${vitals.deathSaves.successes >= 1 ? 'checked' : ''} />
+              <input type="checkbox" id="death-succ-2" class="death-box death-succ" ${vitals.deathSaves.successes >= 2 ? 'checked' : ''} />
+              <input type="checkbox" id="death-succ-3" class="death-box death-succ" ${vitals.deathSaves.successes >= 3 ? 'checked' : ''} />
+            </div>
+            <div class="death-saves-row">
+              <span class="death-save-label">Fail:</span>
+              <input type="checkbox" id="death-fail-1" class="death-box death-fail" ${vitals.deathSaves.failures >= 1 ? 'checked' : ''} />
+              <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
+              <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
+            </div>
+          </div>
+        `;
+      } else {
+        // EDIT MODE (Full input controls)
+        container.innerHTML = `
+          <!-- HP Edit Card -->
+          <div class="vital-card vital-card-hp">
+            <div class="vital-card-header">
+              <span class="vital-label">Hit Points (Edit)</span>
+              <span class="vital-sublabel">Current / Max / Temp</span>
+            </div>
+            <div class="hp-edit-row">
+              <label>Cur: <input type="number" id="hp-edit-cur" class="vital-edit-input" value="${vitals.hpCurrent}" min="0" /></label>
+              <label>Max: <input type="number" id="hp-edit-max" class="vital-edit-input" value="${vitals.hpMax}" min="1" /></label>
+              <label>Temp: <input type="number" id="hp-edit-temp" class="vital-edit-input" value="${vitals.hpTemp || 0}" min="0" /></label>
+            </div>
+            <div class="hp-bar-track">
+              <div class="hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
+            </div>
+          </div>
+
+          <!-- AC Edit -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Armor Class</span>
+            <input type="number" id="ac-edit-input" class="vital-edit-input vital-edit-lg" value="${vitals.ac}" min="1" max="50" />
+            <span class="vital-caption">Shield & Armor</span>
+          </div>
+
+          <!-- Initiative Edit -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Initiative Mod</span>
+            <input type="number" id="init-edit-input" class="vital-edit-input vital-edit-lg" value="${vitals.initiative || 0}" />
+            <span class="vital-caption">Bonus Mod</span>
+          </div>
+
+          <!-- Speed Edit -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Speed (ft)</span>
+            <input type="number" id="speed-edit-input" class="vital-edit-input vital-edit-lg" value="${vitals.speed}" min="0" step="5" />
+            <span class="vital-caption">Base Movement</span>
+          </div>
+
+          <!-- Proficiency Edit -->
+          <div class="vital-card vital-card-compact">
+            <span class="vital-label">Proficiency</span>
+            <input type="number" id="prof-edit-input" class="vital-edit-input vital-edit-lg" value="${vitals.profBonus}" min="1" max="10" />
+            <span class="vital-caption">Bonus</span>
+          </div>
+
+          <!-- Death Saves -->
+          <div class="vital-card vital-card-death">
+            <span class="vital-label">Death Saves</span>
+            <div class="death-saves-row">
+              <span class="death-save-label">Succ:</span>
+              <input type="checkbox" id="death-succ-1" class="death-box death-succ" ${vitals.deathSaves.successes >= 1 ? 'checked' : ''} />
+              <input type="checkbox" id="death-succ-2" class="death-box death-succ" ${vitals.deathSaves.successes >= 2 ? 'checked' : ''} />
+              <input type="checkbox" id="death-succ-3" class="death-box death-succ" ${vitals.deathSaves.successes >= 3 ? 'checked' : ''} />
+            </div>
+            <div class="death-saves-row">
+              <span class="death-save-label">Fail:</span>
+              <input type="checkbox" id="death-fail-1" class="death-box death-fail" ${vitals.deathSaves.failures >= 1 ? 'checked' : ''} />
+              <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
+              <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
+            </div>
+          </div>
+        `;
+
+        // Wire inputs in edit mode
+        container.querySelector('#hp-edit-cur')?.addEventListener('change', (e) => {
+          vitals.hpCurrent = parseInt(e.target.value, 10) || 0;
+          this.saveStorage();
+        });
+        container.querySelector('#hp-edit-max')?.addEventListener('change', (e) => {
+          vitals.hpMax = Math.max(1, parseInt(e.target.value, 10) || 1);
+          this.saveStorage();
+        });
+        container.querySelector('#hp-edit-temp')?.addEventListener('change', (e) => {
+          vitals.hpTemp = parseInt(e.target.value, 10) || 0;
+          this.saveStorage();
+        });
+        container.querySelector('#ac-edit-input')?.addEventListener('change', (e) => {
+          vitals.ac = parseInt(e.target.value, 10) || 10;
+          this.saveStorage();
+        });
+        container.querySelector('#init-edit-input')?.addEventListener('change', (e) => {
+          vitals.initiative = parseInt(e.target.value, 10) || 0;
+          this.saveStorage();
+        });
+        container.querySelector('#speed-edit-input')?.addEventListener('change', (e) => {
+          vitals.speed = parseInt(e.target.value, 10) || 30;
+          this.saveStorage();
+        });
+        container.querySelector('#prof-edit-input')?.addEventListener('change', (e) => {
+          vitals.profBonus = parseInt(e.target.value, 10) || 2;
+          this.saveStorage();
+        });
       }
 
-      // Steppers for HP
+      // HP Steppers (Active in view mode)
       const setupHpBtn = (id, delta) => {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.onclick = () => {
+        container.querySelector(`#${id}`)?.addEventListener('click', () => {
           vitals.hpCurrent = Math.max(0, vitals.hpCurrent + delta);
           this.saveStorage();
           this.renderVitals(char);
-        };
+        });
       };
-      setupHpBtn('char-hp-minus-5', -5);
-      setupHpBtn('char-hp-minus-1', -1);
-      setupHpBtn('char-hp-plus-1', 1);
-      setupHpBtn('char-hp-plus-5', 5);
+      setupHpBtn('hp-minus-5', -5);
+      setupHpBtn('hp-minus-1', -1);
+      setupHpBtn('hp-plus-1', 1);
+      setupHpBtn('hp-plus-5', 5);
 
-      if (hpCurEl) hpCurEl.onchange = (e) => {
-        vitals.hpCurrent = parseInt(e.target.value, 10) || 0;
-        this.saveStorage();
-        this.renderVitals(char);
-      };
-      if (hpMaxEl) hpMaxEl.onchange = (e) => {
-        vitals.hpMax = Math.max(1, parseInt(e.target.value, 10) || 1);
-        this.saveStorage();
-        this.renderVitals(char);
-      };
-      if (hpTempEl) hpTempEl.onchange = (e) => {
-        vitals.hpTemp = parseInt(e.target.value, 10) || 0;
-        this.saveStorage();
-      };
+      // Roll Initiative button
+      container.querySelector('#char-roll-init-btn')?.addEventListener('click', () => {
+        if (window.DiceRoller) {
+          window.DiceRoller.roll('1d20', 'Initiative Check', char.name, 'normal', initMod);
+        }
+      });
 
-      // AC, Speed, Initiative, Proficiency
-      const acEl = document.getElementById('char-ac-input');
-      const speedEl = document.getElementById('char-speed-input');
-      const profEl = document.getElementById('char-prof-input');
-      const initModEl = document.getElementById('char-init-mod');
-
-      if (acEl) {
-        acEl.value = vitals.ac;
-        acEl.onchange = (e) => { vitals.ac = parseInt(e.target.value, 10) || 10; this.saveStorage(); };
-      }
-      if (speedEl) {
-        speedEl.value = vitals.speed;
-        speedEl.onchange = (e) => { vitals.speed = parseInt(e.target.value, 10) || 30; this.saveStorage(); };
-      }
-      if (profEl) {
-        profEl.value = vitals.profBonus;
-        profEl.onchange = (e) => { vitals.profBonus = parseInt(e.target.value, 10) || 2; this.saveStorage(); };
-      }
-
-      // Initiative Roll Button
-      const initMod = vitals.initiative || 0;
-      if (initModEl) initModEl.textContent = initMod >= 0 ? `+${initMod}` : initMod;
-      const rollInitBtn = document.getElementById('char-roll-init-btn');
-      if (rollInitBtn) {
-        rollInitBtn.onclick = () => {
-          if (window.DiceRoller) {
-            window.DiceRoller.roll('1d20', 'Initiative Check', char.name, 'normal', initMod);
-          }
-        };
-      }
-
-      // Death Saves
+      // Death Saves Checkboxes
       const deathSaves = vitals.deathSaves || { successes: 0, failures: 0 };
       for (let i = 1; i <= 3; i++) {
-        const sBox = document.getElementById(`death-succ-${i}`);
-        const fBox = document.getElementById(`death-fail-${i}`);
-        if (sBox) {
-          sBox.checked = deathSaves.successes >= i;
-          sBox.onchange = () => {
-            let count = 0;
-            for (let j = 1; j <= 3; j++) {
-              if (document.getElementById(`death-succ-${j}`)?.checked) count++;
-            }
-            deathSaves.successes = count;
-            this.saveStorage();
-          };
-        }
-        if (fBox) {
-          fBox.checked = deathSaves.failures >= i;
-          fBox.onchange = () => {
-            let count = 0;
-            for (let j = 1; j <= 3; j++) {
-              if (document.getElementById(`death-fail-${j}`)?.checked) count++;
-            }
-            deathSaves.failures = count;
-            this.saveStorage();
-          };
-        }
+        container.querySelector(`#death-succ-${i}`)?.addEventListener('change', () => {
+          let count = 0;
+          for (let j = 1; j <= 3; j++) {
+            if (container.querySelector(`#death-succ-${j}`)?.checked) count++;
+          }
+          deathSaves.successes = count;
+          this.saveStorage();
+        });
+        container.querySelector(`#death-fail-${i}`)?.addEventListener('change', () => {
+          let count = 0;
+          for (let j = 1; j <= 3; j++) {
+            if (container.querySelector(`#death-fail-${j}`)?.checked) count++;
+          }
+          deathSaves.failures = count;
+          this.saveStorage();
+        });
       }
     }
 
+    // 3. ABILITY SCORES (CLICK-BONUS-TO-ROLL vs EDIT)
     renderAbilityScores(char) {
       const stats = char.stats || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, saveProfs: [] };
       const profBonus = (char.vitals && char.vitals.profBonus) ? char.vitals.profBonus : 2;
@@ -746,53 +950,74 @@
         const saveModStr = saveMod >= 0 ? `+${saveMod}` : `${saveMod}`;
 
         const card = document.createElement('div');
-        card.className = 'char-stat-card';
-        card.innerHTML = `
-          <div class="stat-card-title">${abNames[ab]}</div>
-          <div class="stat-card-mod">${modStr}</div>
-          <div class="stat-card-base">
-            <span>Score:</span>
-            <input type="number" class="stat-score-input" value="${score}" min="1" max="30" data-stat="${ab}" />
-          </div>
-          <div class="stat-card-actions">
-            <button type="button" class="stat-action-btn stat-btn-check" data-stat="${ab}" title="Roll ${fullNames[ab]} Ability Check">
-              Check (${modStr})
+
+        if (!this.isEditMode) {
+          // CLEAN PLAY MODE: The bonus itself is big, glowing, and clickable to roll!
+          card.className = 'char-stat-card stat-card-play';
+          card.innerHTML = `
+            <div class="stat-card-title">${abNames[ab]}</div>
+            <button type="button" class="stat-mod-click-btn" title="Click to roll ${fullNames[ab]} Check (${modStr})">
+              ${modStr}
             </button>
-            <button type="button" class="stat-action-btn stat-btn-save ${isProf ? 'is-proficient' : ''}" data-stat="${ab}" title="Roll ${fullNames[ab]} Save (${saveModStr})">
-              Save ${saveModStr}
-            </button>
-          </div>
-        `;
+            <div class="stat-score-caption">Score ${score}</div>
+            ${isProf ? `<div class="stat-save-badge-play" title="Proficient Save (+${saveMod})">Save ${saveModStr}</div>` : ''}
+          `;
 
-        // Input change
-        const input = card.querySelector('.stat-score-input');
-        input?.addEventListener('change', (e) => {
-          stats[ab] = parseInt(e.target.value, 10) || 10;
-          this.saveStorage();
-          this.renderAbilityScores(char);
-          this.renderVitals(char);
-        });
+          // Clicking the bonus (e.g. +1 in Constitution) rolls the check automatically!
+          const modBtn = card.querySelector('.stat-mod-click-btn');
+          modBtn?.addEventListener('click', () => {
+            if (window.DiceRoller) {
+              window.DiceRoller.roll('1d20', `${fullNames[ab]} Check`, char.name, 'normal', mod);
+            }
+          });
 
-        // Click to Roll Check
-        const checkBtn = card.querySelector('.stat-btn-check');
-        checkBtn?.addEventListener('click', () => {
-          if (window.DiceRoller) {
-            window.DiceRoller.roll('1d20', `${fullNames[ab]} Check`, char.name, 'normal', mod);
-          }
-        });
+          // Clicking save badge rolls saving throw
+          const saveBadge = card.querySelector('.stat-save-badge-play');
+          saveBadge?.addEventListener('click', () => {
+            if (window.DiceRoller) {
+              window.DiceRoller.roll('1d20', `${fullNames[ab]} Save`, char.name, 'normal', saveMod);
+            }
+          });
+        } else {
+          // EDIT MODE: Typable score input and save proficiency toggle
+          card.className = 'char-stat-card char-stat-card-editing';
+          card.innerHTML = `
+            <div class="stat-card-title">${abNames[ab]}</div>
+            <div class="stat-card-mod">${modStr}</div>
+            <div class="stat-card-base">
+              <span>Score:</span>
+              <input type="number" class="stat-score-input" value="${score}" min="1" max="30" data-stat="${ab}" />
+            </div>
+            <label class="stat-save-toggle-label">
+              <input type="checkbox" class="stat-save-prof-check" data-stat="${ab}" ${isProf ? 'checked' : ''} />
+              <span>Save Prof (+${profBonus})</span>
+            </label>
+          `;
 
-        // Click to Roll Save
-        const saveBtn = card.querySelector('.stat-btn-save');
-        saveBtn?.addEventListener('click', () => {
-          if (window.DiceRoller) {
-            window.DiceRoller.roll('1d20', `${fullNames[ab]} Save`, char.name, 'normal', saveMod);
-          }
-        });
+          const scoreInput = card.querySelector('.stat-score-input');
+          scoreInput?.addEventListener('change', (e) => {
+            stats[ab] = parseInt(e.target.value, 10) || 10;
+            this.saveStorage();
+            this.renderAbilityScores(char);
+          });
+
+          const profCheck = card.querySelector('.stat-save-prof-check');
+          profCheck?.addEventListener('change', (e) => {
+            if (!Array.isArray(stats.saveProfs)) stats.saveProfs = [];
+            if (e.target.checked) {
+              if (!stats.saveProfs.includes(ab)) stats.saveProfs.push(ab);
+            } else {
+              stats.saveProfs = stats.saveProfs.filter(s => s !== ab);
+            }
+            this.saveStorage();
+          });
+        }
 
         container.appendChild(card);
       });
     }
 
+    // 4. SUB-TABS (Combat, Divions, Boons, Equipment, Magic, Feats, Notes)
     renderTabContent() {
       const char = this.getActiveCharacter();
       if (!char) return;
@@ -827,21 +1052,23 @@
       }
     }
 
-    // 1. COMBAT & ATTACKS TAB
+    // COMBAT & ATTACKS TAB
     renderCombatTab(container, char) {
       if (!Array.isArray(char.attacks)) char.attacks = [];
 
       let attacksHtml = '';
       if (char.attacks.length === 0) {
-        attacksHtml = `<div class="char-empty-msg">No attacks or weapons registered. Click "Add Attack" below!</div>`;
+        attacksHtml = `<div class="char-empty-msg">No attacks or weapons registered.${this.isEditMode ? ' Click "Add Attack" below!' : ''}</div>`;
       } else {
         attacksHtml = char.attacks.map((atk, index) => `
           <div class="char-item-card char-atk-card" data-index="${index}">
             <div class="item-card-header">
               <strong class="item-card-title">${escapeHtml(atk.name)}</strong>
-              <div class="item-card-controls">
-                <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Attack">✕</button>
-              </div>
+              ${this.isEditMode ? `
+                <div class="item-card-controls">
+                  <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Attack">✕</button>
+                </div>
+              ` : ''}
             </div>
             <div class="atk-card-details">
               <span class="atk-bonus-badge">Atk: ${atk.bonus >= 0 ? `+${atk.bonus}` : atk.bonus}</span>
@@ -863,42 +1090,37 @@
       container.innerHTML = `
         <div class="char-section-head">
           <h3>Attacks & Combat Actions</h3>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Attack / Weapon</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Attack / Weapon</button>` : ''}
         </div>
         <div class="char-cards-grid">${attacksHtml}</div>
       `;
 
       // Handlers
-      container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
-        const name = prompt('Weapon / Attack Name (e.g., Shortsword, Fire Bolt):');
-        if (!name) return;
-        const bonus = parseInt(prompt('Attack Bonus (e.g. 5 for +5):', '5'), 10) || 0;
-        const damageFormula = prompt('Damage Formula (e.g., 1d8+3, 2d6):', '1d8+3') || '1d8';
-        const damageType = prompt('Damage Type (e.g., Slashing, Radiant):', 'Slashing') || '';
-        const notes = prompt('Additional Notes / Properties (optional):', '') || '';
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
+          const name = prompt('Weapon / Attack Name (e.g. Shortsword, Fire Bolt):');
+          if (!name) return;
+          const bonus = parseInt(prompt('Attack Bonus (e.g. 5 for +5):', '5'), 10) || 0;
+          const damageFormula = prompt('Damage Formula (e.g., 1d8+3, 2d6):', '1d8+3') || '1d8';
+          const damageType = prompt('Damage Type (e.g. Slashing, Radiant):', 'Slashing') || '';
+          const notes = prompt('Additional Notes / Properties (optional):', '') || '';
 
-        char.attacks.push({
-          id: `atk_${Date.now()}`,
-          name,
-          bonus,
-          damageFormula,
-          damageType,
-          notes
+          char.attacks.push({ id: `atk_${Date.now()}`, name, bonus, damageFormula, damageType, notes });
+          this.saveStorage();
+          this.renderCombatTab(container, char);
         });
-        this.saveStorage();
-        this.renderCombatTab(container, char);
-      });
 
-      container.querySelectorAll('.char-item-del-btn[data-type="attack"]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const idx = parseInt(btn.dataset.index, 10);
-          if (confirm(`Remove "${char.attacks[idx].name}"?`)) {
-            char.attacks.splice(idx, 1);
-            this.saveStorage();
-            this.renderCombatTab(container, char);
-          }
+        container.querySelectorAll('.char-item-del-btn[data-type="attack"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            if (confirm(`Remove "${char.attacks[idx].name}"?`)) {
+              char.attacks.splice(idx, 1);
+              this.saveStorage();
+              this.renderCombatTab(container, char);
+            }
+          });
         });
-      });
+      }
 
       container.querySelectorAll('.atk-roll-atk-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -921,13 +1143,13 @@
       });
     }
 
-    // 2. DIVIONS & MANIFESTS TAB (The O-Codex Canon Magic)
+    // DIVIONS & MANIFESTS TAB
     renderDivionsTab(container, char) {
       if (!Array.isArray(char.divions)) char.divions = [];
 
       let divionsHtml = '';
       if (char.divions.length === 0) {
-        divionsHtml = `<div class="char-empty-msg">No Divions recorded. Register your manifests, domain resonance, or Flow arts below!</div>`;
+        divionsHtml = `<div class="char-empty-msg">No Divions recorded.${this.isEditMode ? ' Register manifests or Flow arts below!' : ''}</div>`;
       } else {
         divionsHtml = char.divions.map((div, index) => `
           <div class="char-item-card char-divion-card">
@@ -937,7 +1159,7 @@
                 <span class="divion-badge-type">${escapeHtml(div.type || 'Manifest')}</span>
                 <span class="divion-badge-rank">${escapeHtml(div.rank || 'Tier I')}</span>
               </div>
-              <button type="button" class="char-item-del-btn" data-type="divion" data-index="${index}" title="Remove Divion">✕</button>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="divion" data-index="${index}" title="Remove Divion">✕</button>` : ''}
             </div>
             <div class="divion-cost"><strong>Cost:</strong> ${escapeHtml(div.cost || 'None')}</div>
             <div class="divion-manifest"><strong>Manifestation:</strong> ${escapeHtml(div.manifestEffect || '')}</div>
@@ -951,50 +1173,45 @@
             <h3>Divions & Manifestations</h3>
             <p class="section-subtitle">Canon Magic System: Channeling Flow through divine domains and personal manifests.</p>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-divion">+ Add Divion</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-divion">+ Add Divion</button>` : ''}
         </div>
         <div class="char-cards-grid">${divionsHtml}</div>
       `;
 
-      container.querySelector('#btn-add-divion')?.addEventListener('click', () => {
-        const name = prompt('Divion / Manifest Name:');
-        if (!name) return;
-        const type = prompt('Domain / School (e.g., Illusion, Light, Kinetic, Primal):', 'Domain Manifest') || '';
-        const rank = prompt('Tier / Rank (e.g., Tier I, Tier II, Master):', 'Tier I') || '';
-        const cost = prompt('Flow / Aether Cost (e.g., 1 Flow, 2 Shards):', '1 Flow') || '';
-        const manifestEffect = prompt('Manifestation Effect & Lore:') || '';
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-divion')?.addEventListener('click', () => {
+          const name = prompt('Divion / Manifest Name:');
+          if (!name) return;
+          const type = prompt('Domain / School (e.g. Illusion, Light, Kinetic, Primal):', 'Domain Manifest') || '';
+          const rank = prompt('Tier / Rank (e.g. Tier I, Tier II, Master):', 'Tier I') || '';
+          const cost = prompt('Flow / Aether Cost (e.g. 1 Flow, 2 Shards):', '1 Flow') || '';
+          const manifestEffect = prompt('Manifestation Effect & Lore:') || '';
 
-        char.divions.push({
-          id: `div_${Date.now()}`,
-          name,
-          type,
-          rank,
-          cost,
-          manifestEffect
+          char.divions.push({ id: `div_${Date.now()}`, name, type, rank, cost, manifestEffect });
+          this.saveStorage();
+          this.renderDivionsTab(container, char);
         });
-        this.saveStorage();
-        this.renderDivionsTab(container, char);
-      });
 
-      container.querySelectorAll('.char-item-del-btn[data-type="divion"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index, 10);
-          if (confirm(`Remove "${char.divions[idx].name}"?`)) {
-            char.divions.splice(idx, 1);
-            this.saveStorage();
-            this.renderDivionsTab(container, char);
-          }
+        container.querySelectorAll('.char-item-del-btn[data-type="divion"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            if (confirm(`Remove "${char.divions[idx].name}"?`)) {
+              char.divions.splice(idx, 1);
+              this.saveStorage();
+              this.renderDivionsTab(container, char);
+            }
+          });
         });
-      });
+      }
     }
 
-    // 3. DM BOONS & BLESSINGS TAB
+    // DM BOONS & BLESSINGS TAB
     renderBoonsTab(container, char) {
       if (!Array.isArray(char.boons)) char.boons = [];
 
       let boonsHtml = '';
       if (char.boons.length === 0) {
-        boonsHtml = `<div class="char-empty-msg">No DM boons or divine blessings recorded yet. When the DM awards a boon, write it here!</div>`;
+        boonsHtml = `<div class="char-empty-msg">No DM boons or divine blessings recorded yet.</div>`;
       } else {
         boonsHtml = char.boons.map((boon, index) => `
           <div class="char-item-card char-boon-card">
@@ -1003,7 +1220,7 @@
                 <strong class="item-card-title">${escapeHtml(boon.name)}</strong>
                 <span class="boon-granted-by">Granted by: <em>${escapeHtml(boon.grantedBy || 'Dungeon Master')}</em></span>
               </div>
-              <button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
             </div>
             <div class="boon-effect">${escapeHtml(boon.effect || '')}</div>
           </div>
@@ -1016,54 +1233,51 @@
             <h3>DM Boons, Blessings & Divine Gifts</h3>
             <p class="section-subtitle">Special campaign rewards, patron blessings, and narrative miracles bestowed by the DM.</p>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-boon">+ Add Boon / Blessing</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-boon">+ Add Boon / Blessing</button>` : ''}
         </div>
         <div class="char-cards-grid">${boonsHtml}</div>
       `;
 
-      container.querySelector('#btn-add-boon')?.addEventListener('click', () => {
-        const name = prompt('Boon / Blessing Title (e.g. Azzie\'s Calming Aegis):');
-        if (!name) return;
-        const grantedBy = prompt('Granted By / Origin (e.g., Azzie, The High Sovereign, Ancient Entity):', 'Dungeon Master') || 'Dungeon Master';
-        const effect = prompt('Boon Effect / Power details:') || '';
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-boon')?.addEventListener('click', () => {
+          const name = prompt('Boon / Blessing Title:');
+          if (!name) return;
+          const grantedBy = prompt('Granted By (e.g. Azzie, The High Sovereign):', 'Dungeon Master') || 'Dungeon Master';
+          const effect = prompt('Boon Effect / Power details:') || '';
 
-        char.boons.push({
-          id: `boon_${Date.now()}`,
-          name,
-          grantedBy,
-          effect
+          char.boons.push({ id: `boon_${Date.now()}`, name, grantedBy, effect });
+          this.saveStorage();
+          this.renderBoonsTab(container, char);
         });
-        this.saveStorage();
-        this.renderBoonsTab(container, char);
-      });
 
-      container.querySelectorAll('.char-item-del-btn[data-type="boon"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index, 10);
-          if (confirm(`Remove "${char.boons[idx].name}"?`)) {
-            char.boons.splice(idx, 1);
-            this.saveStorage();
-            this.renderBoonsTab(container, char);
-          }
+        container.querySelectorAll('.char-item-del-btn[data-type="boon"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            if (confirm(`Remove "${char.boons[idx].name}"?`)) {
+              char.boons.splice(idx, 1);
+              this.saveStorage();
+              this.renderBoonsTab(container, char);
+            }
+          });
         });
-      });
+      }
     }
 
-    // 4. EQUIPMENT & CURRENCY TAB
+    // EQUIPMENT & CURRENCY TAB
     renderEquipmentTab(container, char) {
       if (!Array.isArray(char.equipment)) char.equipment = [];
       const cur = char.currency || { cp: 0, sp: 0, gp: 0, pp: 0, aetherGems: 0 };
 
       let eqHtml = '';
       if (char.equipment.length === 0) {
-        eqHtml = `<div class="char-empty-msg">No equipment items recorded. Keep track of packs, armor, kits and provisions!</div>`;
+        eqHtml = `<div class="char-empty-msg">No equipment items recorded.</div>`;
       } else {
         eqHtml = char.equipment.map((eq, index) => `
           <div class="char-eq-row">
             <span class="eq-qty">x${eq.qty || 1}</span>
             <span class="eq-name">${escapeHtml(eq.name)}</span>
             <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
-            <button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}">✕</button>
+            ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}">✕</button>` : ''}
           </div>
         `).join('');
       }
@@ -1071,82 +1285,78 @@
       container.innerHTML = `
         <div class="char-section-head">
           <h3>Equipment & Inventory</h3>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment</button>` : ''}
         </div>
 
-        <div class="char-currency-panel">
+        <div class="char-currency-panel ${!this.isEditMode ? 'currency-panel-view' : ''}">
           <div class="currency-group">
-            <label>Copper (CP)</label>
-            <input type="number" id="cur-cp" value="${cur.cp || 0}" min="0" />
+            <label>CP</label>
+            ${this.isEditMode ? `<input type="number" id="cur-cp" value="${cur.cp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.cp || 0}</strong>`}
           </div>
           <div class="currency-group">
-            <label>Silver (SP)</label>
-            <input type="number" id="cur-sp" value="${cur.sp || 0}" min="0" />
+            <label>SP</label>
+            ${this.isEditMode ? `<input type="number" id="cur-sp" value="${cur.sp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.sp || 0}</strong>`}
           </div>
           <div class="currency-group">
-            <label>Gold (GP)</label>
-            <input type="number" id="cur-gp" value="${cur.gp || 0}" min="0" />
+            <label>GP</label>
+            ${this.isEditMode ? `<input type="number" id="cur-gp" value="${cur.gp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.gp || 0}</strong>`}
           </div>
           <div class="currency-group">
-            <label>Platinum (PP)</label>
-            <input type="number" id="cur-pp" value="${cur.pp || 0}" min="0" />
+            <label>PP</label>
+            ${this.isEditMode ? `<input type="number" id="cur-pp" value="${cur.pp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.pp || 0}</strong>`}
           </div>
           <div class="currency-group currency-special">
-            <label>💎 Aether Gems</label>
-            <input type="number" id="cur-gems" value="${cur.aetherGems || 0}" min="0" />
+            <label>💎 Aether</label>
+            ${this.isEditMode ? `<input type="number" id="cur-gems" value="${cur.aetherGems || 0}" min="0" />` : `<strong class="cur-static-val">${cur.aetherGems || 0}</strong>`}
           </div>
         </div>
 
         <div class="char-eq-list">${eqHtml}</div>
       `;
 
-      // Bind currency
-      ['cp', 'sp', 'gp', 'pp'].forEach(coin => {
-        container.querySelector(`#cur-${coin}`)?.addEventListener('change', (e) => {
-          cur[coin] = parseInt(e.target.value, 10) || 0;
+      if (this.isEditMode) {
+        ['cp', 'sp', 'gp', 'pp'].forEach(coin => {
+          container.querySelector(`#cur-${coin}`)?.addEventListener('change', (e) => {
+            cur[coin] = parseInt(e.target.value, 10) || 0;
+            char.currency = cur;
+            this.saveStorage();
+          });
+        });
+        container.querySelector('#cur-gems')?.addEventListener('change', (e) => {
+          cur.aetherGems = parseInt(e.target.value, 10) || 0;
           char.currency = cur;
           this.saveStorage();
         });
-      });
-      container.querySelector('#cur-gems')?.addEventListener('change', (e) => {
-        cur.aetherGems = parseInt(e.target.value, 10) || 0;
-        char.currency = cur;
-        this.saveStorage();
-      });
 
-      container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
-        const name = prompt('Equipment Item Name:');
-        if (!name) return;
-        const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
-        const notes = prompt('Notes / Details:') || '';
+        container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
+          const name = prompt('Equipment Item Name:');
+          if (!name) return;
+          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
+          const notes = prompt('Notes / Details:') || '';
 
-        char.equipment.push({
-          id: `eq_${Date.now()}`,
-          name,
-          qty,
-          notes
-        });
-        this.saveStorage();
-        this.renderEquipmentTab(container, char);
-      });
-
-      container.querySelectorAll('.char-item-del-btn[data-type="equipment"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index, 10);
-          char.equipment.splice(idx, 1);
+          char.equipment.push({ id: `eq_${Date.now()}`, name, qty, notes });
           this.saveStorage();
           this.renderEquipmentTab(container, char);
         });
-      });
+
+        container.querySelectorAll('.char-item-del-btn[data-type="equipment"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            char.equipment.splice(idx, 1);
+            this.saveStorage();
+            this.renderEquipmentTab(container, char);
+          });
+        });
+      }
     }
 
-    // 5. MAGIC ITEMS & RELICS TAB
+    // MAGIC ITEMS & RELICS TAB
     renderMagicTab(container, char) {
       if (!Array.isArray(char.magicItems)) char.magicItems = [];
 
       let itemsHtml = '';
       if (char.magicItems.length === 0) {
-        itemsHtml = `<div class="char-empty-msg">No magic items or relics attuned. Add rare grimoires, aetherial amulets, and relics below!</div>`;
+        itemsHtml = `<div class="char-empty-msg">No magic items or relics attuned.</div>`;
       } else {
         itemsHtml = char.magicItems.map((item, index) => `
           <div class="char-item-card char-magic-card">
@@ -1156,7 +1366,7 @@
                 <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
                 ${item.attuned ? '<span class="magic-attuned-badge">✓ Attuned</span>' : ''}
               </div>
-              <button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}">✕</button>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}">✕</button>` : ''}
             </div>
             ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
             <div class="magic-desc">${escapeHtml(item.description || '')}</div>
@@ -1167,44 +1377,39 @@
       container.innerHTML = `
         <div class="char-section-head">
           <h3>Magic Items & Relics</h3>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
         </div>
         <div class="char-cards-grid">${itemsHtml}</div>
       `;
 
-      container.querySelector('#btn-add-magic')?.addEventListener('click', () => {
-        const name = prompt('Magic Item Name:');
-        if (!name) return;
-        const rarity = prompt('Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact):', 'Rare') || 'Uncommon';
-        const attuned = confirm('Is this item Attuned to your character?');
-        const charges = prompt('Charges / Uses (e.g. 3 / 3 daily, Passive):', 'Passive') || '';
-        const description = prompt('Item Description & Powers:') || '';
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-magic')?.addEventListener('click', () => {
+          const name = prompt('Magic Item Name:');
+          if (!name) return;
+          const rarity = prompt('Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact):', 'Rare') || 'Uncommon';
+          const attuned = confirm('Is this item Attuned to your character?');
+          const charges = prompt('Charges / Uses (e.g. 3 / 3 daily, Passive):', 'Passive') || '';
+          const description = prompt('Item Description & Powers:') || '';
 
-        char.magicItems.push({
-          id: `item_${Date.now()}`,
-          name,
-          rarity,
-          attuned,
-          charges,
-          description
+          char.magicItems.push({ id: `item_${Date.now()}`, name, rarity, attuned, charges, description });
+          this.saveStorage();
+          this.renderMagicTab(container, char);
         });
-        this.saveStorage();
-        this.renderMagicTab(container, char);
-      });
 
-      container.querySelectorAll('.char-item-del-btn[data-type="magic"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index, 10);
-          if (confirm(`Remove "${char.magicItems[idx].name}"?`)) {
-            char.magicItems.splice(idx, 1);
-            this.saveStorage();
-            this.renderMagicTab(container, char);
-          }
+        container.querySelectorAll('.char-item-del-btn[data-type="magic"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            if (confirm(`Remove "${char.magicItems[idx].name}"?`)) {
+              char.magicItems.splice(idx, 1);
+              this.saveStorage();
+              this.renderMagicTab(container, char);
+            }
+          });
         });
-      });
+      }
     }
 
-    // 6. FEATS & TRAITS TAB
+    // FEATS & TRAITS TAB
     renderFeatsTab(container, char) {
       if (!Array.isArray(char.feats)) char.feats = [];
 
@@ -1219,7 +1424,7 @@
                 <strong class="item-card-title">${escapeHtml(feat.name)}</strong>
                 <span class="feat-source-badge">${escapeHtml(feat.source || 'Feat')}</span>
               </div>
-              <button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}">✕</button>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}">✕</button>` : ''}
             </div>
             <div class="feat-desc">${escapeHtml(feat.description || '')}</div>
           </div>
@@ -1229,53 +1434,120 @@
       container.innerHTML = `
         <div class="char-section-head">
           <h3>Feats & Special Traits</h3>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-add-feat">+ Add Feat</button>
+          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-feat">+ Add Feat</button>` : ''}
         </div>
         <div class="char-cards-grid">${featsHtml}</div>
       `;
 
-      container.querySelector('#btn-add-feat')?.addEventListener('click', () => {
-        const name = prompt('Feat / Trait Name:');
-        if (!name) return;
-        const source = prompt('Source (e.g., General Feat, Racial Trait, Class):', 'General Feat') || 'Feat';
-        const description = prompt('Feat Rules & Benefits:') || '';
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-feat')?.addEventListener('click', () => {
+          const name = prompt('Feat / Trait Name:');
+          if (!name) return;
+          const source = prompt('Source (e.g. General Feat, Racial Trait):', 'General Feat') || 'Feat';
+          const description = prompt('Feat Rules & Benefits:') || '';
 
-        char.feats.push({
-          id: `feat_${Date.now()}`,
-          name,
-          source,
-          description
-        });
-        this.saveStorage();
-        this.renderFeatsTab(container, char);
-      });
-
-      container.querySelectorAll('.char-item-del-btn[data-type="feat"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index, 10);
-          char.feats.splice(idx, 1);
+          char.feats.push({ id: `feat_${Date.now()}`, name, source, description });
           this.saveStorage();
           this.renderFeatsTab(container, char);
         });
+
+        container.querySelectorAll('.char-item-del-btn[data-type="feat"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index, 10);
+            char.feats.splice(idx, 1);
+            this.saveStorage();
+            this.renderFeatsTab(container, char);
+          });
+        });
+      }
+    }
+
+    // BACKSTORY & SESSION NOTES TAB
+    renderNotesTab(container, char) {
+      if (!this.isEditMode) {
+        const text = char.notes ? escapeHtml(char.notes).replace(/\n/g, '<br>') : '<em>No notes recorded. Click "Edit Sheet" above to write backstory and session reminders.</em>';
+        container.innerHTML = `
+          <div class="char-section-head">
+            <h3>Character Lore & Session Notes</h3>
+          </div>
+          <div class="char-notes-box char-notes-view">
+            <div class="notes-rendered-text">${text}</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="char-section-head">
+            <h3>Character Lore & Session Notes</h3>
+          </div>
+          <div class="char-notes-box">
+            <textarea id="char-notes-textarea" class="char-notes-input" placeholder="Write backstory details, campaign reminders, personal goals, and session highlights...">${escapeHtml(char.notes || '')}</textarea>
+          </div>
+        `;
+
+        const area = container.querySelector('#char-notes-textarea');
+        area?.addEventListener('input', (e) => {
+          char.notes = e.target.value;
+          this.saveStorage();
+        });
+      }
+    }
+
+    // 5. LEFT-SIDE ROLL TRACKER WINDOW (PERSONAL vs EVERYONE)
+    renderRollTracker() {
+      const feed = document.getElementById('char-rolls-feed');
+      if (!feed) return;
+
+      const char = this.getActiveCharacter();
+      const allHistory = (window.DiceRoller && Array.isArray(window.DiceRoller.history)) ? window.DiceRoller.history : [];
+
+      let rolls = [];
+      if (this.rollsTab === 'personal') {
+        rolls = allHistory.filter(r => {
+          if (!r || !r.roller) return false;
+          const rName = r.roller.toLowerCase();
+          return rName === (char?.name || '').toLowerCase() || 
+                 rName === (char?.player || '').toLowerCase() || 
+                 rName === (localStorage.getItem('o_codex_player_name') || '').toLowerCase();
+        });
+      } else {
+        rolls = allHistory;
+      }
+
+      if (rolls.length === 0) {
+        feed.innerHTML = `
+          <div class="rolls-sidebar-empty">
+            <span class="empty-dice-icon">🎲</span>
+            <p>${this.rollsTab === 'personal' ? `No rolls from <strong>${escapeHtml(char?.name || 'you')}</strong> yet.<br>Click any stat bonus above to roll!` : 'No rolls recorded yet.<br>Roll a d20 to start the party feed!'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      feed.innerHTML = '';
+      rolls.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `roll-log-card ${item.isCrit ? 'is-crit' : ''} ${item.isFumble ? 'is-fumble' : ''}`;
+        card.innerHTML = `
+          <div class="roll-log-head">
+            <strong class="roll-log-roller">${escapeHtml(item.roller)}</strong>
+            <span class="roll-log-time">${this.formatTime(item.timestamp)}</span>
+          </div>
+          <div class="roll-log-body">
+            <span class="roll-log-label">${escapeHtml(item.label)}</span>
+            <span class="roll-log-total">${item.total}</span>
+          </div>
+          ${item.isCrit ? '<div class="roll-log-tag tag-crit">✨ CRITICAL HIT (NAT 20)</div>' : ''}
+          ${item.isFumble ? '<div class="roll-log-tag tag-fumble">💀 CRITICAL FUMBLE (NAT 1)</div>' : ''}
+          <div class="roll-log-formula">${escapeHtml(item.formula)} ➔ ${escapeHtml(item.detailsText)}</div>
+        `;
+        feed.appendChild(card);
       });
     }
 
-    // 7. BACKSTORY & SESSION NOTES TAB
-    renderNotesTab(container, char) {
-      container.innerHTML = `
-        <div class="char-section-head">
-          <h3>Character Lore & Session Notes</h3>
-        </div>
-        <div class="char-notes-box">
-          <textarea id="char-notes-textarea" class="char-notes-input" placeholder="Write backstory details, campaign reminders, personal goals, and session highlights...">${escapeHtml(char.notes || '')}</textarea>
-        </div>
-      `;
-
-      const area = container.querySelector('#char-notes-textarea');
-      area?.addEventListener('input', (e) => {
-        char.notes = e.target.value;
-        this.saveStorage();
-      });
+    formatTime(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     }
 
     // CREATE NEW CHARACTER
@@ -1293,25 +1565,9 @@
         level: 1,
         alignment: 'Neutral',
         vitals: {
-          hpCurrent: 10,
-          hpMax: 10,
-          hpTemp: 0,
-          ac: 10,
-          initiative: 0,
-          speed: 30,
-          profBonus: 2,
-          hitDice: '1d8',
-          deathSaves: { successes: 0, failures: 0 }
+          hpCurrent: 10, hpMax: 10, hpTemp: 0, ac: 10, initiative: 0, speed: 30, profBonus: 2, hitDice: '1d8', deathSaves: { successes: 0, failures: 0 }
         },
-        stats: {
-          str: 10,
-          dex: 10,
-          con: 10,
-          int: 10,
-          wis: 10,
-          cha: 10,
-          saveProfs: []
-        },
+        stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, saveProfs: [] },
         attacks: [],
         divions: [],
         boons: [],

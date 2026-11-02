@@ -148,9 +148,13 @@ window.showToast = function(message, type = "info", duration = 3200) {
   };
   const icon = iconMap[type] || "✨";
 
+  const safeMsg = /<[a-z][\s\S]*>/i.test(message)
+    ? message.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    : escapeHtml(message);
+
   toast.innerHTML = `
     <span class="toast-icon" aria-hidden="true">${icon}</span>
-    <span class="toast-message">${escapeHtml(message)}</span>
+    <span class="toast-message">${safeMsg}</span>
   `;
 
   container.appendChild(toast);

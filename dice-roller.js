@@ -286,7 +286,13 @@
       this.renderLatestResult(rollResult);
       this.renderHistory();
 
-      // Show floating party roll toast
+      // Notify Character Sheet left-hand roll tracker
+      window.dispatchEvent(new CustomEvent('diceroller:new-roll', { detail: rollResult }));
+      if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
+        window.CharacterSheet.renderRollTracker();
+      }
+
+      // Show floating party roll toast (suppressed when in Characters mode)
       this.showRollToast(rollResult);
 
       // Broadcast to Firebase Firestore for real-time party sync!
@@ -356,11 +362,16 @@
     }
 
     showRollToast(roll) {
+      // In Characters mode, rolls are live-tracked in the dedicated left panel — no top-right toast needed!
+      if (document.body.classList.contains('characters-mode-active') || (window.state && window.state.appMode === 'characters')) {
+        return;
+      }
+
       if (typeof window.showToast !== 'function') return;
 
-      let msg = `🎲 <strong>${escapeHtml(roll.roller)}</strong> rolled <strong>${roll.total}</strong> for <em>${escapeHtml(roll.label)}</em>`;
-      if (roll.isCrit) msg += ` · ✨ <strong>NAT 20!</strong>`;
-      else if (roll.isFumble) msg += ` · 💀 <strong>NAT 1!</strong>`;
+      let msg = `🎲 ${roll.roller} rolled ${roll.total} for ${roll.label}`;
+      if (roll.isCrit) msg += ` · ✨ NAT 20!`;
+      else if (roll.isFumble) msg += ` · 💀 NAT 1!`;
 
       window.showToast(msg, roll.isCrit ? 'success' : (roll.isFumble ? 'warning' : 'info'), 3200);
     }
@@ -375,6 +386,13 @@
       this.saveStorage();
 
       this.renderHistory();
+
+      // Notify Character Sheet left-hand roll tracker
+      window.dispatchEvent(new CustomEvent('diceroller:new-roll', { detail: remoteRoll }));
+      if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
+        window.CharacterSheet.renderRollTracker();
+      }
+
       this.showRollToast(remoteRoll);
       this.playDiceSound();
     }
