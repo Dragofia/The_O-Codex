@@ -1483,6 +1483,10 @@
         // Click to inspect territory (DM Mode: Edit modal | Player Mode: Read-only lore view)
         polygon.on('click', (e) => {
           if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          if (window.MapTactics && window.MapTactics.isMeasuring) {
+            window.MapTactics.onMapClick(e);
+            return;
+          }
           L.DomEvent.stopPropagation(e);
           if (this.isDmMode()) {
             this.openEditTerritoryModal(reg.id);
@@ -1493,6 +1497,7 @@
 
         polygon.on('mouseover', () => {
           if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          if (window.MapTactics && window.MapTactics.isMeasuring) return;
           polygon.setStyle({
             weight: 3.5,
             fillOpacity: 0.28
@@ -1592,8 +1597,12 @@
           className: 'custom-map-tooltip'
         });
 
-        marker.on('click', () => {
+        marker.on('click', (e) => {
           if (wasDragged || this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
+          if (window.MapTactics && window.MapTactics.isMeasuring) {
+            window.MapTactics.onMapClick(e);
+            return;
+          }
           this.openPinDrawer(pin);
         });
 

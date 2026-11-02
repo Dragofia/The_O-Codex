@@ -3611,25 +3611,31 @@ body.map-mode-active {
    PHASE 2: TACTICAL MAP ENHANCEMENTS
    ======================================================================== */
 
-/* 1. Map Category Filter Bar (Top Center) */
+/* When Map Mode is active: hide the bottom Codex Quick-Bar */
+body.map-mode-active .quickbar-dock {
+  display: none !important;
+}
+
+/* 1. Map Category Filter Bar (Docked at Bottom Center, replacing the Quick-Bar!) */
 .map-filter-bar {
   position: absolute;
-  top: 1.25rem;
+  bottom: 1.25rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1200;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(6, 11, 20, 0.88);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 11, 20, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
-  padding: 4px 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 14px rgba(0, 0, 0, 0.4);
-  max-width: calc(100vw - 32rem);
+  padding: 5px 8px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.75), 0 0 16px rgba(0, 0, 0, 0.5);
+  max-width: calc(100vw - 3rem);
   overflow-x: auto;
   scrollbar-width: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .map-filter-bar::-webkit-scrollbar {
@@ -3694,6 +3700,19 @@ body.map-mode-active {
   display: none;
 }
 
+/* Smooth continuous sizing & label transitions during zoom */
+.custom-codex-map-marker .map-marker-wrapper {
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, margin 0.22s ease !important;
+}
+
+.custom-codex-map-marker .map-marker-body {
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-width 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.custom-codex-map-marker .map-marker-lod-label {
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
 /* LOD: Low Zoom (Overview) — sleek compact micro-dots */
 .map-lod-low .custom-codex-map-marker .map-marker-wrapper {
   width: 14px !important;
@@ -3755,6 +3774,13 @@ body.map-mode-active {
 .map-cursor-measuring,
 .map-cursor-measuring .leaflet-container {
   cursor: crosshair !important;
+}
+
+/* While measuring: disable pointer-events on territory polygons and pins so all clicks pass straight to the map canvas! */
+.map-cursor-measuring .leaflet-overlay-pane path,
+.map-cursor-measuring .custom-codex-map-marker,
+.map-cursor-measuring .custom-party-beacon-marker {
+  pointer-events: none !important;
 }
 
 .custom-ruler-waypoint {
@@ -3907,14 +3933,13 @@ body.map-mode-active {
 }
 
 /* Mobile & Narrow Screen Responsive Adjustments */
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .map-filter-bar {
-    top: auto;
-    bottom: 5.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: calc(100vw - 2rem);
-    padding: 3px 6px;
+    bottom: 0.75rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+  .map-region-hud {
+    bottom: 4.2rem !important;
   }
 }
 

@@ -236,22 +236,38 @@
       if (!this.map) return;
       this.updateZoomLOD();
 
+      // Listen to zoomanim so LOD classes change IMMEDIATELY at the start of a zoom transition,
+      // not waiting for the camera motion to halt!
+      this.map.on('zoomanim', (e) => {
+        if (typeof e.zoom === 'number') {
+          this.updateZoomLOD(e.zoom);
+        }
+      });
       this.map.on('zoom', () => this.updateZoomLOD());
+      this.map.on('zoomstart', () => this.updateZoomLOD());
       this.map.on('zoomend', () => this.updateZoomLOD());
+
+      // Pre-emptively adapt on wheel rotation
+      const container = this.map.getContainer();
+      container?.addEventListener('wheel', (e) => {
+        const cur = this.map.getZoom();
+        const delta = e.deltaY < 0 ? 0.4 : -0.4;
+        this.updateZoomLOD(cur + delta);
+      }, { passive: true });
     }
 
-    updateZoomLOD() {
+    updateZoomLOD(customZoom) {
       if (!this.map) return;
-      const zoom = this.map.getZoom();
+      const zoom = typeof customZoom === 'number' ? customZoom : this.map.getZoom();
       const container = this.map.getContainer();
       if (!container) return;
 
       container.classList.remove('map-lod-low', 'map-lod-mid', 'map-lod-high');
 
-      if (zoom < -0.2) {
+      if (zoom < 0.1) {
         // Zoomed out overview: compact glowing micro-dots
         container.classList.add('map-lod-low');
-      } else if (zoom < 1.15) {
+      } else if (zoom < 0.95) {
         // Standard regional view: regular icon badges
         container.classList.add('map-lod-mid');
       } else {
@@ -359,7 +375,8 @@
     onMapClick(e) {
       if (!this.isMeasuring || !this.map) return;
 
-      const latLng = e.latlng;
+      const latLng = e.latlng || (e.target && typeof e.target.getLatLng === 'function' ? e.target.getLatLng() : null);
+      if (!latLng) return;
       const x = Math.max(0, Math.min(1000, Math.round(latLng.lng)));
       const y = Math.max(0, Math.min(1000, Math.round(latLng.lat)));
 
@@ -573,7 +590,11 @@
         this.updatePartyLocation({ x: clampedX, y: clampedY });
       });
 
-      this.partyMarker.on('click', () => {
+      this.partyMarker.on('click', (e) => {
+        if (this.isMeasuring) {
+          this.onMapClick(e);
+          return;
+        }
         const regionName = this.detectPartyRegion();
         window.showToast?.(`🧭 Party Current Location: ${regionName} (X: ${this.partyLocation.x}, Y: ${this.partyLocation.y})`, 'info', 2800);
       });
