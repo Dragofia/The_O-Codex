@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=21">
+  <link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -20,10 +20,9 @@
         <span class="mode-tab__icon">🗺️</span>
         <span class="mode-tab__label">World Map</span>
       </button>
-      <button type="button" class="mode-tab mode-tab--disabled" data-mode="characters" id="mode-tab-characters" title="Character Sheets coming soon">
+      <button type="button" class="mode-tab" data-mode="characters" id="mode-tab-characters" title="Party Character Sheets (C)">
         <span class="mode-tab__icon">⚔️</span>
         <span class="mode-tab__label">Characters</span>
-        <span class="mode-tab__badge">Soon</span>
       </button>
       <div class="mode-bar-separator" aria-hidden="true"></div>
       <button type="button" class="mode-tab mode-tab--dm" id="dm-mode-toggle" title="Toggle Dungeon Master Mode (Ctrl+Shift+D)">
@@ -241,6 +240,170 @@
         </div>
       </aside>
     </div>
+
+    <!-- Party Character Sheets Mode View -->
+    <div id="characters-mode-view" class="mode-view mode-view--characters">
+      <div class="site-shell char-sheet-shell">
+        <!-- Roster Top Bar -->
+        <header class="char-roster-bar">
+          <div class="char-roster-title">
+            <span class="char-roster-icon">⚔️</span>
+            <div>
+              <h2>Party Roster</h2>
+              <p class="char-roster-subtitle">Campaign adventurers, vitals & shared dice rolls</p>
+            </div>
+          </div>
+
+          <div id="char-roster-list" class="char-roster-list">
+            <!-- Dynamically populated roster pills -->
+          </div>
+
+          <div class="char-roster-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="char-add-btn" title="Add a new character to the party">+ New Character</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="char-export-btn" title="Export party roster as JSON">Export</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="char-import-btn" title="Import party roster JSON">Import</button>
+            <input type="file" id="char-import-file" class="hidden" accept=".json" />
+          </div>
+        </header>
+
+        <!-- Main Character Sheet Container -->
+        <main class="char-sheet-container">
+          <!-- Persona Header -->
+          <section class="char-persona-card">
+            <div class="persona-row persona-row-primary">
+              <div class="persona-field persona-field-name">
+                <label for="char-name-input">Character Name</label>
+                <input type="text" id="char-name-input" class="persona-input persona-input-lg" placeholder="Character Name" />
+              </div>
+              <div class="persona-field persona-field-class">
+                <label for="char-class-input">Class & Level</label>
+                <input type="text" id="char-class-input" class="persona-input" placeholder="e.g. Manifestor / Scholar 5" />
+              </div>
+              <div class="persona-field persona-field-player">
+                <label for="char-player-input">Player Name</label>
+                <input type="text" id="char-player-input" class="persona-input" placeholder="Player or DM" />
+              </div>
+            </div>
+            <div class="persona-row persona-row-secondary">
+              <div class="persona-field">
+                <label for="char-heritage-input">Heritage / Race</label>
+                <input type="text" id="char-heritage-input" class="persona-input" placeholder="e.g. Human, Awakened Colossus" />
+              </div>
+              <div class="persona-field">
+                <label for="char-align-input">Alignment</label>
+                <input type="text" id="char-align-input" class="persona-input" placeholder="e.g. Chaotic Good" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Vitals Strip -->
+          <section class="char-vitals-strip">
+            <!-- Hit Points Card -->
+            <div class="vital-card vital-card-hp">
+              <div class="vital-card-header">
+                <span class="vital-label">Hit Points (HP)</span>
+                <span class="vital-sublabel">Current / Max</span>
+              </div>
+              <div class="hp-stepper-row">
+                <button type="button" class="hp-step-btn" id="char-hp-minus-5">-5</button>
+                <button type="button" class="hp-step-btn" id="char-hp-minus-1">-1</button>
+                <div class="hp-number-box">
+                  <input type="number" id="char-hp-current" class="hp-input" min="0" />
+                  <span class="hp-slash">/</span>
+                  <input type="number" id="char-hp-max" class="hp-input hp-input-max" min="1" />
+                </div>
+                <button type="button" class="hp-step-btn" id="char-hp-plus-1">+1</button>
+                <button type="button" class="hp-step-btn" id="char-hp-plus-5">+5</button>
+              </div>
+              <div class="hp-bar-track">
+                <div id="char-hp-bar-fill" class="hp-bar-fill" style="width: 100%;"></div>
+              </div>
+              <div class="hp-temp-row">
+                <label for="char-hp-temp">Temp HP:</label>
+                <input type="number" id="char-hp-temp" class="hp-input-temp" min="0" value="0" />
+              </div>
+            </div>
+
+            <!-- AC Card -->
+            <div class="vital-card vital-card-compact">
+              <span class="vital-label">Armor Class</span>
+              <div class="vital-big-value">
+                <input type="number" id="char-ac-input" class="vital-input" min="1" max="50" value="10" />
+              </div>
+              <span class="vital-caption">Shield & Armor</span>
+            </div>
+
+            <!-- Initiative Card -->
+            <div class="vital-card vital-card-compact">
+              <span class="vital-label">Initiative</span>
+              <div class="vital-big-value" id="char-init-mod">+0</div>
+              <button type="button" class="btn btn-secondary btn-xs" id="char-roll-init-btn">🎲 Roll Init</button>
+            </div>
+
+            <!-- Speed Card -->
+            <div class="vital-card vital-card-compact">
+              <span class="vital-label">Speed</span>
+              <div class="vital-big-value">
+                <input type="number" id="char-speed-input" class="vital-input" min="0" step="5" value="30" />
+                <span class="vital-unit">ft</span>
+              </div>
+              <span class="vital-caption">Movement</span>
+            </div>
+
+            <!-- Prof Bonus Card -->
+            <div class="vital-card vital-card-compact">
+              <span class="vital-label">Proficiency</span>
+              <div class="vital-big-value">
+                <span class="vital-unit">+</span>
+                <input type="number" id="char-prof-input" class="vital-input" min="1" max="10" value="2" />
+              </div>
+              <span class="vital-caption">Bonus</span>
+            </div>
+
+            <!-- Death Saves Card -->
+            <div class="vital-card vital-card-death">
+              <span class="vital-label">Death Saves</span>
+              <div class="death-saves-row">
+                <span class="death-save-label">Succ:</span>
+                <input type="checkbox" id="death-succ-1" class="death-box death-succ" />
+                <input type="checkbox" id="death-succ-2" class="death-box death-succ" />
+                <input type="checkbox" id="death-succ-3" class="death-box death-succ" />
+              </div>
+              <div class="death-saves-row">
+                <span class="death-save-label">Fail:</span>
+                <input type="checkbox" id="death-fail-1" class="death-box death-fail" />
+                <input type="checkbox" id="death-fail-2" class="death-box death-fail" />
+                <input type="checkbox" id="death-fail-3" class="death-box death-fail" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Core Ability Scores Grid -->
+          <section class="char-abilities-section">
+            <h3 class="char-subhead">Ability Scores & Modifiers</h3>
+            <div id="char-ability-grid" class="char-ability-grid">
+              <!-- Dynamically populated 6 stat cards with Check / Save roll triggers -->
+            </div>
+          </section>
+
+          <!-- Ample Content Navigation Tabs -->
+          <nav class="char-navigation-tabs" aria-label="Character Sheet Details">
+            <button type="button" class="char-nav-btn is-active" data-tab="combat">🗡️ Combat & Actions</button>
+            <button type="button" class="char-nav-btn" data-tab="divions">🔮 Divions & Manifests</button>
+            <button type="button" class="char-nav-btn" data-tab="boons">🎁 DM Boons & Blessings</button>
+            <button type="button" class="char-nav-btn" data-tab="equipment">⚔️ Equipment & Currency</button>
+            <button type="button" class="char-nav-btn" data-tab="magic">✨ Magic Items & Relics</button>
+            <button type="button" class="char-nav-btn" data-tab="feats">📜 Feats & Traits</button>
+            <button type="button" class="char-nav-btn" data-tab="notes">📝 Backstory & Notes</button>
+          </nav>
+
+          <!-- Active Details Tab Content -->
+          <section id="char-tab-view" class="char-tab-view">
+            <!-- Dynamically rendered tab view -->
+          </section>
+        </main>
+      </div>
+    </div>
   </div>
 
   <!-- Entry Detail Modal -->
@@ -414,6 +577,14 @@
           <p>Manifests and Divions feature quick-reference action, range, and charge stats for fast lookup during combat. Linked upgrade paths also provide clickable cross-references connecting items with their associated Spire quests.</p>
         </section>
 
+        <section class="help-card">
+          <div class="help-card__header">
+            <span class="help-card__icon" aria-hidden="true">⚔️</span>
+            <h3>Character Sheets & Party Dice Tray</h3>
+          </div>
+          <p>Switch to the <strong>Characters</strong> tab (<kbd>C</kbd>) to view party vitals, equipment, magic items, DM boons, and canon Divions. Click any stat, attack, or the floating dice button (<kbd>D</kbd>) to roll polyhedral dice shared in real time across the party!</p>
+        </section>
+
         <section class="help-card help-card--shortcuts" style="grid-column: 1 / -1;">
           <div class="help-card__header">
             <span class="help-card__icon" aria-hidden="true">⌨️</span>
@@ -428,6 +599,14 @@
             <div class="shortcut-item">
               <span class="shortcut-keys"><kbd>M</kbd></span>
               <span class="shortcut-desc">Toggle between O-Codex and World Map</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>C</kbd></span>
+              <span class="shortcut-desc">Toggle Party Character Sheets</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>D</kbd> / <kbd>Ctrl</kbd> + <kbd>R</kbd></span>
+              <span class="shortcut-desc">Open Party Dice Roller Tray & Live Feed</span>
             </div>
             <div class="shortcut-item">
               <span class="shortcut-keys"><kbd>1</kbd> – <kbd>5</kbd></span>
@@ -915,6 +1094,106 @@
     </div>
   </aside>
 
+  <!-- Floating Party Dice Tray Toggle Button -->
+  <button id="dice-tray-toggle" class="dice-tray-toggle" type="button" title="Open Party Dice Roller (D / Ctrl+R)" aria-label="Open Party Dice Roller">
+    <span class="dice-toggle-icon">🎲</span>
+  </button>
+
+  <!-- Party Dice Roller Drawer & Backdrop -->
+  <div id="dice-tray-backdrop" class="dice-tray-backdrop hidden"></div>
+  <aside id="dice-tray-drawer" class="dice-tray-drawer is-collapsed" aria-label="Party Dice Roller">
+    <div class="dice-drawer-head">
+      <div class="dice-drawer-title-group">
+        <span class="dice-drawer-icon" style="font-size: 1.4rem;">🎲</span>
+        <div>
+          <h3>Party Dice Tray</h3>
+          <span class="dice-sync-status" style="font-size: 0.72rem; color: #38bdf8;">📡 Shared with Party Live</span>
+        </div>
+      </div>
+      <button id="dice-tray-close" class="dice-drawer-close" type="button" aria-label="Close dice tray">✕</button>
+    </div>
+
+    <div class="dice-drawer-body">
+      <!-- Polyhedral Dice Buttons -->
+      <div class="dice-polyhedral-row">
+        <button type="button" class="dice-btn" data-die="d4" title="Add d4">
+          <span class="dice-btn-glyph">▲</span>
+          <span>d4</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d6" title="Add d6">
+          <span class="dice-btn-glyph">■</span>
+          <span>d6</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d8" title="Add d8">
+          <span class="dice-btn-glyph">◆</span>
+          <span>d8</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d10" title="Add d10">
+          <span class="dice-btn-glyph">◈</span>
+          <span>d10</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d12" title="Add d12">
+          <span class="dice-btn-glyph">⬡</span>
+          <span>d12</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d20" title="Set 1d20">
+          <span class="dice-btn-glyph">⬢</span>
+          <span>d20</span>
+        </button>
+        <button type="button" class="dice-btn" data-die="d100" title="Add d100">
+          <span class="dice-btn-glyph">%</span>
+          <span>d100</span>
+        </button>
+      </div>
+
+      <!-- Advantage / Disadvantage and Modifier -->
+      <div class="dice-control-row">
+        <div class="dice-adv-group">
+          <button type="button" class="dice-adv-btn is-active" data-mode="normal">Normal</button>
+          <button type="button" class="dice-adv-btn" data-mode="advantage">ADV</button>
+          <button type="button" class="dice-adv-btn" data-mode="disadvantage">DIS</button>
+        </div>
+
+        <div class="dice-mod-group">
+          <button type="button" class="dice-mod-btn" id="dice-mod-minus">-</button>
+          <input type="number" id="dice-mod-input" class="dice-mod-input" value="0" />
+          <button type="button" class="dice-mod-btn" id="dice-mod-plus">+</button>
+        </div>
+      </div>
+
+      <!-- Formula Preview Box -->
+      <div class="dice-formula-box">
+        <span class="dice-formula-label">Formula:</span>
+        <span id="dice-current-formula" class="dice-formula-display">1d20</span>
+      </div>
+
+      <!-- Optional Roll Label Input -->
+      <div class="dice-label-field">
+        <label for="dice-label-input">Roll Reason / Action</label>
+        <input type="text" id="dice-label-input" class="dice-label-input" placeholder="e.g. Stealth Check, Rapier Attack..." />
+      </div>
+
+      <!-- Roll & Clear Action Buttons -->
+      <div class="dice-action-row">
+        <button type="button" id="dice-roll-execute-btn" class="dice-roll-execute-btn">🎲 Roll Dice</button>
+        <button type="button" id="dice-clear-btn" class="dice-clear-btn" title="Reset to 1d20">Clear</button>
+      </div>
+
+      <!-- Latest Result Display -->
+      <div id="dice-latest-result" class="dice-latest-result hidden">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- History Feed -->
+      <div class="dice-history-head">
+        <h4>Party Roll Feed</h4>
+      </div>
+      <div id="dice-history-list" class="dice-history-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </aside>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
@@ -924,11 +1203,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-sync.js?v=5" defer></script>
+  <script src="firebase-sync.js?v=6" defer></script>
   <!-- Core Scripts -->
+  <script src="dice-roller.js?v=1" defer></script>
+  <script src="characters.js?v=1" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
-  <script src="script.js?v=17" defer></script>
+  <script src="script.js?v=18" defer></script>
   <script src="quickbar.js?v=3" defer></script>
   <script src="map.js?v=14" defer></script>
   <script src="map-tactics.js?v=2" defer></script>

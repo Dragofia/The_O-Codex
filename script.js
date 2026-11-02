@@ -404,15 +404,20 @@ window.setAppMode = function(mode, options = {}) {
   const stage = elements.viewportStage || document.getElementById("viewport-stage");
   const tabCodex = elements.modeTabCodex || document.getElementById("mode-tab-codex");
   const tabMap = elements.modeTabMap || document.getElementById("mode-tab-map");
+  const tabCharacters = elements.modeTabCharacters || document.getElementById("mode-tab-characters");
+
+  if (stage) {
+    stage.classList.remove("mode--codex", "mode--map", "mode--characters");
+    stage.classList.add(`mode--${mode}`);
+  }
+
+  tabCodex?.classList.toggle("is-active", mode === "codex");
+  tabMap?.classList.toggle("is-active", mode === "map");
+  tabCharacters?.classList.toggle("is-active", mode === "characters");
 
   if (mode === "map") {
-    if (stage) {
-      stage.classList.remove("mode--codex");
-      stage.classList.add("mode--map");
-    }
     document.body.classList.add("map-mode-active");
-    tabCodex?.classList.remove("is-active");
-    tabMap?.classList.add("is-active");
+    document.body.classList.remove("characters-mode-active");
 
     if (syncUrl) {
       try {
@@ -432,20 +437,40 @@ window.setAppMode = function(mode, options = {}) {
       setTimeout(() => window.mapEngine?.invalidateSize(), 150);
       setTimeout(() => window.mapEngine?.invalidateSize(), 460);
     }
-  } else {
-    if (stage) {
-      stage.classList.remove("mode--map");
-      stage.classList.add("mode--codex");
-    }
+  } else if (mode === "characters") {
     document.body.classList.remove("map-mode-active");
+    document.body.classList.add("characters-mode-active");
+
     if (window.mapEngine && window.mapEngine.activeTransientPinId) {
       window.mapEngine.activeTransientPinId = null;
       window.mapEngine.renderPins();
     }
-    tabMap?.classList.remove("is-active");
-    tabCodex?.classList.add("is-active");
 
-    if (syncUrl && window.location.hash.toLowerCase() === "#map") {
+    if (syncUrl) {
+      try {
+        if (pushHistory) {
+          window.history.pushState({ mode: "characters" }, "", "#characters");
+        } else {
+          window.history.replaceState({ mode: "characters" }, "", "#characters");
+        }
+      } catch {
+        window.location.hash = "#characters";
+      }
+    }
+
+    if (window.CharacterSheet) {
+      window.CharacterSheet.renderRosterBar();
+      window.CharacterSheet.renderCurrentSheet();
+    }
+  } else {
+    // "codex" mode
+    document.body.classList.remove("map-mode-active", "characters-mode-active");
+    if (window.mapEngine && window.mapEngine.activeTransientPinId) {
+      window.mapEngine.activeTransientPinId = null;
+      window.mapEngine.renderPins();
+    }
+
+    if (syncUrl && (window.location.hash.toLowerCase() === "#map" || window.location.hash.toLowerCase() === "#characters" || window.location.hash.toLowerCase() === "#party")) {
       try {
         if (pushHistory) {
           window.history.pushState({ mode: "codex" }, "", window.location.pathname);
@@ -471,7 +496,7 @@ function bindEvents() {
   });
 
   elements.modeTabCharacters?.addEventListener("click", () => {
-    window.showToast("Character Sheets mode is in development and coming in a future update!", "info");
+    window.setAppMode("characters");
   });
 
   elements.dmModeToggle?.addEventListener("click", () => {
@@ -598,6 +623,10 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     // 1. Escape: universal close / cancel / blur
     if (event.key === "Escape") {
+      if (window.DiceRoller && window.DiceRoller.isOpen) {
+        window.DiceRoller.closeTray();
+        return;
+      }
       if (state.isHelpOpen) {
         closeHelpModal();
         return;
@@ -677,6 +706,21 @@ function bindEvents() {
         window.setAppMode(next);
         window.showToast?.(
           next === "map" ? "🗺️ World Map Active (Press M to return)" : "📜 O-Codex Active (Press M for Map)",
+          "info",
+          1600
+        );
+        return;
+      }
+    }
+
+    // 5. "c" or "C" : Toggle Character Sheets Mode
+    if ((event.key === "c" || event.key === "C") && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
+        event.preventDefault();
+        const next = state.appMode === "characters" ? "codex" : "characters";
+        window.setAppMode(next);
+        window.showToast?.(
+          next === "characters" ? "⚔️ Character Sheets Active (Press C to return)" : "📜 O-Codex Active",
           "info",
           1600
         );
@@ -1552,6 +1596,10 @@ const router = {
       return { type: "map", id: "map" };
     }
 
+    if (decoded.toLowerCase() === "characters" || decoded.toLowerCase() === "party") {
+      return { type: "characters", id: "characters" };
+    }
+
     const entryPrefixMatch = decoded.match(/^(?:entry[\/:]|item[\/:]|id[\/:])(.+)$/i);
     const candidateEntryId = (entryPrefixMatch ? entryPrefixMatch[1].trim() : decoded).toLowerCase();
 
@@ -1680,7 +1728,10 @@ const router = {
     if (route.type === "map") {
       window.setAppMode("map", { syncUrl: false });
       return;
-    } else if (state.appMode === "map") {
+    } else if (route.type === "characters") {
+      window.setAppMode("characters", { syncUrl: false });
+      return;
+    } else if (state.appMode !== "codex") {
       window.setAppMode("codex", { syncUrl: false });
     }
 

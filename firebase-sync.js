@@ -22,6 +22,10 @@
       this.app = null;
       this.db = null;
       this.unsubscribe = null;
+      this.unsubscribeParty = null;
+      this.unsubscribeNotes = null;
+      this.unsubscribeRolls = null;
+      this.unsubscribeChars = null;
       this.isReady = false;
       this.status = 'unconfigured'; // 'unconfigured' | 'connected' | 'error'
     }
@@ -113,6 +117,14 @@
         this.unsubscribeNotes();
         this.unsubscribeNotes = null;
       }
+      if (this.unsubscribeRolls) {
+        this.unsubscribeRolls();
+        this.unsubscribeRolls = null;
+      }
+      if (this.unsubscribeChars) {
+        this.unsubscribeChars();
+        this.unsubscribeChars = null;
+      }
       localStorage.removeItem(FIREBASE_CONFIG_KEY);
       this.isReady = false;
       this.db = null;
@@ -130,6 +142,12 @@
       }
       if (this.unsubscribeNotes) {
         this.unsubscribeNotes();
+      }
+      if (this.unsubscribeRolls) {
+        this.unsubscribeRolls();
+      }
+      if (this.unsubscribeChars) {
+        this.unsubscribeChars();
       }
 
       try {
@@ -182,6 +200,40 @@
       } catch (e) {
         console.warn('[CloudSync] Could not attach party notes listener:', e);
       }
+
+      // Realtime listener for Party Dice Rolls
+      try {
+        const rollsRef = this.db.collection('codex_campaign').doc('dice_rolls');
+        this.unsubscribeRolls = rollsRef.onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && data.latestRoll && window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
+              window.DiceRoller.onRemoteRoll(data.latestRoll);
+            }
+          }
+        }, err => {
+          console.warn('[CloudSync] Party dice rolls listener warning:', err);
+        });
+      } catch (e) {
+        console.warn('[CloudSync] Could not attach dice rolls listener:', e);
+      }
+
+      // Realtime listener for Party Character Sheets
+      try {
+        const charsRef = this.db.collection('codex_campaign').doc('characters');
+        this.unsubscribeChars = charsRef.onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && Array.isArray(data.party) && window.CharacterSheet && typeof window.CharacterSheet.onRemoteCharacters === 'function') {
+              window.CharacterSheet.onRemoteCharacters(data.party);
+            }
+          }
+        }, err => {
+          console.warn('[CloudSync] Party characters listener warning:', err);
+        });
+      } catch (e) {
+        console.warn('[CloudSync] Could not attach character sheets listener:', e);
+      }
     }
 
     async pushPins(pins) {
@@ -233,6 +285,38 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push note to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushDiceRoll(rollData) {
+      if (!this.isReady || !this.db || !rollData) return false;
+      try {
+        const docRef = this.db.collection('codex_campaign').doc('dice_rolls');
+        await docRef.set({
+          latestRoll: rollData,
+          updatedAt: Date.now(),
+          updatedBy: rollData.roller || localStorage.getItem('o_codex_player_name') || 'Adventurer'
+        }, { merge: true });
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push dice roll to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushCharacters(charactersList) {
+      if (!this.isReady || !this.db || !Array.isArray(charactersList)) return false;
+      try {
+        const docRef = this.db.collection('codex_campaign').doc('characters');
+        await docRef.set({
+          party: charactersList,
+          updatedAt: Date.now(),
+          updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
+        }, { merge: true });
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push characters to Firebase:', e);
         return false;
       }
     }
