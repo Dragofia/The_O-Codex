@@ -861,6 +861,7 @@
               <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
               <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
             </div>
+            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">🎲 Roll d20</button>
           </div>
         `;
       } else {
@@ -925,6 +926,7 @@
               <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
               <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
             </div>
+            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">🎲 Roll d20</button>
           </div>
         `;
 
@@ -989,6 +991,38 @@
       container.querySelector('#char-roll-init-btn')?.addEventListener('click', () => {
         if (window.DiceRoller) {
           window.DiceRoller.roll('1d20', 'Initiative Check', char.name, 'normal', initMod);
+        }
+      });
+
+      // Death Saving Throw raw d20 button
+      container.querySelector('#char-roll-death-save-btn')?.addEventListener('click', () => {
+        if (window.DiceRoller) {
+          const result = window.DiceRoller.roll('1d20', 'Death Saving Throw', char.name, 'normal', 0);
+          if (result) {
+            const deathSaves = vitals.deathSaves || { successes: 0, failures: 0 };
+            if (result.total >= 10) {
+              if (result.isCrit) {
+                // Natural 20: Regain 1 HP and stabilize
+                vitals.hpCurrent = Math.max(1, vitals.hpCurrent || 1);
+                deathSaves.successes = Math.min(3, deathSaves.successes + 2);
+                this.playHpSound(5);
+              } else {
+                deathSaves.successes = Math.min(3, deathSaves.successes + 1);
+                this.playHpSound(1);
+              }
+            } else {
+              if (result.isFumble) {
+                // Natural 1: 2 failures
+                deathSaves.failures = Math.min(3, deathSaves.failures + 2);
+                this.playHpSound(-5);
+              } else {
+                deathSaves.failures = Math.min(3, deathSaves.failures + 1);
+                this.playHpSound(-1);
+              }
+            }
+            this.saveStorage();
+            this.renderVitals(char);
+          }
         }
       });
 

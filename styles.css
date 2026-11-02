@@ -5027,6 +5027,14 @@ body.map-mode-active .map-filter-bar {
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
 
+.death-roll-btn {
+  width: 100%;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.4rem;
+  justify-content: center;
+}
+
 /* Ability Scores Grid */
 .char-abilities-section {
   margin-bottom: 1.5rem;
