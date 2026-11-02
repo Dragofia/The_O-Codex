@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=14">
+  <link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -352,12 +352,38 @@
           <p>Manifests and Divions feature quick-reference action, range, and charge stats for fast lookup during combat. Linked upgrade paths also provide clickable cross-references connecting items with their associated Spire quests.</p>
         </section>
 
-        <section class="help-card">
+        <section class="help-card help-card--shortcuts" style="grid-column: 1 / -1;">
           <div class="help-card__header">
             <span class="help-card__icon" aria-hidden="true">⌨️</span>
-            <h3>Shortcuts & Back Navigation</h3>
+            <h3>Global Keyboard Shortcuts & Quick-Bar</h3>
           </div>
-          <p>Press <kbd>Esc</kbd> anytime to close open detail or help windows. Press <kbd>/</kbd> to instantly jump to the search bar. You can also use your browser's <strong>Back</strong> button to return to the previous view without reloading.</p>
+          <p>Navigate and search effortlessly from any view or device using these built-in hotkeys:</p>
+          <div class="shortcuts-legend-grid">
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>/</kbd></span>
+              <span class="shortcut-desc">Instant search & quick jump from anywhere (Codex or Map)</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>M</kbd></span>
+              <span class="shortcut-desc">Toggle between O-Codex and World Map</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>1</kbd> – <kbd>5</kbd></span>
+              <span class="shortcut-desc">Quick-open recent/pinned entries in the bottom Quick-Bar</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>Esc</kbd></span>
+              <span class="shortcut-desc">Close open modals, cancel tools, or dismiss map drawers</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>?</kbd></span>
+              <span class="shortcut-desc">Toggle this Guide & Shortcuts Reference</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></span>
+              <span class="shortcut-desc">Toggle Dungeon Master Mode & map tools</span>
+            </div>
+          </div>
         </section>
       </div>
     </div>
@@ -764,6 +790,32 @@
     </div>
   </div>
 
+  <!-- Persistent Quick-Bar Dock -->
+  <aside id="quickbar-dock" class="quickbar-dock" aria-label="Recent and pinned codex entries">
+    <div class="quickbar-shell">
+      <button id="quickbar-toggle-btn" class="quickbar-toggle-btn" type="button" aria-expanded="true" title="Toggle Quick-Bar (Recent entries)">
+        <span class="quickbar-toggle-icon" aria-hidden="true">🔖</span>
+        <span class="quickbar-toggle-label">Recent</span>
+        <span id="quickbar-badge" class="quickbar-badge" style="display: none;">0</span>
+        <span id="quickbar-chevron" class="quickbar-chevron" aria-hidden="true">▾</span>
+      </button>
+
+      <div id="quickbar-tray" class="quickbar-tray">
+        <div id="quickbar-list" class="quickbar-list" role="list">
+          <div class="quickbar-empty">
+            <span>No recent entries yet. Press <kbd class="quickbar-kbd">/</kbd> to browse.</span>
+          </div>
+        </div>
+
+        <div class="quickbar-meta">
+          <button id="quickbar-clear-btn" class="quickbar-clear-btn" type="button" title="Clear unpinned recent history" style="display: none;">
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
@@ -775,7 +827,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="firebase-sync.js?v=3" defer></script>
   <!-- Core Scripts -->
-  <script src="script.js?v=11" defer></script>
+  <script src="script.js?v=12" defer></script>
+  <script src="quickbar.js?v=1" defer></script>
   <script src="map.js?v=12" defer></script>
 </body>
 </html>

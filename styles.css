@@ -3157,3 +3157,290 @@ body.map-mode-active {
   0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(56, 189, 248, 0.9); }
   50% { transform: scale(1.15); box-shadow: 0 0 24px rgba(168, 85, 247, 1); }
 }
+
+/* ============================================================================
+   QUICK-BAR & RECENT ENTRIES DOCK
+   ============================================================================ */
+.quickbar-dock {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1250;
+  max-width: calc(100vw - 2rem);
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.quickbar-shell {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(7, 14, 25, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(90, 232, 255, 0.22);
+  border-radius: 9999px;
+  padding: 0.32rem 0.5rem 0.32rem 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 16px rgba(90, 232, 255, 0.08);
+  transition: all 0.22s ease;
+}
+
+.quickbar-dock.is-collapsed .quickbar-tray {
+  display: none;
+}
+
+.quickbar-dock.is-collapsed .quickbar-shell {
+  padding: 0.3rem 0.75rem;
+  border-color: rgba(90, 232, 255, 0.16);
+  background: rgba(7, 14, 25, 0.85);
+}
+
+.quickbar-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--body-font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 9999px;
+  transition: color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.quickbar-toggle-btn:hover {
+  color: var(--accent);
+}
+
+.quickbar-toggle-icon {
+  font-size: 0.9rem;
+}
+
+.quickbar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #050a12;
+  background: var(--accent);
+  border-radius: 9999px;
+}
+
+.quickbar-chevron {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.quickbar-tray {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  overflow: hidden;
+}
+
+.quickbar-list {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  max-width: min(65vw, 680px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.05rem 0;
+}
+
+.quickbar-list::-webkit-scrollbar {
+  display: none;
+}
+
+.quickbar-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(90, 232, 255, 0.16);
+  border-radius: 9999px;
+  padding: 0.22rem 0.5rem 0.22rem 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.quickbar-pill:hover {
+  background: rgba(90, 232, 255, 0.14);
+  border-color: rgba(90, 232, 255, 0.4);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.quickbar-pill.is-pinned {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.09);
+  color: #fef3c7;
+}
+
+.quickbar-pill__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(90, 232, 255, 0.16);
+  color: var(--accent);
+  border-radius: 3px;
+  margin-right: 0.05rem;
+}
+
+.quickbar-pill__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.quickbar-pill__title {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quickbar-pill__pin-btn,
+.quickbar-pill__close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0 1px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  color: var(--text-muted);
+}
+
+.quickbar-pill:hover .quickbar-pill__pin-btn,
+.quickbar-pill:hover .quickbar-pill__close-btn {
+  opacity: 1;
+}
+
+.quickbar-pill__pin-btn:hover {
+  transform: scale(1.15);
+  color: #fbbf24;
+}
+
+.quickbar-pill__pin-btn.is-active {
+  opacity: 1;
+  color: #fbbf24;
+}
+
+.quickbar-pill__close-btn:hover {
+  transform: scale(1.2);
+  color: #f87171;
+}
+
+.quickbar-empty {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 0.15rem 0.4rem;
+  white-space: nowrap;
+}
+
+.quickbar-kbd {
+  font-family: inherit;
+  font-size: 0.7rem;
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+.quickbar-clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-family: var(--body-font);
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.quickbar-clear-btn:hover {
+  color: #f87171;
+}
+
+/* Shortcuts Legend in Help Modal */
+.shortcuts-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.shortcut-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(90, 232, 255, 0.1);
+}
+
+.shortcut-keys {
+  font-weight: 600;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.shortcut-keys kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: rgba(90, 232, 255, 0.12);
+  border: 1px solid rgba(90, 232, 255, 0.3);
+  border-radius: 4px;
+  color: var(--accent);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.shortcut-desc {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  .quickbar-dock {
+    bottom: 0.75rem;
+  }
+  .quickbar-list {
+    max-width: 48vw;
+  }
+}
+

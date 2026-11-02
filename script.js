@@ -557,7 +557,43 @@ function bindEvents() {
     elements.helpBackdrop.addEventListener("click", () => closeHelpModal());
   }
 
+  function isUserTyping(event) {
+    const active = document.activeElement;
+    if (!active) return false;
+    const tag = active.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || active.isContentEditable || Boolean(active.closest("[contenteditable='true']"));
+  }
+
+  function jumpToSearch() {
+    if (state.isHelpOpen) closeHelpModal();
+    if (!elements.modal.classList.contains("hidden")) closeModal();
+
+    const mapModals = [
+      "firebase-settings-modal", "create-pin-modal", "manage-territories-modal",
+      "copy-map-data-modal", "edit-map-modal", "create-map-modal", "view-territory-modal"
+    ];
+    for (const mId of mapModals) {
+      const m = document.getElementById(mId);
+      if (m && !m.classList.contains("hidden")) {
+        window.mapEngine?.closeModal(mId);
+      }
+    }
+
+    if (state.appMode === "map") {
+      window.setAppMode("codex");
+    }
+
+    setTimeout(() => {
+      if (elements.searchInput) {
+        elements.searchInput.focus();
+        elements.searchInput.select();
+        elements.controls?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }, 120);
+  }
+
   document.addEventListener("keydown", (event) => {
+    // 1. Escape: universal close / cancel / blur
     if (event.key === "Escape") {
       if (state.isHelpOpen) {
         closeHelpModal();
@@ -567,18 +603,98 @@ function bindEvents() {
         closeModal();
         return;
       }
+      // Check map modals
+      const mapModals = [
+        "firebase-settings-modal", "create-pin-modal", "manage-territories-modal",
+        "copy-map-data-modal", "edit-map-modal", "create-map-modal", "view-territory-modal"
+      ];
+      for (const mId of mapModals) {
+        const m = document.getElementById(mId);
+        if (m && !m.classList.contains("hidden")) {
+          window.mapEngine?.closeModal(mId);
+          return;
+        }
+      }
+      // Map drawer or active tools
+      if (window.mapEngine) {
+        if (window.mapEngine.isDrawingRegion) {
+          window.mapEngine.cancelTerritoryDraw();
+          return;
+        }
+        if (window.mapEngine.isDroppingPin) {
+          window.mapEngine.exitPinDropMode();
+          return;
+        }
+        if (window.mapEngine.isDrawerOpen) {
+          window.mapEngine.closePinDrawer();
+          return;
+        }
+      }
+      // If search input has text, clear it; if empty, blur it
+      if (document.activeElement === elements.searchInput) {
+        if (elements.searchInput.value) {
+          elements.searchInput.value = "";
+          state.query = "";
+          renderApp();
+        } else {
+          elements.searchInput.blur();
+        }
+        return;
+      }
     }
 
-    if (
-      event.key === "/" &&
-      document.activeElement !== elements.searchInput &&
-      !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) &&
-      elements.modal.classList.contains("hidden") &&
-      !state.isHelpOpen
-    ) {
+    // 2. Ctrl + K or Cmd + K: Quick Search from anywhere
+    if ((event.ctrlKey || event.metaKey) && (event.key === "k" || event.key === "K")) {
       event.preventDefault();
-      elements.searchInput.focus();
-      elements.searchInput.select();
+      jumpToSearch();
+      return;
+    }
+
+    // Don't process single-key shortcuts while typing in inputs
+    if (isUserTyping(event)) {
+      return;
+    }
+
+    // 3. "/" : Jump to search
+    if (event.key === "/") {
+      event.preventDefault();
+      jumpToSearch();
+      return;
+    }
+
+    // 4. "m" or "M" : Toggle between Codex & World Map
+    if ((event.key === "m" || event.key === "M") && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
+        event.preventDefault();
+        const next = state.appMode === "map" ? "codex" : "map";
+        window.setAppMode(next);
+        window.showToast?.(
+          next === "map" ? "🗺️ World Map Active (Press M to return)" : "📜 O-Codex Active (Press M for Map)",
+          "info",
+          1600
+        );
+        return;
+      }
+    }
+
+    // 5. "1" through "5" : Quick-open Quick-Bar items
+    if (["1", "2", "3", "4", "5"].includes(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (window.QuickBar && elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
+        const index = parseInt(event.key, 10) - 1;
+        window.QuickBar.openIndex(index);
+        return;
+      }
+    }
+
+    // 6. "?" (Shift + "/") : Toggle Help & Shortcuts Guide
+    if (event.key === "?" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      if (state.isHelpOpen) {
+        closeHelpModal();
+      } else {
+        openHelpModal();
+      }
+      return;
     }
   });
 
@@ -1683,6 +1799,16 @@ function openModal(entryId, options = {}) {
 
   state.selectedEntryId = entryId;
   resetCopyLinkButton();
+
+  // Track in Quick-Bar & emit event
+  try {
+    window.dispatchEvent(new CustomEvent("codex:entry-opened", { detail: { entryId, entry } }));
+    if (window.QuickBar && typeof window.QuickBar.record === "function") {
+      window.QuickBar.record(entry);
+    }
+  } catch (err) {
+    console.warn("[Codex] Event dispatch warning:", err);
+  }
 
   elements.modalCategory.textContent = category?.label ?? "Entry";
   elements.modalTitle.textContent = getEntryTitle(entry);
