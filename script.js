@@ -340,6 +340,9 @@ async function loadWorldData() {
 
     const data = await response.json();
     state.worldData = normaliseWorldData(data);
+    if (window.CodexLinker && typeof window.CodexLinker.buildIndex === "function") {
+      window.CodexLinker.buildIndex(state.worldData.entries);
+    }
   } catch (error) {
     showLoadError(error);
   }
@@ -1812,8 +1815,14 @@ function openModal(entryId, options = {}) {
 
   elements.modalCategory.textContent = category?.label ?? "Entry";
   elements.modalTitle.textContent = getEntryTitle(entry);
-  elements.modalSummary.textContent = entry.summary ?? "No summary added yet.";
-  elements.modalDescription.textContent = entry.description ?? "No full description has been added yet.";
+
+  if (window.CodexLinker && typeof window.CodexLinker.renderInto === "function") {
+    window.CodexLinker.renderInto(elements.modalSummary, entry.summary ?? "No summary added yet.", entry.id);
+    window.CodexLinker.renderInto(elements.modalDescription, entry.description ?? "No full description has been added yet.", entry.id);
+  } else {
+    elements.modalSummary.textContent = entry.summary ?? "No summary added yet.";
+    elements.modalDescription.textContent = entry.description ?? "No full description has been added yet.";
+  }
   elements.modalMedia.replaceChildren(buildMediaFrame(entry, true));
   applyModalMediaLayout("side");
   void updateModalMediaLayout(entry);
@@ -2170,7 +2179,11 @@ function renderUpgradePath(entry) {
   if (upgradeInfo.notes.length > 0) {
     upgradeInfo.notes.forEach((note) => {
       const noteLine = document.createElement("div");
-      noteLine.textContent = note;
+      if (window.CodexLinker && typeof window.CodexLinker.renderInto === "function") {
+        window.CodexLinker.renderInto(noteLine, note, entry.id);
+      } else {
+        noteLine.textContent = note;
+      }
       elements.modalUpgradeCopy.append(noteLine);
     });
   }
@@ -2359,7 +2372,11 @@ function renderValue(value) {
     return list;
   }
 
-  return document.createTextNode(String(value));
+  const str = String(value);
+  if (window.CodexLinker && typeof window.CodexLinker.linkify === "function") {
+    return window.CodexLinker.linkify(str, state.selectedEntryId);
+  }
+  return document.createTextNode(str);
 }
 
 function isSimpleValue(value) {
