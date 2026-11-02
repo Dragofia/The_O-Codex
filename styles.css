@@ -5049,9 +5049,12 @@ body.map-mode-active .map-filter-bar {
   transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Stat Card Play Mode (Click bonus to roll!) */
+/* Stat Card Play Mode (Click anywhere in box to roll check!) */
 .stat-card-play {
   cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .stat-card-play:hover {
@@ -5061,11 +5064,16 @@ body.map-mode-active .map-filter-bar {
   background: rgba(16, 28, 52, 0.9);
 }
 
+.stat-card-play:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
 .stat-card-title {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #94a3b8;
+  pointer-events: none;
 }
 
 .stat-mod-click-btn {
@@ -5075,11 +5083,11 @@ body.map-mode-active .map-filter-bar {
   font-size: 1.85rem;
   font-weight: 900;
   color: #38bdf8;
-  cursor: pointer;
   padding: 0.1rem 0;
   line-height: 1.1;
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
   transition: transform 0.15s, color 0.15s, text-shadow 0.15s;
+  pointer-events: none;
 }
 
 .stat-card-play:hover .stat-mod-click-btn {
@@ -5092,6 +5100,7 @@ body.map-mode-active .map-filter-bar {
   font-size: 0.72rem;
   color: #64748b;
   margin-top: 0.2rem;
+  pointer-events: none;
 }
 
 .stat-save-badge-play {
@@ -5103,12 +5112,15 @@ body.map-mode-active .map-filter-bar {
   border-radius: 4px;
   padding: 0.15rem 0.35rem;
   margin-top: 0.35rem;
+  cursor: pointer;
+  pointer-events: auto;
   transition: all 0.15s;
 }
 
 .stat-save-badge-play:hover {
-  background: rgba(234, 179, 8, 0.3);
+  background: rgba(234, 179, 8, 0.35);
   border-color: #facc15;
+  transform: scale(1.05);
 }
 
 /* Stat Card Edit Mode */

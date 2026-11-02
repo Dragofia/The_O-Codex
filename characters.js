@@ -960,28 +960,41 @@
         const card = document.createElement('div');
 
         if (!this.isEditMode) {
-          // CLEAN PLAY MODE: The bonus itself is big, glowing, and clickable to roll!
+          // CLEAN PLAY MODE: The entire card is interactive; clicking anywhere in the box rolls the check!
           card.className = 'char-stat-card stat-card-play';
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('title', `Click anywhere in this box to roll ${fullNames[ab]} Check (${modStr})`);
           card.innerHTML = `
             <div class="stat-card-title">${abNames[ab]}</div>
-            <button type="button" class="stat-mod-click-btn" title="Click to roll ${fullNames[ab]} Check (${modStr})">
+            <div class="stat-mod-click-btn">
               ${modStr}
-            </button>
+            </div>
             <div class="stat-score-caption">Score ${score}</div>
-            ${isProf ? `<div class="stat-save-badge-play" title="Proficient Save (+${saveMod})">Save ${saveModStr}</div>` : ''}
+            ${isProf ? `<button type="button" class="stat-save-badge-play" title="Click to roll ${fullNames[ab]} Save (+${saveMod})">Save ${saveModStr}</button>` : ''}
           `;
 
-          // Clicking the bonus (e.g. +1 in Constitution) rolls the check automatically!
-          const modBtn = card.querySelector('.stat-mod-click-btn');
-          modBtn?.addEventListener('click', () => {
+          // Clicking anywhere in the ability score box rolls the check automatically!
+          card.addEventListener('click', () => {
             if (window.DiceRoller) {
               window.DiceRoller.roll('1d20', `${fullNames[ab]} Check`, char.name, 'normal', mod);
             }
           });
 
-          // Clicking save badge rolls saving throw
+          // Keyboard support (Enter or Space) when focused on the ability box
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (window.DiceRoller) {
+                window.DiceRoller.roll('1d20', `${fullNames[ab]} Check`, char.name, 'normal', mod);
+              }
+            }
+          });
+
+          // Clicking save badge specifically rolls the saving throw instead of check
           const saveBadge = card.querySelector('.stat-save-badge-play');
-          saveBadge?.addEventListener('click', () => {
+          saveBadge?.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (window.DiceRoller) {
               window.DiceRoller.roll('1d20', `${fullNames[ab]} Save`, char.name, 'normal', saveMod);
             }
