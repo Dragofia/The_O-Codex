@@ -191,8 +191,9 @@
 
       this.listEl.innerHTML = '';
       this.history.forEach((item, index) => {
+        const isActive = window.state?.selectedEntryId === item.id;
         const pill = document.createElement('div');
-        pill.className = `quickbar-pill ${item.pinned ? 'is-pinned' : ''}`;
+        pill.className = `quickbar-pill ${item.pinned ? 'is-pinned' : ''} ${isActive ? 'is-active-entry' : ''}`;
         pill.setAttribute('role', 'button');
         pill.setAttribute('tabindex', '0');
         pill.title = `${item.title} (${item.category})\nClick to open${index < 5 ? ` [Hotkey: ${index + 1}]` : ''}`;
@@ -260,6 +261,10 @@
           const found = window.state.worldData.entries.find(item => item.id === e.detail.entryId);
           if (found) this.record(found);
         }
+      });
+
+      window.addEventListener('codex:entry-closed', () => {
+        this.render();
       });
     }
   }

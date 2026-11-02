@@ -3292,6 +3292,13 @@ body.map-mode-active {
   color: #fef3c7;
 }
 
+.quickbar-pill.is-active-entry {
+  border-color: var(--accent);
+  background: rgba(90, 232, 255, 0.18);
+  color: var(--text-main);
+  box-shadow: 0 0 10px rgba(90, 232, 255, 0.28);
+}
+
 .quickbar-pill__key {
   display: inline-flex;
   align-items: center;

@@ -680,9 +680,9 @@ function bindEvents() {
       }
     }
 
-    // 5. "1" through "5" : Quick-open Quick-Bar items
+    // 5. "1" through "5" : Quick-open Quick-Bar items (works everywhere including inside open modals)
     if (["1", "2", "3", "4", "5"].includes(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      if (window.QuickBar && elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
+      if (window.QuickBar && !state.isHelpOpen) {
         const index = parseInt(event.key, 10) - 1;
         window.QuickBar.openIndex(index);
         return;
@@ -1908,6 +1908,13 @@ function closeModal(options = {}) {
 
   state.selectedEntryId = null;
   resetCopyLinkButton();
+
+  try {
+    window.dispatchEvent(new CustomEvent("codex:entry-closed"));
+    if (window.QuickBar && typeof window.QuickBar.render === "function") {
+      window.QuickBar.render();
+    }
+  } catch (err) {}
 
   if (syncUrl) {
     router.updateUrl({ viewId: state.activeView, pushHistory });
