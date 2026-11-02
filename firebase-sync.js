@@ -105,6 +105,10 @@
         this.unsubscribe();
         this.unsubscribe = null;
       }
+      if (this.unsubscribeParty) {
+        this.unsubscribeParty();
+        this.unsubscribeParty = null;
+      }
       localStorage.removeItem(FIREBASE_CONFIG_KEY);
       this.isReady = false;
       this.db = null;
@@ -116,6 +120,9 @@
       if (!this.isReady || !this.db) return;
       if (this.unsubscribe) {
         this.unsubscribe();
+      }
+      if (this.unsubscribeParty) {
+        this.unsubscribeParty();
       }
 
       try {
@@ -134,6 +141,24 @@
       } catch (e) {
         console.warn('[CloudSync] Could not attach realtime listener:', e);
       }
+
+      try {
+        const partyRef = this.db.collection('codex_campaign').doc('party_location');
+        this.unsubscribeParty = partyRef.onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data && typeof data.x === 'number' && typeof data.y === 'number') {
+              if (window.MapTactics && typeof window.MapTactics.onRemotePartyLocation === 'function') {
+                window.MapTactics.onRemotePartyLocation(data);
+              }
+            }
+          }
+        }, err => {
+          console.warn('[CloudSync] Party location listener warning:', err);
+        });
+      } catch (e) {
+        console.warn('[CloudSync] Could not attach party location listener:', e);
+      }
     }
 
     async pushPins(pins) {
@@ -148,6 +173,22 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push pins to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushPartyLocation(location) {
+      if (!this.isReady || !this.db) return false;
+      try {
+        const docRef = this.db.collection('codex_campaign').doc('party_location');
+        await docRef.set({
+          ...location,
+          updatedAt: Date.now(),
+          updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
+        }, { merge: true });
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push party location to Firebase:', e);
         return false;
       }
     }

@@ -619,6 +619,10 @@ function bindEvents() {
         }
       }
       // Map drawer or active tools
+      if (window.MapTactics && window.MapTactics.isMeasuring) {
+        window.MapTactics.exitMeasureMode();
+        return;
+      }
       if (window.mapEngine) {
         if (window.mapEngine.isDrawingRegion) {
           window.mapEngine.cancelTerritoryDraw();

@@ -391,16 +391,18 @@
     }
   };
 
-  function createMarkerIcon(category, isHighlighted = false, isSecret = false, isStealth = false) {
+  function createMarkerIcon(category, isHighlighted = false, isSecret = false, isStealth = false, title = '') {
     const theme = PIN_THEMES[category] || PIN_THEMES.Location;
     const pulseHtml = isHighlighted ? '<div class="map-marker-pulse"></div>' : '';
     const secretClass = isSecret ? ' is-secret-marker' : (isStealth ? ' is-stealth-marker' : '');
+    const labelHtml = title ? `<span class="map-marker-lod-label">${escapeHtml(title)}</span>` : '';
     const html = `
       <div class="map-marker-wrapper" style="width: 32px; height: 32px;">
         ${pulseHtml}
         <div class="map-marker-body" style="background: #060b14; border: 2px solid ${isSecret ? '#c084fc' : theme.color}; box-shadow: 0 0 12px ${isSecret ? 'rgba(192, 132, 252, 0.8)' : theme.glow};">
           <span style="color: ${isSecret ? '#c084fc' : theme.color}; display: flex; align-items: center; justify-content: center;">${theme.iconSvg}</span>
         </div>
+        ${labelHtml}
       </div>
     `;
     return L.divIcon({
@@ -1533,10 +1535,17 @@
           return;
         }
 
+        // Tactical Category Filter check (Settlements, Dungeons, Landmarks, Quests, Player Pins)
+        if (window.MapTactics && typeof window.MapTactics.isPinVisible === 'function') {
+          if (!window.MapTactics.isPinVisible(pin)) {
+            return;
+          }
+        }
+
         const isHighlighted = (pin.codexId || pin.id) === this.currentHighlightedPinId;
         const isRevealedStealth = pin.isStealth && this.activeTransientPinId === pin.id;
         const marker = L.marker([pin.y, pin.x], {
-          icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret, isRevealedStealth),
+          icon: createMarkerIcon(pin.category, isHighlighted, pin.isSecret, isRevealedStealth, pin.name || pin.title),
           title: pin.name || pin.title,
           draggable: isDm
         });
@@ -1591,6 +1600,16 @@
         marker.addTo(this.map);
         this.markerLayers.set(pin.id, marker);
       });
+
+      // Notify MapTactics of updated pin counts and refresh party beacon
+      if (window.MapTactics) {
+        if (typeof window.MapTactics.updateFilterCounts === 'function') {
+          window.MapTactics.updateFilterCounts(allPins);
+        }
+        if (typeof window.MapTactics.renderPartyBeacon === 'function') {
+          window.MapTactics.renderPartyBeacon();
+        }
+      }
     }
 
     openPinDrawer(pin) {
@@ -1780,6 +1799,9 @@
     }
 
     startPinDropMode() {
+      if (window.MapTactics && window.MapTactics.isMeasuring) {
+        window.MapTactics.exitMeasureMode();
+      }
       this.isDroppingPin = true;
       this.setMarkerDraggingEnabled(false);
       const canvas = document.getElementById('campaign-map-canvas');
@@ -2024,6 +2046,9 @@
       if (!this.isDmMode()) {
         window.showToast?.('Drawing territory boundaries is restricted to the Dungeon Master.', 'warning');
         return;
+      }
+      if (window.MapTactics && window.MapTactics.isMeasuring) {
+        window.MapTactics.exitMeasureMode();
       }
       this.setMarkerDraggingEnabled(false);
 
