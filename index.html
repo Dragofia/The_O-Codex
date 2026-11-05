@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=36">
+  <link rel="stylesheet" href="styles.css?v=37">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -23,6 +23,10 @@
       <button type="button" class="mode-tab" data-mode="characters" id="mode-tab-characters" title="Party Character Sheets (C)">
         <span class="mode-tab__icon">⚔️</span>
         <span class="mode-tab__label">Characters</span>
+      </button>
+      <button type="button" class="mode-tab" data-mode="grimoire" id="mode-tab-grimoire" title="Grimoire & Spell Compendium (G)">
+        <span class="mode-tab__icon">✨</span>
+        <span class="mode-tab__label">Grimoire</span>
       </button>
       <div class="mode-bar-separator" aria-hidden="true"></div>
       <button type="button" class="mode-tab mode-tab--dm" id="dm-mode-toggle" title="Toggle Dungeon Master Mode (Ctrl+Shift+D)">
@@ -382,6 +386,116 @@
         </div>
       </div>
     </div>
+
+    <!-- Grimoire Mode View (The Arcane Spell Compendium) -->
+    <div id="grimoire-mode-view" class="mode-view mode-view--grimoire">
+      <div class="site-shell grimoire-shell">
+        <!-- Grimoire Header Toolbar -->
+        <header class="grimoire-header">
+          <div class="grimoire-title-group">
+            <div class="grimoire-title-row">
+              <span class="grimoire-title-icon">✨</span>
+              <h2>Arcane Grimoire</h2>
+              <span class="grimoire-count-badge" id="grimoire-count-badge">Loading compendium...</span>
+            </div>
+            <p class="grimoire-subtitle">The Grand Spell Compendium: 5e SRD, Dunamancy, and Campaign Magic with party-wide instant sharing</p>
+          </div>
+          <div class="grimoire-top-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="grimoire-btn-custom">
+              + Custom Spell
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="grimoire-btn-import" title="Import spells from Donjon or JSON with auto-merge">
+              📥 Import / Donjon
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" id="grimoire-btn-export" title="Export entire spell database as JSON">
+              📤 Export
+            </button>
+          </div>
+        </header>
+
+        <!-- Grimoire Filter and Search Bar -->
+        <div class="grimoire-filter-strip">
+          <div class="grimoire-search-box">
+            <span class="grimoire-search-icon">🔍</span>
+            <input type="text" id="grimoire-search-input" class="grimoire-search-input" placeholder="Search spells by name, school, description..." autocomplete="off" />
+            <button type="button" class="grimoire-search-clear" id="grimoire-search-clear" title="Clear search">✕</button>
+          </div>
+
+          <div class="grimoire-dropdowns-row">
+            <div class="grimoire-select-group">
+              <label for="grimoire-class-filter">Class:</label>
+              <select id="grimoire-class-filter" class="grimoire-select">
+                <option value="all">All Classes</option>
+                <option value="Wizard">Wizard</option>
+                <option value="Paladin">Paladin</option>
+                <option value="Druid">Druid</option>
+                <option value="Artificer">Artificer</option>
+                <option value="Cleric">Cleric</option>
+                <option value="Sorcerer">Sorcerer</option>
+                <option value="Warlock">Warlock</option>
+                <option value="Bard">Bard</option>
+                <option value="Ranger">Ranger</option>
+              </select>
+            </div>
+
+            <div class="grimoire-select-group">
+              <label for="grimoire-level-filter">Level:</label>
+              <select id="grimoire-level-filter" class="grimoire-select">
+                <option value="all">All Levels</option>
+                <option value="0">Cantrips</option>
+                <option value="1">1st Level</option>
+                <option value="2">2nd Level</option>
+                <option value="3">3rd Level</option>
+                <option value="4">4th Level</option>
+                <option value="5">5th Level</option>
+                <option value="6">6th Level</option>
+                <option value="7">7th Level</option>
+                <option value="8">8th Level</option>
+                <option value="9">9th Level</option>
+              </select>
+            </div>
+
+            <div class="grimoire-select-group">
+              <label for="grimoire-school-filter">School:</label>
+              <select id="grimoire-school-filter" class="grimoire-select">
+                <option value="all">All Schools</option>
+                <option value="Abjuration">Abjuration</option>
+                <option value="Conjuration">Conjuration</option>
+                <option value="Divination">Divination</option>
+                <option value="Enchantment">Enchantment</option>
+                <option value="Evocation">Evocation</option>
+                <option value="Illusion">Illusion</option>
+                <option value="Necromancy">Necromancy</option>
+                <option value="Transmutation">Transmutation</option>
+                <option value="Dunamancy">Dunamancy</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick Filter Pills -->
+          <div class="grimoire-quick-pills">
+            <button type="button" class="grimoire-pill-btn" id="grimoire-toggle-fav">
+              ⭐ Favorites
+            </button>
+            <button type="button" class="grimoire-pill-btn" id="grimoire-toggle-spellbook">
+              📖 In Spellbook
+            </button>
+            <button type="button" class="grimoire-pill-btn" id="grimoire-toggle-conc">
+              Concentration
+            </button>
+            <button type="button" class="grimoire-pill-btn" id="grimoire-toggle-ritual">
+              Ritual
+            </button>
+          </div>
+        </div>
+
+        <!-- Grimoire Cards Grid -->
+        <div id="grimoire-grid" class="char-cards-grid grimoire-cards-grid">
+          <!-- Dynamically rendered spell cards -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Entry Detail Modal -->
@@ -1212,13 +1326,181 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=5" defer></script>
-  <script src="characters.js?v=14" defer></script>
+  <script src="characters.js?v=15" defer></script>
+  <script src="grimoire.js?v=1" defer></script>
   <script src="initiative-tracker.js?v=2" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
-  <script src="script.js?v=24" defer></script>
+  <script src="script.js?v=25" defer></script>
   <script src="quickbar.js?v=4" defer></script>
   <script src="map.js?v=14" defer></script>
   <script src="map-tactics.js?v=2" defer></script>
+
+  <!-- Custom Spell Creator Modal -->
+  <div id="custom-spell-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="custom-spell-title">
+    <div class="modal__backdrop" id="custom-spell-backdrop"></div>
+    <div class="modal__dialog modal__dialog--grimoire-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">GRIMOIRE COMPENDIUM</span>
+          <h2 id="custom-spell-title" class="modal__title">✨ Add Custom / Homebrew Spell</h2>
+        </div>
+        <button type="button" class="modal__close" id="custom-spell-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="custom-spell-form" class="grimoire-modal-form">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="spellName">Spell Name *</label>
+            <input type="text" id="spellName" name="spellName" required placeholder="e.g. Aether Lance" />
+          </div>
+          <div class="form-group">
+            <label for="spellLevel">Level *</label>
+            <select id="spellLevel" name="spellLevel">
+              <option value="0">Cantrip</option>
+              <option value="1">1st Level</option>
+              <option value="2">2nd Level</option>
+              <option value="3">3rd Level</option>
+              <option value="4">4th Level</option>
+              <option value="5">5th Level</option>
+              <option value="6">6th Level</option>
+              <option value="7">7th Level</option>
+              <option value="8">8th Level</option>
+              <option value="9">9th Level</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="spellSchool">School of Magic</label>
+            <select id="spellSchool" name="spellSchool">
+              <option value="Abjuration">Abjuration</option>
+              <option value="Conjuration">Conjuration</option>
+              <option value="Divination">Divination</option>
+              <option value="Enchantment">Enchantment</option>
+              <option value="Evocation" selected>Evocation</option>
+              <option value="Illusion">Illusion</option>
+              <option value="Necromancy">Necromancy</option>
+              <option value="Transmutation">Transmutation</option>
+              <option value="Dunamancy">Dunamancy</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="spellCastingTime">Casting Time</label>
+            <input type="text" id="spellCastingTime" name="spellCastingTime" value="1 action" placeholder="1 action, 1 bonus action, etc." />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="spellRange">Range / Area</label>
+            <input type="text" id="spellRange" name="spellRange" value="60 feet" placeholder="e.g. 60 feet, Self, Touch" />
+          </div>
+          <div class="form-group">
+            <label for="spellDuration">Duration</label>
+            <input type="text" id="spellDuration" name="spellDuration" value="Instantaneous" placeholder="e.g. Instantaneous, 1 minute" />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="spellComponents">Components</label>
+            <input type="text" id="spellComponents" name="spellComponents" value="V, S" placeholder="V, S, M (details)" />
+          </div>
+          <div class="form-group form-group--toggles">
+            <label class="checkbox-label">
+              <input type="checkbox" id="spellConc" name="spellConc" />
+              <span>Requires Concentration</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="spellRitual" name="spellRitual" />
+              <span>Ritual Castable</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="spellDamageFormula">Damage / Heal Formula (Optional)</label>
+            <input type="text" id="spellDamageFormula" name="spellDamageFormula" placeholder="e.g. 3d8, 8d6" />
+          </div>
+          <div class="form-group">
+            <label for="spellDamageType">Damage Type (Optional)</label>
+            <input type="text" id="spellDamageType" name="spellDamageType" placeholder="e.g. Radiant, Fire, Force" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Caster Classes</label>
+          <div class="checkbox-grid">
+            <label><input type="checkbox" name="spellClass" value="Wizard" checked /> Wizard</label>
+            <label><input type="checkbox" name="spellClass" value="Paladin" /> Paladin</label>
+            <label><input type="checkbox" name="spellClass" value="Druid" /> Druid</label>
+            <label><input type="checkbox" name="spellClass" value="Artificer" /> Artificer</label>
+            <label><input type="checkbox" name="spellClass" value="Cleric" /> Cleric</label>
+            <label><input type="checkbox" name="spellClass" value="Sorcerer" /> Sorcerer</label>
+            <label><input type="checkbox" name="spellClass" value="Warlock" /> Warlock</label>
+            <label><input type="checkbox" name="spellClass" value="Bard" /> Bard</label>
+            <label><input type="checkbox" name="spellClass" value="Ranger" /> Ranger</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="spellDescription">Spell Description *</label>
+          <textarea id="spellDescription" name="spellDescription" rows="4" required placeholder="Describe the spell effect, targets, saving throws, and mechanics..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="spellHigherLevel">At Higher Levels (Optional)</label>
+          <textarea id="spellHigherLevel" name="spellHigherLevel" rows="2" placeholder="e.g. When cast using a slot of 2nd level or higher..."></textarea>
+        </div>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn-secondary" id="custom-spell-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="custom-spell-submit">✓ Save to Grimoire</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Donjon & External Spell Batch Import Modal -->
+  <div id="spell-import-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="spell-import-title">
+    <div class="modal__backdrop" id="spell-import-backdrop"></div>
+    <div class="modal__dialog modal__dialog--grimoire-import" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">DATA COMPENDIUM & DEDUPLICATION</span>
+          <h2 id="spell-import-title" class="modal__title">📥 Import Spells (Donjon / JSON / 5e-Tools)</h2>
+        </div>
+        <button type="button" class="modal__close" id="spell-import-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="grimoire-import-body">
+        <p class="import-lead-text">
+          Paste spell data from <strong>Donjon Spell Sheets</strong> (TSV/CSV), <strong>5e-tools JSON</strong>, or any custom spell JSON array.
+        </p>
+        <div class="import-feature-box">
+          <strong>⚡ Smart Auto-Merge & Zero Duplication:</strong> Any spell that already exists in your compendium will be intelligently merged and enriched (filling missing damage dice or higher-level scaling) without creating clutter or duplicate cards.
+        </div>
+        
+        <div class="form-group" style="margin-top: 1rem;">
+          <label for="spell-import-source">Source Label (e.g. Donjon, Xanathar, Homebrew):</label>
+          <input type="text" id="spell-import-source" value="Donjon Export" class="grimoire-input" />
+        </div>
+
+        <div class="form-group">
+          <label for="spell-import-textarea">Paste Spell Data (JSON or Donjon Text):</label>
+          <textarea id="spell-import-textarea" class="grimoire-textarea" rows="8" placeholder="Paste [ { &quot;name&quot;: &quot;...&quot;, &quot;level&quot;: 1, ... } ] or Donjon TSV text here..."></textarea>
+        </div>
+
+        <div id="spell-import-status" class="import-status-box"></div>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn-secondary" id="spell-import-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="spell-import-btn">⚡ Run Auto-Merge Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

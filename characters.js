@@ -18,7 +18,7 @@
   const CHARACTERS_STORAGE_KEY = 'o_codex_characters';
   const ACTIVE_CHAR_KEY = 'o_codex_active_char_id';
   const ROSTER_VERSION_KEY = 'o_codex_roster_version';
-  const CURRENT_ROSTER_VERSION = 'v3_tab_restructure';
+  const CURRENT_ROSTER_VERSION = 'v4_grimoire';
 
   // Campaign Currency Configuration Framework (visible: false hides from UI while keeping framework & data intact)
   const CURRENCY_REGISTRY = [
@@ -95,6 +95,25 @@
       ],
       divions: [],
       boons: [],
+      spellSlots: {
+        '1': { max: 4, used: 0 },
+        '2': { max: 3, used: 0 },
+        '3': { max: 2, used: 0 }
+      },
+      spellsKnown: [
+        'Guidance', 'Mold Earth', 'Minor Illusion', 'Prestidigitation', 'Message', 'Mind Sliver',
+        'Silent Image', 'Absorb Elements', 'Faerie Fire', 'Cure Wounds', 'Sanctuary', 'Shield',
+        'Feather Fall', 'Magic Missile', "Tasha's Hideous Laughter", 'Magnify Gravity',
+        'Find Familiar', 'Comprehend Languages', 'Identify',
+        'Suggestion', 'Invisibility', 'Web', 'Vortex Warp',
+        'Haste', 'Counterspell', 'Hypnotic Pattern', "Leomund's Tiny Hut"
+      ],
+      spellsPrepared: [
+        'Guidance', 'Mold Earth', 'Minor Illusion', 'Prestidigitation', 'Message', 'Mind Sliver',
+        'Absorb Elements', 'Cure Wounds', 'Shield', 'Magic Missile', "Tasha's Hideous Laughter", 'Magnify Gravity',
+        'Invisibility', 'Web', 'Vortex Warp',
+        'Counterspell', 'Hypnotic Pattern'
+      ],
       magicItems: [
         {
           id: 'item_v1',
@@ -277,6 +296,18 @@ ALLIES & REMINDERS:
       ],
       divions: [],
       boons: [],
+      spellSlots: {
+        '1': { max: 4, used: 0 },
+        '2': { max: 2, used: 0 }
+      },
+      spellsKnown: [
+        'Ceremony', 'Searing Smite', 'Shield of Faith', 'Command', 'Alarm', 'Detect Magic',
+        'Lesser Restoration', 'Branding Smite', 'Moonbeam'
+      ],
+      spellsPrepared: [
+        'Ceremony', 'Searing Smite', 'Shield of Faith', 'Command', 'Detect Magic',
+        'Lesser Restoration', 'Branding Smite', 'Moonbeam'
+      ],
       magicItems: [],
       feats: [
         {
@@ -474,6 +505,24 @@ BACKSTORY & DEATH NOTE:
       ],
       divions: [],
       boons: [],
+      spellSlots: {
+        '1': { max: 4, used: 0 },
+        '2': { max: 3, used: 0 },
+        '3': { max: 2, used: 0 }
+      },
+      spellsKnown: [
+        'Mending', 'Sacred Flame', 'Spare the Dying', 'Produce Flame', 'Control Flames',
+        'Thunderous Smite', 'Command', 'Detect Magic', 'Ceremony', 'Shield of Faith',
+        'Charm Person', 'Goodberry', 'Speak with Animals', 'Cure Wounds', 'Burning Hands',
+        'Flame Blade', 'Enhance Ability', 'Air Bubble', 'Pass Without Trace',
+        'Dispel Magic', 'Plant Growth', 'Revivify'
+      ],
+      spellsPrepared: [
+        'Mending', 'Sacred Flame', 'Spare the Dying', 'Produce Flame', 'Control Flames',
+        'Thunderous Smite', 'Command', 'Detect Magic', 'Shield of Faith', 'Goodberry', 'Cure Wounds',
+        'Flame Blade', 'Pass Without Trace',
+        'Dispel Magic', 'Revivify'
+      ],
       magicItems: [
         {
           id: 'item_t1',
@@ -663,6 +712,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!Array.isArray(c.divions)) c.divions = [];
           if (!Array.isArray(c.feats)) c.feats = [];
           if (!Array.isArray(c.boons)) c.boons = [];
+          if (!c.spellSlots || typeof c.spellSlots !== 'object') c.spellSlots = {};
+          if (!Array.isArray(c.spellsKnown)) c.spellsKnown = [];
+          if (!Array.isArray(c.spellsPrepared)) c.spellsPrepared = [];
           if (!c.currency) c.currency = { cp: 0, sp: 0, gp: 0, pp: 0, aetherGems: 0 };
         });
       }
@@ -905,6 +957,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
         const type = titleTarget.dataset.shareType;
         const index = parseInt(titleTarget.dataset.index, 10);
+        if (type === 'spell') {
+          this.shareItemByType(type, index, this.getActiveCharacter(), titleTarget);
+          return;
+        }
         if (type && !isNaN(index)) {
           this.shareItemByType(type, index, this.getActiveCharacter(), titleTarget);
         }
@@ -1444,11 +1500,14 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       }
     }
 
-    // TAB 1: EQUIPMENT & MANIFESTS (Weapons & Strikes, Magic Items & Relics, Armor & Carried Gear)
+    // TAB 1: EQUIPMENT & MANIFESTS (Weapons, Magic Items, Carried Gear, Spell Slots & Spellbook)
     renderEquipmentTab(container, char) {
       if (!Array.isArray(char.attacks)) char.attacks = [];
       if (!Array.isArray(char.magicItems)) char.magicItems = [];
       if (!Array.isArray(char.equipment)) char.equipment = [];
+      if (!char.spellSlots || typeof char.spellSlots !== 'object') char.spellSlots = {};
+      if (!Array.isArray(char.spellsKnown)) char.spellsKnown = [];
+      if (!Array.isArray(char.spellsPrepared)) char.spellsPrepared = [];
 
       // 1. Attacks & Combat Weapons
       let attacksHtml = '';
@@ -1518,9 +1577,141 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         `).join('');
       }
 
+      // 4. Spell Slots Tracker
+      const slotLevels = Object.keys(char.spellSlots).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+      let slotRowsHtml = '';
+      if (slotLevels.length === 0) {
+        slotRowsHtml = `<div class="char-empty-msg">No spell slots configured.${this.isEditMode ? ' Click "+ Add Slot Level" below to add slots!' : ''}</div>`;
+      } else {
+        slotRowsHtml = slotLevels.map(lvl => {
+          const slot = char.spellSlots[lvl] || { max: 0, used: 0 };
+          const max = slot.max || 0;
+          const used = Math.min(slot.used || 0, max);
+          const available = Math.max(0, max - used);
+          const lvlLabel = lvl === '1' ? '1st' : lvl === '2' ? '2nd' : lvl === '3' ? '3rd' : `${lvl}th`;
+          let pips = '';
+          for (let i = 0; i < max; i++) {
+            const isUsed = i < used;
+            pips += `<button type="button" class="slot-pip ${isUsed ? 'is-used' : ''}" data-slot-level="${lvl}" data-pip-index="${i}" title="${isUsed ? 'Slot Expended (Click to restore)' : 'Slot Available (Click to expend)'}"></button>`;
+          }
+          return `
+            <div class="slot-level-row">
+              <div class="slot-level-info">
+                <span class="slot-level-badge">${lvlLabel} Level</span>
+                <span class="slot-avail-counter">${available} / ${max} left</span>
+              </div>
+              <div class="slot-pips-strip">
+                ${pips}
+              </div>
+              ${this.isEditMode ? `
+                <div class="slot-edit-controls">
+                  <button type="button" class="btn btn-ghost btn-xs btn-slot-dec" data-slot-level="${lvl}" title="Decrease max slots">-</button>
+                  <button type="button" class="btn btn-ghost btn-xs btn-slot-inc" data-slot-level="${lvl}" title="Increase max slots">+</button>
+                  <button type="button" class="char-item-del-btn" data-type="slot-level" data-slot-level="${lvl}" title="Delete slot level">✕</button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. Prepared Spells & Spellbook Cards
+      const grimoire = window.Grimoire;
+      const allKnown = Array.from(new Set([...char.spellsKnown, ...char.spellsPrepared]));
+      let spellsHtml = '';
+      if (allKnown.length === 0) {
+        spellsHtml = `
+          <div class="char-empty-msg">
+            No spells currently inscribed in ${escapeHtml(char.name)}'s spellbook.
+            <div style="margin-top: 0.6rem;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-grimoire-empty">
+                ✨ Browse Grimoire to Inscribe Spells
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        const spellCards = allKnown.map(name => {
+          const normKey = grimoire ? grimoire.normalizeSpellKey(name) : name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const found = grimoire && grimoire.allSpells ? grimoire.allSpells.find(s => grimoire.normalizeSpellKey(s.name) === normKey) : null;
+          const isPrep = char.spellsPrepared.some(p => (grimoire ? grimoire.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) === normKey);
+          const level = found ? found.level : 1;
+          const school = found ? found.school : 'Arcane';
+          const isCantrip = level === 0;
+          const castingTime = found ? found.castingTime : '1 action';
+          const range = found ? found.range : '60 feet';
+          const duration = found ? found.duration : 'Instantaneous';
+          const damageFormula = found ? found.damageFormula : '';
+          const damageType = found ? found.damageType : '';
+          const concentration = found ? !!found.concentration : false;
+          const ritual = found ? !!found.ritual : false;
+          const description = found ? (found.description || found.desc || '') : '';
+          const levelLabel = isCantrip ? 'Cantrip' : `${level}${level === 1 ? 'st' : level === 2 ? 'nd' : level === 3 ? 'rd' : 'th'} Level`;
+
+          return {
+            name,
+            level,
+            school,
+            isCantrip,
+            castingTime,
+            range,
+            duration,
+            damageFormula,
+            damageType,
+            concentration,
+            ritual,
+            description,
+            levelLabel,
+            isPrep: isCantrip ? true : isPrep
+          };
+        });
+
+        spellCards.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+
+        spellsHtml = spellCards.map(sp => `
+          <div class="char-item-card char-spell-card ${sp.isPrep ? 'is-prepared' : ''}" data-spell-name="${escapeHtml(sp.name)}">
+            <div class="item-card-header">
+              <div>
+                <strong class="item-card-title item-shareable-title" data-share-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Click to share spell details to party Roll Log">
+                  ${escapeHtml(sp.name)} <span class="share-hint-icon" aria-hidden="true">📜</span>
+                </strong>
+                <span class="spell-level-badge">${sp.levelLabel} ${escapeHtml(sp.school || '')}</span>
+                ${sp.concentration ? '<span class="spell-tag-badge spell-tag--conc" title="Requires Concentration">C</span>' : ''}
+                ${sp.ritual ? '<span class="spell-tag-badge spell-tag--ritual" title="Ritual Castable">R</span>' : ''}
+              </div>
+              <div class="spell-prep-toggle-group">
+                ${sp.isCantrip ? '<span class="spell-cantrip-badge">Cantrip</span>' : `
+                  <label class="spell-prep-checkbox-label" title="Toggle prepared status for this spell">
+                    <input type="checkbox" class="spell-prep-checkbox" data-spell-name="${escapeHtml(sp.name)}" ${sp.isPrep ? 'checked' : ''} />
+                    <span>Prepared</span>
+                  </label>
+                `}
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Remove from Spellbook">✕</button>` : ''}
+              </div>
+            </div>
+            <div class="spell-meta-quick">
+              <span><strong>Time:</strong> ${escapeHtml(sp.castingTime)}</span>
+              <span><strong>Range:</strong> ${escapeHtml(sp.range)}</span>
+              <span><strong>Duration:</strong> ${escapeHtml(sp.duration)}</span>
+            </div>
+            ${sp.description ? `<p class="item-card-notes spell-short-desc">${escapeHtml(sp.description.slice(0, 140))}${sp.description.length > 140 ? '...' : ''}</p>` : ''}
+            <div class="atk-roll-buttons spell-card-actions">
+              <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}">
+                🎲 Cast Spell
+              </button>
+              ${sp.damageFormula ? `
+                <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(sp.damageFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}">
+                  💥 Roll Damage (${escapeHtml(sp.damageFormula)})
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
       container.innerHTML = `
         <div class="char-tab-intro">
-          <p class="tab-subtitle-lead">All weapons, combat actions, enchanted relics, and durable carried equipment.</p>
+          <p class="tab-subtitle-lead">All weapons, combat strikes, enchanted relics, durable carried equipment, and arcane spells.</p>
         </div>
 
         <!-- Section 1: Weapons & Strikes -->
@@ -1528,14 +1719,41 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-section-head">
             <div>
               <h3>⚔️ Weapons & Combat Strikes</h3>
-              <p class="section-subtitle">Weapons, cantrips, smites, and physical actions ready to roll</p>
+              <p class="section-subtitle">Weapons, unarmed strikes, smites, and physical actions ready to roll</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Weapon / Strike</button>` : ''}
           </div>
           <div class="char-cards-grid">${attacksHtml}</div>
         </div>
 
-        <!-- Section 2: Magic Items & Relics -->
+        <!-- Section 2: Spell Slots & Prepared Spells -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>✨ Arcane Grimoire & Spell Slots</h3>
+              <p class="section-subtitle">Expendable spell slot pools, daily prepared spells, and castable cantrips</p>
+            </div>
+            <div class="char-section-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-long-rest-slots" title="Restore all expended spell slots">
+                🌙 Long Rest (Restore Slots)
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-browse-grimoire" title="Browse Grimoire Compendium">
+                ✨ Browse Grimoire
+              </button>
+              ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-slot-level">+ Add Slot Level</button>` : ''}
+            </div>
+          </div>
+
+          <!-- Slots Tracker Widget -->
+          <div class="char-slots-tracker-box">
+            <div class="slots-levels-grid">${slotRowsHtml}</div>
+          </div>
+
+          <!-- Inscribed Spells Grid -->
+          <div class="char-cards-grid" style="margin-top: 1rem;">${spellsHtml}</div>
+        </div>
+
+        <!-- Section 3: Magic Items & Relics -->
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
@@ -1547,7 +1765,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-cards-grid">${magicHtml}</div>
         </div>
 
-        <!-- Section 3: Worn Armor & Gear -->
+        <!-- Section 4: Worn Armor & Gear -->
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
@@ -1577,6 +1795,119 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const atk = char.attacks[idx];
           if (atk && window.DiceRoller) {
             window.DiceRoller.roll(atk.damageFormula, `${atk.name} Damage`, char.name, 'normal', 0);
+          }
+        });
+      });
+
+      // Spell Slot Pip listeners (Interactive slot clicking)
+      container.querySelectorAll('.slot-pip').forEach(pip => {
+        pip.addEventListener('click', () => {
+          const lvl = pip.dataset.slotLevel;
+          const slot = char.spellSlots[lvl];
+          if (!slot) return;
+          const pipIdx = parseInt(pip.dataset.pipIndex, 10);
+          if (pip.classList.contains('is-used')) {
+            slot.used = Math.max(0, pipIdx);
+            this.playHpSound(2);
+          } else {
+            slot.used = Math.min(slot.max, pipIdx + 1);
+            this.playHpSound(1);
+          }
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+      });
+
+      // Long Rest (Restore Slots)
+      container.querySelector('#btn-long-rest-slots')?.addEventListener('click', () => {
+        let restored = 0;
+        Object.keys(char.spellSlots).forEach(lvl => {
+          restored += char.spellSlots[lvl].used || 0;
+          char.spellSlots[lvl].used = 0;
+        });
+        this.playHpSound(3);
+        window.showToast?.(`🌙 Long Rest completed! ${restored} spell slot(s) restored.`, 'success', 2200);
+        this.saveStorage();
+        this.renderEquipmentTab(container, char);
+      });
+
+      // Browse Grimoire button listeners
+      const openGrimoire = () => {
+        if (window.setAppMode) window.setAppMode('grimoire');
+      };
+      container.querySelector('#btn-browse-grimoire')?.addEventListener('click', openGrimoire);
+      container.querySelector('#btn-browse-grimoire-empty')?.addEventListener('click', openGrimoire);
+
+      // Spell Prepared checkbox listener
+      container.querySelectorAll('.spell-prep-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const spellName = cb.dataset.spellName;
+          const g = window.Grimoire;
+          const normKey = g ? g.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cb.checked) {
+            if (!char.spellsPrepared.some(p => (g ? g.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) === normKey)) {
+              char.spellsPrepared.push(spellName);
+            }
+          } else {
+            char.spellsPrepared = char.spellsPrepared.filter(p => (g ? g.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) !== normKey);
+          }
+          this.playHpSound(1);
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+      });
+
+      // Spell Cast button listener
+      container.querySelectorAll('.char-spell-cast-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const spellName = btn.dataset.spellName;
+          const lvl = parseInt(btn.dataset.spellLevel, 10) || 0;
+          const g = window.Grimoire;
+          const normKey = g ? g.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const spell = g && g.allSpells ? g.allSpells.find(s => g.normalizeSpellKey(s.name) === normKey) : null;
+
+          let slotExpendedMsg = '';
+          if (lvl > 0 && char.spellSlots && char.spellSlots[lvl]) {
+            const slot = char.spellSlots[lvl];
+            if (slot.used < slot.max) {
+              slot.used++;
+              const remaining = slot.max - slot.used;
+              slotExpendedMsg = ` (Expended ${lvl}${lvl === 1 ? 'st' : lvl === 2 ? 'nd' : lvl === 3 ? 'rd' : 'th'} level slot, ${remaining} left)`;
+              this.saveStorage();
+            } else {
+              if (!confirm(`You have no ${lvl}-level spell slots remaining! Cast ${spellName} anyway?`)) {
+                return;
+              }
+            }
+          }
+
+          if (spell && g) {
+            g.shareSpell(spell);
+          } else {
+            window.DiceRoller?.shareItem?.({
+              name: spellName,
+              roller: char.name,
+              category: 'SPELL CAST',
+              sourceType: 'spell',
+              badges: [{ label: lvl === 0 ? 'Cantrip' : `${lvl}-Level Spell`, cls: 'prop-school' }],
+              description: `Cast ${spellName}${slotExpendedMsg}`
+            });
+          }
+
+          this.playHpSound(2);
+          window.showToast?.(`✨ Cast ${spellName}!${slotExpendedMsg}`, 'info', 2200);
+          this.renderEquipmentTab(container, char);
+        });
+      });
+
+      // Spell Damage button listener
+      container.querySelectorAll('.char-spell-dmg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const formula = btn.dataset.damageFormula;
+          const dmgType = btn.dataset.damageType;
+          const name = btn.dataset.spellName;
+          if (window.DiceRoller) {
+            window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})`, char.name, 'normal', 0);
           }
         });
       });
@@ -1620,6 +1951,40 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           this.renderEquipmentTab(container, char);
         });
 
+        container.querySelector('#btn-add-slot-level')?.addEventListener('click', () => {
+          const lvl = prompt('Enter spell slot level (1 to 9):', '1');
+          if (!lvl) return;
+          const max = parseInt(prompt(`How many ${lvl}-level slots?`, '2'), 10) || 1;
+          char.spellSlots[lvl] = { max, used: 0 };
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+
+        container.querySelectorAll('.btn-slot-inc').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const lvl = btn.dataset.slotLevel;
+            if (char.spellSlots[lvl]) {
+              char.spellSlots[lvl].max = (char.spellSlots[lvl].max || 0) + 1;
+              this.saveStorage();
+              this.renderEquipmentTab(container, char);
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-slot-dec').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const lvl = btn.dataset.slotLevel;
+            if (char.spellSlots[lvl] && char.spellSlots[lvl].max > 1) {
+              char.spellSlots[lvl].max--;
+              if (char.spellSlots[lvl].used > char.spellSlots[lvl].max) {
+                char.spellSlots[lvl].used = char.spellSlots[lvl].max;
+              }
+              this.saveStorage();
+              this.renderEquipmentTab(container, char);
+            }
+          });
+        });
+
         container.querySelectorAll('.char-item-del-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             const type = btn.dataset.type;
@@ -1640,12 +2005,28 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               char.equipment.splice(idx, 1);
               this.saveStorage();
               this.renderEquipmentTab(container, char);
+            } else if (type === 'slot-level') {
+              const lvl = btn.dataset.slotLevel;
+              if (confirm(`Delete ${lvl}-level spell slots?`)) {
+                delete char.spellSlots[lvl];
+                this.saveStorage();
+                this.renderEquipmentTab(container, char);
+              }
+            } else if (type === 'spell') {
+              const spellName = btn.dataset.spellName;
+              const g = window.Grimoire;
+              const normKey = g ? g.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
+              if (confirm(`Remove "${spellName}" from ${char.name}'s spellbook?`)) {
+                char.spellsKnown = char.spellsKnown.filter(p => (g ? g.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) !== normKey);
+                char.spellsPrepared = char.spellsPrepared.filter(p => (g ? g.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) !== normKey);
+                this.saveStorage();
+                this.renderEquipmentTab(container, char);
+              }
             }
           });
         });
       }
     }
-
     // TAB 2: DIVIONS, FEATS, & BOONS (Divions & Manifests, Feats & Class Features, DM Boons & Blessings)
     renderDivionsTab(container, char) {
       if (!Array.isArray(char.divions)) char.divions = [];
@@ -2340,6 +2721,24 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         if (item.damageFormula) badges.push({ label: `${item.damageFormula} ${item.damageType || ''}`.trim(), cls: 'prop-dmg' });
         if (item.healFormula) badges.push({ label: `Heal: ${item.healFormula}`, cls: 'prop-heal' });
         description = item.notes || item.description || `Quantity: ${item.qty}`;
+      } else if (type === 'spell') {
+        const spellName = titleEl.dataset.spellName || titleEl.textContent.trim().replace(/📜/g, '').trim();
+        const grimoire = window.Grimoire;
+        const normKey = grimoire ? grimoire.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const found = grimoire && grimoire.allSpells ? grimoire.allSpells.find(s => grimoire.normalizeSpellKey(s.name) === normKey) : null;
+
+        item = found || { name: spellName, level: 0, school: 'Arcane', description: 'Spell from character grimoire.' };
+        category = 'SPELL';
+        const lvlLabel = item.level === 0 ? 'Cantrip' : `${item.level}-Level`;
+        badges.push({ label: `${lvlLabel} ${item.school || ''}`.trim(), cls: 'prop-school' });
+        if (item.castingTime) badges.push({ label: item.castingTime, cls: 'prop-time' });
+        if (item.range) badges.push({ label: item.range, cls: 'prop-range' });
+        if (item.duration) badges.push({ label: item.duration, cls: 'prop-duration' });
+        if (item.concentration) badges.push({ label: 'Concentration', cls: 'prop-conc' });
+        if (item.ritual) badges.push({ label: 'Ritual', cls: 'prop-ritual' });
+        if (item.damageFormula) badges.push({ label: `${item.damageFormula} ${item.damageType || ''}`.trim(), cls: 'prop-dmg' });
+        description = item.description || item.desc || '';
+        if (item.higherLevel) description += `\n\nAt Higher Levels: ${item.higherLevel}`;
       }
 
       if (!item) return;

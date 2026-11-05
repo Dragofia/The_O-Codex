@@ -295,6 +295,7 @@ function initElements() {
   elements.modeTabCodex = document.getElementById("mode-tab-codex");
   elements.modeTabMap = document.getElementById("mode-tab-map");
   elements.modeTabCharacters = document.getElementById("mode-tab-characters");
+  elements.modeTabGrimoire = document.getElementById("mode-tab-grimoire");
   elements.dmModeToggle = document.getElementById("dm-mode-toggle");
   elements.modalViewOnMap = document.getElementById("modal-view-on-map");
   elements.modalLocationBadge = document.getElementById("modal-location-badge");
@@ -433,19 +434,21 @@ window.setAppMode = function(mode, options = {}) {
   const tabCodex = elements.modeTabCodex || document.getElementById("mode-tab-codex");
   const tabMap = elements.modeTabMap || document.getElementById("mode-tab-map");
   const tabCharacters = elements.modeTabCharacters || document.getElementById("mode-tab-characters");
+  const tabGrimoire = elements.modeTabGrimoire || document.getElementById("mode-tab-grimoire");
 
   if (stage) {
-    stage.classList.remove("mode--codex", "mode--map", "mode--characters");
+    stage.classList.remove("mode--codex", "mode--map", "mode--characters", "mode--grimoire");
     stage.classList.add(`mode--${mode}`);
   }
 
   tabCodex?.classList.toggle("is-active", mode === "codex");
   tabMap?.classList.toggle("is-active", mode === "map");
   tabCharacters?.classList.toggle("is-active", mode === "characters");
+  tabGrimoire?.classList.toggle("is-active", mode === "grimoire");
 
   if (mode === "map") {
     document.body.classList.add("map-mode-active");
-    document.body.classList.remove("characters-mode-active");
+    document.body.classList.remove("characters-mode-active", "grimoire-mode-active");
     if (window.DiceRoller && typeof window.DiceRoller.closeTray === 'function') {
       window.DiceRoller.closeTray();
     }
@@ -469,7 +472,7 @@ window.setAppMode = function(mode, options = {}) {
       setTimeout(() => window.mapEngine?.invalidateSize(), 460);
     }
   } else if (mode === "characters") {
-    document.body.classList.remove("map-mode-active");
+    document.body.classList.remove("map-mode-active", "grimoire-mode-active");
     document.body.classList.add("characters-mode-active");
 
     if (window.mapEngine && window.mapEngine.activeTransientPinId) {
@@ -493,9 +496,10 @@ window.setAppMode = function(mode, options = {}) {
       window.CharacterSheet.renderRosterBar();
       window.CharacterSheet.renderCurrentSheet();
     }
-  } else {
-    // "codex" mode
+  } else if (mode === "grimoire") {
     document.body.classList.remove("map-mode-active", "characters-mode-active");
+    document.body.classList.add("grimoire-mode-active");
+
     if (window.DiceRoller && typeof window.DiceRoller.closeTray === 'function') {
       window.DiceRoller.closeTray();
     }
@@ -504,7 +508,33 @@ window.setAppMode = function(mode, options = {}) {
       window.mapEngine.renderPins();
     }
 
-    if (syncUrl && (window.location.hash.toLowerCase() === "#map" || window.location.hash.toLowerCase() === "#characters" || window.location.hash.toLowerCase() === "#party")) {
+    if (syncUrl) {
+      try {
+        if (pushHistory) {
+          window.history.pushState({ mode: "grimoire" }, "", "#grimoire");
+        } else {
+          window.history.replaceState({ mode: "grimoire" }, "", "#grimoire");
+        }
+      } catch {
+        window.location.hash = "#grimoire";
+      }
+    }
+
+    if (window.Grimoire && typeof window.Grimoire.render === 'function') {
+      window.Grimoire.render();
+    }
+  } else {
+    // "codex" mode
+    document.body.classList.remove("map-mode-active", "characters-mode-active", "grimoire-mode-active");
+    if (window.DiceRoller && typeof window.DiceRoller.closeTray === 'function') {
+      window.DiceRoller.closeTray();
+    }
+    if (window.mapEngine && window.mapEngine.activeTransientPinId) {
+      window.mapEngine.activeTransientPinId = null;
+      window.mapEngine.renderPins();
+    }
+
+    if (syncUrl && (window.location.hash.toLowerCase() === "#map" || window.location.hash.toLowerCase() === "#characters" || window.location.hash.toLowerCase() === "#party" || window.location.hash.toLowerCase() === "#grimoire" || window.location.hash.toLowerCase() === "#spells")) {
       try {
         if (pushHistory) {
           window.history.pushState({ mode: "codex" }, "", window.location.pathname);
@@ -531,6 +561,10 @@ function bindEvents() {
 
   elements.modeTabCharacters?.addEventListener("click", () => {
     window.setAppMode("characters");
+  });
+
+  elements.modeTabGrimoire?.addEventListener("click", () => {
+    window.setAppMode("grimoire");
   });
 
   elements.dmModeToggle?.addEventListener("click", () => {
@@ -737,12 +771,13 @@ function bindEvents() {
       return;
     }
 
-    // 4. "o", "c", "m" : Screen navigation with previous-screen return
+    // 4. "o", "c", "m", "g" : Screen navigation with previous-screen return
     //  - O / o : The O-Codex (pressing O while on Codex returns to previous screen)
     //  - C / c : Character Sheets (pressing C while on Characters returns to previous screen)
     //  - M / m : World Map (pressing M while on Map returns to previous screen)
+    //  - G / g : Arcane Grimoire (pressing G while on Grimoire returns to previous screen)
     const lowerKey = event.key.toLowerCase();
-    if (["o", "c", "m"].includes(lowerKey) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (["o", "c", "m", "g"].includes(lowerKey) && !event.ctrlKey && !event.metaKey && !event.altKey) {
       if (!state.isHelpOpen) {
         event.preventDefault();
 
@@ -754,7 +789,8 @@ function bindEvents() {
         const modeMap = {
           o: "codex",
           c: "characters",
-          m: "map"
+          m: "map",
+          g: "grimoire"
         };
         const targetMode = modeMap[lowerKey];
         let nextMode;
@@ -773,7 +809,8 @@ function bindEvents() {
         const toastLabels = {
           codex: "📜 The O-Codex Active",
           characters: "⚔️ Character Sheets Active",
-          map: "🗺️ World Map Active"
+          map: "🗺️ World Map Active",
+          grimoire: "✨ Arcane Grimoire Active"
         };
         window.showToast?.(toastLabels[nextMode] || "Screen Switched", "info", 1400);
         return;
@@ -1658,6 +1695,10 @@ const router = {
       return { type: "characters", id: "characters" };
     }
 
+    if (decoded.toLowerCase() === "grimoire" || decoded.toLowerCase() === "spells") {
+      return { type: "grimoire", id: "grimoire" };
+    }
+
     const entryPrefixMatch = decoded.match(/^(?:entry[\/:]|item[\/:]|id[\/:])(.+)$/i);
     const candidateEntryId = (entryPrefixMatch ? entryPrefixMatch[1].trim() : decoded).toLowerCase();
 
@@ -1789,6 +1830,9 @@ const router = {
     } else if (route.type === "characters") {
       window.setAppMode("characters", { syncUrl: false });
       return;
+    } else if (route.type === "grimoire") {
+      window.setAppMode("grimoire", { syncUrl: false });
+      return;
     } else if (state.appMode !== "codex") {
       window.setAppMode("codex", { syncUrl: false });
     }
@@ -1838,6 +1882,18 @@ const router = {
     if (route.type === "map") {
       renderApp();
       window.setAppMode("map", { syncUrl: false });
+      return;
+    }
+
+    if (route.type === "characters") {
+      renderApp();
+      window.setAppMode("characters", { syncUrl: false });
+      return;
+    }
+
+    if (route.type === "grimoire") {
+      renderApp();
+      window.setAppMode("grimoire", { syncUrl: false });
       return;
     }
 
