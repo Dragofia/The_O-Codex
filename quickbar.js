@@ -156,7 +156,17 @@
     openIndex(idx) {
       if (idx < 0 || idx >= this.history.length) return;
       const target = this.history[idx];
-      if (target && window.openModal) {
+      if (!target) return;
+
+      // If the entry in this slot is already open in the modal, toggle it closed!
+      if (window.state && window.state.selectedEntryId === target.id) {
+        if (typeof window.closeModal === 'function') {
+          window.closeModal();
+        }
+        return;
+      }
+
+      if (typeof window.openModal === 'function') {
         window.openModal(target.id);
       }
     }
@@ -220,12 +230,16 @@
           <button class="quickbar-pill__close-btn" type="button" aria-label="Remove" title="Remove from recent">×</button>
         `;
 
-        // Click pill to open entry
+        // Click pill to open entry (or toggle closed if already open)
         pill.addEventListener('click', (e) => {
           if (e.target.closest('.quickbar-pill__pin-btn') || e.target.closest('.quickbar-pill__close-btn')) {
             return;
           }
-          if (window.openModal) {
+          if (window.state && window.state.selectedEntryId === item.id) {
+            if (typeof window.closeModal === 'function') window.closeModal();
+            return;
+          }
+          if (typeof window.openModal === 'function') {
             window.openModal(item.id);
           }
         });
@@ -233,7 +247,11 @@
         pill.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            if (window.openModal) window.openModal(item.id);
+            if (window.state && window.state.selectedEntryId === item.id) {
+              if (typeof window.closeModal === 'function') window.closeModal();
+              return;
+            }
+            if (typeof window.openModal === 'function') window.openModal(item.id);
           }
         });
 

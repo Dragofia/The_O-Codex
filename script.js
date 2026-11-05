@@ -148,14 +148,28 @@ window.showToast = function(message, type = "info", duration = 3200) {
   };
   const icon = iconMap[type] || "✨";
 
-  const safeMsg = /<[a-z][\s\S]*>/i.test(message)
-    ? message.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    : escapeHtml(message);
+  let clean = String(message || "");
+  if (clean.includes("&lt;") && clean.includes("&gt;")) {
+    clean = clean
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+  }
 
-  toast.innerHTML = `
-    <span class="toast-icon" aria-hidden="true">${icon}</span>
-    <span class="toast-message">${safeMsg}</span>
-  `;
+  const msgSpan = document.createElement("span");
+  msgSpan.className = "toast-message";
+
+  if (/<[a-z][\s\S]*>/i.test(clean)) {
+    const sanitized = clean.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+    msgSpan.innerHTML = sanitized;
+  } else {
+    msgSpan.textContent = clean;
+  }
+
+  toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icon}</span>`;
+  toast.appendChild(msgSpan);
 
   container.appendChild(toast);
 
@@ -328,6 +342,7 @@ async function init() {
   initAccessControl();
   window.state = state;
   window.openModal = openModal;
+  window.closeModal = closeModal;
   bindEvents();
   await loadWorldData();
   router.applyInitialRoute();
@@ -783,8 +798,14 @@ function updateSiteText() {
     document.title = site.title;
   }
 
-  if (site.subtitle) {
-    elements.siteSubtitle.textContent = site.subtitle;
+  if (elements.siteSubtitle) {
+    if (site.subtitle) {
+      elements.siteSubtitle.textContent = site.subtitle;
+      elements.siteSubtitle.style.display = "";
+    } else {
+      elements.siteSubtitle.textContent = "";
+      elements.siteSubtitle.style.display = "none";
+    }
   }
 }
 
@@ -1958,6 +1979,7 @@ function openModal(entryId, options = {}) {
     router.updateUrl({ entryId, pushHistory });
   }
 }
+window.openModal = openModal;
 
 function closeModal(options = {}) {
   const { syncUrl = true, pushHistory = false } = options;
@@ -1993,6 +2015,7 @@ function closeModal(options = {}) {
     modalCloseTimer = null;
   }, 200);
 }
+window.closeModal = closeModal;
 
 function openHelpModal() {
   if (helpCloseTimer) {
