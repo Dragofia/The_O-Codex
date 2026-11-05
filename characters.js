@@ -893,6 +893,25 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.playHpSound(typeof delta === 'number' ? delta : (delta ? 1 : -1));
     }
 
+    adjustCharacterHpByName(name, delta) {
+      if (!name) return null;
+      const char = this.characters.find(c => 
+        (c.name && c.name.toLowerCase() === name.toLowerCase()) ||
+        (c.player && c.player.toLowerCase() === name.toLowerCase())
+      );
+      if (!char || !char.vitals) return null;
+      const oldHp = char.vitals.hpCurrent || 0;
+      const maxHp = char.vitals.hpMax || 1;
+      const newHp = Math.max(0, Math.min(maxHp, oldHp + delta));
+      char.vitals.hpCurrent = newHp;
+      this.playHpSound(delta);
+      this.saveStorage();
+      if (char.id === this.activeCharId) {
+        this.renderVitals(char);
+      }
+      return { char, oldHp, newHp, delta };
+    }
+
     initDOM() {
       // Edit Mode Toggle
       document.getElementById('char-edit-toggle-btn')?.addEventListener('click', () => this.toggleEditMode());
@@ -1778,13 +1797,26 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         </div>
       `;
 
-      // Attack roll listeners
+      // Attack roll listeners (Single-click rolls vs target if selected; double-click rolls untargeted)
       container.querySelectorAll('.atk-roll-atk-btn').forEach(btn => {
+        let clickTimer = null;
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index, 10);
           const atk = char.attacks[idx];
-          if (atk && window.DiceRoller) {
-            window.DiceRoller.roll('1d20', `${atk.name} Attack`, char.name, 'normal', atk.bonus);
+          if (!atk || !window.DiceRoller) return;
+
+          if (clickTimer) {
+            // Double click: bypass targeting
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            window.DiceRoller.roll('1d20', `${atk.name} Attack (Untargeted)`, char.name, 'normal', atk.bonus);
+          } else {
+            clickTimer = setTimeout(() => {
+              clickTimer = null;
+              const target = window.InitiativeTracker?.getSelectedTarget?.();
+              const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
+              window.DiceRoller.roll('1d20', `${atk.name} Attack${targetSuffix}`, char.name, 'normal', atk.bonus);
+            }, 260);
           }
         });
       });
@@ -1794,7 +1826,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const idx = parseInt(btn.dataset.index, 10);
           const atk = char.attacks[idx];
           if (atk && window.DiceRoller) {
-            window.DiceRoller.roll(atk.damageFormula, `${atk.name} Damage`, char.name, 'normal', 0);
+            const target = window.InitiativeTracker?.getSelectedTarget?.();
+            const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
+            window.DiceRoller.roll(atk.damageFormula, `${atk.name} Damage${targetSuffix}`, char.name, 'normal', 0);
           }
         });
       });
@@ -1906,8 +1940,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const formula = btn.dataset.damageFormula;
           const dmgType = btn.dataset.damageType;
           const name = btn.dataset.spellName;
+          const target = window.InitiativeTracker?.getSelectedTarget?.();
+          const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
           if (window.DiceRoller) {
-            window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})`, char.name, 'normal', 0);
+            window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
           }
         });
       });

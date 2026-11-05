@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=37">
+  <link rel="stylesheet" href="styles.css?v=38">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -257,17 +257,30 @@
                 <span class="init-sidebar-icon">⚔️</span>
                 <span class="init-sidebar-heading">Initiative</span>
                 <span class="init-count-pill" id="init-count-pill">0</span>
+                <span class="init-round-pill hidden" id="init-round-pill">Round 1</span>
               </div>
               <div class="init-sidebar-actions">
+                <button type="button" class="init-next-btn hidden" id="init-next-turn-btn" title="Advance to next turn (DM / Hotkey)">Next ⏭️</button>
                 <button type="button" class="init-action-btn" id="init-clear-btn" title="Clear all initiative rolls">Clear</button>
                 <button type="button" class="init-sword-toggle-btn" id="char-toggle-init-btn" title="Toggle Initiative Tracker">⚔️</button>
               </div>
+            </div>
+
+            <!-- Active Target Banner -->
+            <div id="init-target-banner" class="init-target-banner hidden">
+              <span class="init-target-label">🎯 Target:</span>
+              <strong id="init-target-name" class="init-target-name">None</strong>
+              <button type="button" id="init-target-clear-btn" class="init-target-clear-btn" title="Clear active target">✕</button>
             </div>
 
             <!-- DM Quick-Add Enemy Section (Visible only in DM Mode) -->
             <div id="init-dm-panel" class="init-dm-panel hidden">
               <div class="init-dm-panel-header">
                 <span class="init-dm-badge">👑 Quick-Add Enemy</span>
+                <div class="init-dm-turn-tools">
+                  <button type="button" class="init-dm-turn-btn" id="init-dm-undo-turn" title="Undo last turn">⏮️</button>
+                  <button type="button" class="init-dm-turn-btn" id="init-dm-reset-order" title="Reset to initial roll order">🔄</button>
+                </div>
               </div>
               <div class="init-dm-grid">
                 <div class="init-dm-field init-dm-field--name">
@@ -1326,9 +1339,9 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=5" defer></script>
-  <script src="characters.js?v=15" defer></script>
+  <script src="characters.js?v=16" defer></script>
   <script src="grimoire.js?v=1" defer></script>
-  <script src="initiative-tracker.js?v=2" defer></script>
+  <script src="initiative-tracker.js?v=3" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
   <script src="script.js?v=25" defer></script>
