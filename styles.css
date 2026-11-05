@@ -5489,45 +5489,142 @@ body.map-mode-active .map-filter-bar {
 .char-currency-panel {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem;
   background: rgba(12, 19, 36, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 0.85rem 1.25rem;
-  margin-bottom: 1.25rem;
+  border: 1px solid rgba(90, 232, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .currency-group {
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(8, 14, 26, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  flex: 1;
+  min-width: 175px;
 }
 
-.currency-group label {
+.currency-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.currency-badge {
   font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.currency-badge--cp {
+  background: rgba(217, 119, 6, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(217, 119, 6, 0.4);
+}
+
+.currency-badge--sp {
+  background: rgba(203, 213, 225, 0.15);
+  color: #e2e8f0;
+  border: 1px solid rgba(203, 213, 225, 0.35);
+}
+
+.currency-badge--gp {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.currency-badge--pp {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.currency-badge--aetherGems {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.currency-coin-name {
+  font-size: 0.78rem;
   font-weight: 600;
   color: #94a3b8;
 }
 
-.currency-group input {
-  width: 60px;
-  background: rgba(5, 10, 20, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  padding: 0.25rem 0.35rem;
+.currency-stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cur-tick-btn {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(90, 232, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.4rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 26px;
   text-align: center;
-  color: #f1f5f9;
-  font-weight: 600;
+  user-select: none;
+}
+
+.cur-tick-btn:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.cur-tick-btn:active {
+  transform: scale(0.92);
+}
+
+.cur-input {
+  width: 58px;
+  background: rgba(4, 9, 18, 0.85);
+  border: 1px solid rgba(90, 232, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.25rem;
+  text-align: center;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
 }
 
-.currency-special label {
-  color: #38bdf8;
+.cur-input::-webkit-outer-spin-button,
+.cur-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.currency-special input {
-  border-color: rgba(56, 189, 248, 0.4);
-  color: #67e8f9;
+.cur-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.cur-input.pulse-change {
+  animation: curPulse 0.35s ease;
+}
+
+@keyframes curPulse {
+  0% { transform: scale(1); background: rgba(56, 189, 248, 0.3); }
+  50% { transform: scale(1.08); background: rgba(56, 189, 248, 0.4); }
+  100% { transform: scale(1); background: rgba(4, 9, 18, 0.85); }
 }
 
 .char-eq-list {
@@ -5564,16 +5661,7 @@ body.map-mode-active .map-filter-bar {
   color: #94a3b8;
 }
 
-.currency-panel-view .cur-static-val {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #f1f5f9;
-  padding: 0.15rem 0.4rem;
-}
 
-.currency-panel-view .currency-special .cur-static-val {
-  color: #67e8f9;
-}
 
 .char-notes-view .notes-rendered-text {
   font-size: 0.95rem;

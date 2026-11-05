@@ -18,6 +18,15 @@
   const CHARACTERS_STORAGE_KEY = 'o_codex_characters';
   const ACTIVE_CHAR_KEY = 'o_codex_active_char_id';
 
+  // Campaign Currency Configuration Framework (visible: false hides from UI while keeping framework & data intact)
+  const CURRENCY_REGISTRY = [
+    { key: 'cp', label: 'CP', name: 'Copper', color: '#d97706', visible: true },
+    { key: 'sp', label: 'SP', name: 'Silver', color: '#cbd5e1', visible: true },
+    { key: 'gp', label: 'GP', name: 'Gold', color: '#eab308', visible: true },
+    { key: 'pp', label: 'PP', name: 'Platinum', color: '#38bdf8', visible: false },
+    { key: 'aetherGems', label: '💎 Aether', name: 'Aether Gems', color: '#a855f7', visible: false }
+  ];
+
   // Canon party default roster for zero-setup start
   const DEFAULT_ROSTER = [
     {
@@ -1449,52 +1458,77 @@
         `).join('');
       }
 
+      // Framework for all campaign currencies (visible: false hides PP and Aether from UI while keeping framework & data intact)
+      const visibleCurrencies = CURRENCY_REGISTRY.filter(c => c.visible);
+      const currencyCardsHtml = visibleCurrencies.map(c => `
+        <div class="currency-group" data-coin="${c.key}">
+          <div class="currency-header-row">
+            <span class="currency-badge currency-badge--${c.key}">${c.label}</span>
+            <span class="currency-coin-name">${c.name}</span>
+          </div>
+          <div class="currency-stepper-row">
+            <button type="button" class="cur-tick-btn cur-tick-down-5" data-coin="${c.key}" data-delta="-5" title="Subtract 5 ${c.label}">-5</button>
+            <button type="button" class="cur-tick-btn cur-tick-down-1" data-coin="${c.key}" data-delta="-1" title="Subtract 1 ${c.label}">-1</button>
+            <input type="number" id="cur-${c.key}" class="cur-input" value="${cur[c.key] || 0}" min="0" data-coin="${c.key}" title="Click or type ${c.label} directly" />
+            <button type="button" class="cur-tick-btn cur-tick-up-1" data-coin="${c.key}" data-delta="1" title="Add 1 ${c.label}">+1</button>
+            <button type="button" class="cur-tick-btn cur-tick-up-5" data-coin="${c.key}" data-delta="5" title="Add 5 ${c.label}">+5</button>
+          </div>
+        </div>
+      `).join('');
+
       container.innerHTML = `
         <div class="char-section-head">
           <h3>Equipment & Inventory</h3>
           ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment</button>` : ''}
         </div>
 
-        <div class="char-currency-panel ${!this.isEditMode ? 'currency-panel-view' : ''}">
-          <div class="currency-group">
-            <label>CP</label>
-            ${this.isEditMode ? `<input type="number" id="cur-cp" value="${cur.cp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.cp || 0}</strong>`}
-          </div>
-          <div class="currency-group">
-            <label>SP</label>
-            ${this.isEditMode ? `<input type="number" id="cur-sp" value="${cur.sp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.sp || 0}</strong>`}
-          </div>
-          <div class="currency-group">
-            <label>GP</label>
-            ${this.isEditMode ? `<input type="number" id="cur-gp" value="${cur.gp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.gp || 0}</strong>`}
-          </div>
-          <div class="currency-group">
-            <label>PP</label>
-            ${this.isEditMode ? `<input type="number" id="cur-pp" value="${cur.pp || 0}" min="0" />` : `<strong class="cur-static-val">${cur.pp || 0}</strong>`}
-          </div>
-          <div class="currency-group currency-special">
-            <label>💎 Aether</label>
-            ${this.isEditMode ? `<input type="number" id="cur-gems" value="${cur.aetherGems || 0}" min="0" />` : `<strong class="cur-static-val">${cur.aetherGems || 0}</strong>`}
-          </div>
+        <div class="char-currency-panel">
+          ${currencyCardsHtml}
         </div>
 
         <div class="char-eq-list">${eqHtml}</div>
       `;
 
-      if (this.isEditMode) {
-        ['cp', 'sp', 'gp', 'pp'].forEach(coin => {
-          container.querySelector(`#cur-${coin}`)?.addEventListener('change', (e) => {
-            cur[coin] = parseInt(e.target.value, 10) || 0;
-            char.currency = cur;
-            this.saveStorage();
-          });
-        });
-        container.querySelector('#cur-gems')?.addEventListener('change', (e) => {
-          cur.aetherGems = parseInt(e.target.value, 10) || 0;
+      // Currency controls are ALWAYS active and directly editable (without needing "Edit Sheet" mode!)
+      container.querySelectorAll('.cur-input').forEach(input => {
+        const updateCoin = (val) => {
+          const coinKey = input.dataset.coin;
+          const num = Math.max(0, parseInt(val, 10) || 0);
+          cur[coinKey] = num;
           char.currency = cur;
           this.saveStorage();
+        };
+        input.addEventListener('input', (e) => updateCoin(e.target.value));
+        input.addEventListener('change', (e) => {
+          updateCoin(e.target.value);
+          input.value = cur[input.dataset.coin] || 0;
         });
+      });
 
+      // Currency tick steppers: -5, -1, +1, +5
+      container.querySelectorAll('.cur-tick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const coinKey = btn.dataset.coin;
+          const delta = parseInt(btn.dataset.delta, 10) || 0;
+          const currentVal = cur[coinKey] || 0;
+          const newVal = Math.max(0, currentVal + delta);
+          cur[coinKey] = newVal;
+          char.currency = cur;
+
+          const input = container.querySelector(`#cur-${coinKey}`);
+          if (input) {
+            input.value = newVal;
+            input.classList.remove('pulse-change');
+            void input.offsetWidth; // trigger reflow
+            input.classList.add('pulse-change');
+          }
+
+          this.playHealthSound(delta > 0);
+          this.saveStorage();
+        });
+      });
+
+      if (this.isEditMode) {
         container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
           const name = prompt('Equipment Item Name:');
           if (!name) return;
