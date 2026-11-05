@@ -1577,42 +1577,99 @@ img {
 /* ============================================================================
    VIEWPORT STAGE & DUAL VIEW SLIDING ANIMATION
    ============================================================================ */
+/* ============================================================================
+   VIEWPORT STAGE & TRI-VIEW SLIDING TRANSITIONS (CODEX <-> MAP <-> CHARACTERS)
+   ============================================================================ */
+html, body {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
 .viewport-stage {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-.mode-view {
-  width: 100%;
-  min-height: 100vh;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
-}
-
-.mode-view--codex {
-  position: relative;
-  width: 100%;
-}
-
-.mode-view--map {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 20;
+  overflow: hidden;
+}
+
+.mode-view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.mode-view--codex {
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-base, #070e19);
+  padding-bottom: 5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.35) rgba(10, 18, 30, 0.4);
+}
+
+.mode-view--codex::-webkit-scrollbar {
+  width: 7px;
+}
+
+.mode-view--codex::-webkit-scrollbar-track {
+  background: rgba(10, 18, 30, 0.4);
+}
+
+.mode-view--codex::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.32);
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.mode-view--codex::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.65);
+}
+
+.mode-view--map {
+  z-index: 15;
   overflow: hidden;
   background: #02060d;
 }
 
-.mode-view--characters {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  padding-bottom: 5rem;
+.viewport-stage.mode--map .mode-view--map {
+  z-index: 25;
 }
 
-/* Codex Mode Active: Codex in place, Map and Characters offscreen */
+.mode-view--characters {
+  z-index: 20;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-base, #070e19);
+  padding-bottom: 5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.35) rgba(10, 18, 30, 0.4);
+}
+
+.mode-view--characters::-webkit-scrollbar {
+  width: 7px;
+}
+
+.mode-view--characters::-webkit-scrollbar-track {
+  background: rgba(10, 18, 30, 0.4);
+}
+
+.mode-view--characters::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.32);
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.mode-view--characters::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.65);
+}
+
+/* 1. Codex Mode Active (index 0): Codex in view, Map and Characters off to the right (+100%) */
 .viewport-stage.mode--codex .mode-view--codex {
   transform: translateX(0);
   opacity: 1;
@@ -1626,13 +1683,12 @@ img {
 }
 
 .viewport-stage.mode--codex .mode-view--characters {
-  display: none;
   transform: translateX(100%);
   opacity: 0;
   pointer-events: none;
 }
 
-/* Map Mode Active: Codex slides off to the left, Map slides in from the right */
+/* 2. Map Mode Active (index 1): Codex off to the left (-100%), Map in view (0), Characters off to the right (+100%) */
 .viewport-stage.mode--map .mode-view--codex {
   transform: translateX(-100%);
   opacity: 0;
@@ -1646,36 +1702,28 @@ img {
 }
 
 .viewport-stage.mode--map .mode-view--characters {
-  display: none;
   transform: translateX(100%);
   opacity: 0;
   pointer-events: none;
 }
 
-/* Characters Mode Active: Characters in view, Codex and Map offscreen */
+/* 3. Characters Mode Active (index 2): Codex and Map off to the left (-100%), Characters in view (0) */
 .viewport-stage.mode--characters .mode-view--codex {
   transform: translateX(-100%);
   opacity: 0;
   pointer-events: none;
-  display: none;
 }
 
 .viewport-stage.mode--characters .mode-view--map {
-  transform: translateX(100%);
+  transform: translateX(-100%);
   opacity: 0;
   pointer-events: none;
 }
 
 .viewport-stage.mode--characters .mode-view--characters {
-  display: block;
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
-}
-
-body.map-mode-active {
-  overflow: hidden !important;
-  height: 100vh;
 }
 
 /* ============================================================================
