@@ -372,6 +372,57 @@
       const advPart = (adv === 'advantage') ? ' (ADV)' : (adv === 'disadvantage' ? ' (DIS)' : '');
       const displayFormula = `${diceFormulaPart}${modPart}${advPart}`;
 
+      // Check for active target from InitiativeTracker
+      let targetResult = null;
+      if (window.InitiativeTracker && typeof window.InitiativeTracker.getSelectedTarget === 'function') {
+        const target = window.InitiativeTracker.getSelectedTarget();
+        const isAttackRoll = /attack|to hit|\batk\b/i.test(lbl) && !/save|saving throw|check|initiative|damage|heal/i.test(lbl);
+
+        if (target && isAttackRoll && typeof window.InitiativeTracker.getTargetAc === 'function') {
+          const targetAc = window.InitiativeTracker.getTargetAc(target);
+          if (typeof targetAc === 'number' && targetAc > 0) {
+            let isHit = false;
+            let hitText = '';
+            let hitBadgeCls = '';
+            let subText = '';
+
+            if (isCrit) {
+              isHit = true;
+              hitText = '✨ CRITICAL HIT!';
+              hitBadgeCls = 'tag-hit tag-crit-hit';
+              subText = `Natural 20 vs AC ${targetAc}`;
+            } else if (isFumble) {
+              isHit = false;
+              hitText = '💀 CRITICAL MISS';
+              hitBadgeCls = 'tag-miss tag-fumble-miss';
+              subText = `Natural 1 vs AC ${targetAc}`;
+            } else if (total >= targetAc) {
+              isHit = true;
+              hitText = '🎯 HIT!';
+              hitBadgeCls = 'tag-hit';
+              subText = `Total ${total} vs AC ${targetAc}`;
+            } else {
+              isHit = false;
+              hitText = '🛡️ MISS';
+              hitBadgeCls = 'tag-miss';
+              subText = `Total ${total} vs AC ${targetAc}`;
+            }
+
+            targetResult = {
+              targetId: target.id,
+              targetName: target.name,
+              targetAc: targetAc,
+              isHit: isHit,
+              isCrit: isCrit,
+              isFumble: isFumble,
+              hitText: hitText,
+              hitBadgeCls: hitBadgeCls,
+              subText: subText
+            };
+          }
+        }
+      }
+
       const rollResult = {
         id: `roll_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         roller,
@@ -382,6 +433,7 @@
         isCrit,
         isFumble,
         detailsText,
+        targetResult,
         timestamp: Date.now()
       };
 
@@ -526,6 +578,16 @@
         }
 
         el.className = `dice-history-item ${item.isCrit ? 'is-crit' : ''} ${item.isFumble ? 'is-fumble' : ''}`;
+        let targetResultHtml = '';
+        if (item.targetResult) {
+          const tr = item.targetResult;
+          targetResultHtml = `
+            <div class="dice-history-target-banner ${tr.hitBadgeCls}">
+              <span class="dice-target-verdict">${escapeHtml(tr.hitText)}</span>
+              <span class="dice-target-details">vs <strong>${escapeHtml(tr.targetName)}</strong> (${escapeHtml(tr.subText)})</span>
+            </div>
+          `;
+        }
         el.innerHTML = `
           <div class="dice-history-head">
             <strong class="dice-history-roller">${escapeHtml(item.roller)}</strong>
@@ -535,6 +597,7 @@
             <span class="dice-history-label">${escapeHtml(item.label)}</span>
             <span class="dice-history-total">${item.total}</span>
           </div>
+          ${targetResultHtml}
           <div class="dice-history-foot">
             <span>${escapeHtml(item.formula)} ➔ ${escapeHtml(item.detailsText)}</span>
           </div>
@@ -557,10 +620,17 @@
       }
 
       let msg = `🎲 ${roll.roller} rolled ${roll.total} for ${roll.label}`;
-      if (roll.isCrit) msg += ` · ✨ NAT 20!`;
-      else if (roll.isFumble) msg += ` · 💀 NAT 1!`;
+      let toastType = roll.isCrit ? 'success' : (roll.isFumble ? 'warning' : 'info');
+      if (roll.targetResult) {
+        msg = `${roll.targetResult.hitText} ${roll.roller} rolled ${roll.total} vs ${roll.targetResult.targetName} (${roll.targetResult.subText})`;
+        toastType = roll.targetResult.isHit ? 'success' : 'warning';
+      } else if (roll.isCrit) {
+        msg += ` · ✨ NAT 20!`;
+      } else if (roll.isFumble) {
+        msg += ` · 💀 NAT 1!`;
+      }
 
-      window.showToast(msg, roll.isCrit ? 'success' : (roll.isFumble ? 'warning' : 'info'), 3200);
+      window.showToast(msg, toastType, 3500);
     }
 
     onRemoteRoll(remoteRoll) {

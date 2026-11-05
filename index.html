@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=40">
+  <link rel="stylesheet" href="styles.css?v=41">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -266,13 +266,6 @@
               </div>
             </div>
 
-            <!-- Active Target Banner -->
-            <div id="init-target-banner" class="init-target-banner hidden">
-              <span class="init-target-label">🎯 Target:</span>
-              <strong id="init-target-name" class="init-target-name">None</strong>
-              <button type="button" id="init-target-clear-btn" class="init-target-clear-btn" title="Clear active target">✕</button>
-            </div>
-
             <!-- DM Quick-Add Enemy Section (Visible only in DM Mode) -->
             <div id="init-dm-panel" class="init-dm-panel hidden">
               <div class="init-dm-panel-header">
@@ -290,6 +283,10 @@
                 <div class="init-dm-field init-dm-field--hp">
                   <label for="init-enemy-hp">Max HP</label>
                   <input type="number" id="init-enemy-hp" class="init-dm-input" placeholder="15" min="1" />
+                </div>
+                <div class="init-dm-field init-dm-field--ac">
+                  <label for="init-enemy-ac">AC</label>
+                  <input type="number" id="init-enemy-ac" class="init-dm-input" placeholder="12" min="1" max="40" />
                 </div>
                 <div class="init-dm-field init-dm-field--mod">
                   <label for="init-enemy-mod">Init +/-</label>
@@ -1338,10 +1335,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
-  <script src="dice-roller.js?v=5" defer></script>
-  <script src="characters.js?v=16" defer></script>
+  <script src="dice-roller.js?v=6" defer></script>
+  <script src="characters.js?v=17" defer></script>
   <script src="grimoire.js?v=1" defer></script>
-  <script src="initiative-tracker.js?v=5" defer></script>
+  <script src="initiative-tracker.js?v=6" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
   <script src="script.js?v=25" defer></script>

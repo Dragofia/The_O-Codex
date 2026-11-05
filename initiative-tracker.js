@@ -457,11 +457,36 @@
         if (found && found.vitals) {
           return {
             hpCurrent: typeof found.vitals.hpCurrent === 'number' ? found.vitals.hpCurrent : 0,
-            hpMax: typeof found.vitals.hpMax === 'number' ? found.vitals.hpMax : 1
+            hpMax: typeof found.vitals.hpMax === 'number' ? found.vitals.hpMax : 1,
+            ac: typeof found.vitals.ac === 'number' ? found.vitals.ac : 10
           };
         }
       }
       return null;
+    }
+
+    getTargetAc(target) {
+      if (!target) return null;
+      if (target.isEnemy) {
+        return (typeof target.ac === 'number' && target.ac > 0) ? target.ac : null;
+      }
+      const vitals = this.getCharacterVitals(target.name);
+      if (vitals && typeof vitals.ac === 'number' && vitals.ac > 0) {
+        return vitals.ac;
+      }
+      if (typeof target.ac === 'number' && target.ac > 0) {
+        return target.ac;
+      }
+      return null;
+    }
+
+    setEnemyAc(id, newAc) {
+      const enemy = this.combatants.find(c => c.id === id);
+      if (!enemy) return;
+      const parsed = parseInt(newAc, 10);
+      enemy.ac = (!isNaN(parsed) && parsed > 0) ? parsed : null;
+      this.saveStorage(true);
+      this.render();
     }
 
     getPartySubtext(name) {
@@ -482,11 +507,14 @@
     addEnemy() {
       const nameInput = document.getElementById('init-enemy-name');
       const hpInput = document.getElementById('init-enemy-hp');
+      const acInput = document.getElementById('init-enemy-ac');
       const modInput = document.getElementById('init-enemy-mod');
       const countInput = document.getElementById('init-enemy-count');
 
       const baseName = (nameInput?.value || '').trim() || 'Enemy';
       const maxHp = Math.max(1, parseInt(hpInput?.value, 10) || 15);
+      const rawAc = acInput ? parseInt(acInput.value, 10) : NaN;
+      const enemyAc = !isNaN(rawAc) && rawAc > 0 ? rawAc : null;
       const initBonus = parseInt(modInput?.value, 10) || 0;
       const rawCount = countInput?.value?.trim();
       const count = rawCount ? Math.max(1, parseInt(rawCount, 10) || 1) : 1;
@@ -502,6 +530,7 @@
           isEnemy: true,
           hpCurrent: maxHp,
           hpMax: maxHp,
+          ac: enemyAc,
           initBonus: initBonus,
           rolls: [total],
           activeScore: total,
@@ -518,6 +547,7 @@
         nameInput.value = '';
         nameInput.focus();
       }
+      if (acInput) acInput.value = '';
       if (countInput) countInput.value = '1';
 
       this.sortCombatants();
@@ -652,19 +682,6 @@
         nextTurnBtn.textContent = this.hasMoved ? 'Next ⏭️' : 'Start ⏭️';
       }
 
-      // Update Target Banner
-      const targetBanner = document.getElementById('init-target-banner');
-      const targetNameEl = document.getElementById('init-target-name');
-      const target = this.getSelectedTarget();
-      if (targetBanner && targetNameEl) {
-        if (target) {
-          targetBanner.classList.remove('hidden');
-          targetNameEl.textContent = target.name;
-        } else {
-          targetBanner.classList.add('hidden');
-        }
-      }
-
       const container = document.getElementById('init-list-body');
       const countPill = document.getElementById('init-count-pill');
       if (countPill) {
@@ -723,6 +740,7 @@
               <span class="init-card-hp" title="Current / Max HP">
                 <span class="init-hp-cur" style="color: ${hpColor}; font-weight: 700;">${curHp}</span><span class="init-hp-slash-dim">/${maxHp}</span>
               </span>
+              <span class="init-player-ac-badge" title="Armor Class: ${vitals.ac}">🛡️${vitals.ac}</span>
             `;
           }
 
@@ -766,12 +784,17 @@
             ? `<span class="init-enemy-dmg-badge" title="Total damage taken: ${damageTaken}">-${damageTaken}</span>`
             : '';
 
-          // DM gets exact HP / maxHp and (-damageTaken)
+          // DM gets exact HP / maxHp and (-damageTaken) plus AC
+          const acDisplay = (c.ac !== null && c.ac !== undefined) ? c.ac : '';
           const dmHpBadge = isDm
             ? `<span class="init-card-hp init-dm-enemy-hp-badge" title="Current: ${curHp} / Max: ${maxHp} (Damage taken: ${damageTaken})">
                 <span class="init-hp-cur" style="color: ${nameColor}; font-weight: 700;">${curHp}</span>
                 <span class="init-hp-slash-dim">/${maxHp}</span>
                 ${damageTaken > 0 ? `<span class="init-enemy-dmg-sub" title="Total damage taken">(-${damageTaken})</span>` : ''}
+              </span>
+              <span class="init-dm-enemy-ac-badge" title="Enemy AC (Click to edit)">
+                <span class="init-ac-shield-icon">🛡️</span>
+                <input type="number" class="init-enemy-ac-input" value="${acDisplay}" placeholder="AC" min="1" max="40" data-id="${c.id}" title="Type enemy AC" />
               </span>`
             : '';
 
@@ -835,7 +858,7 @@
       container.querySelectorAll('.init-card').forEach(card => {
         card.addEventListener('click', (e) => {
           // If clicking buttons or inputs, do not toggle targeting
-          if (e.target.closest('.init-row-del-btn, .init-hp-tick-btn, .init-hp-calc-btn, .init-enemy-hp-input')) {
+          if (e.target.closest('.init-row-del-btn, .init-hp-tick-btn, .init-hp-calc-btn, .init-enemy-hp-input, .init-enemy-ac-input')) {
             return;
           }
           const id = card.dataset.id;
@@ -857,6 +880,15 @@
         input.addEventListener('change', (e) => {
           const id = input.dataset.id;
           this.setEnemyHp(id, e.target.value);
+        });
+        input.addEventListener('click', (e) => e.stopPropagation());
+      });
+
+      // Bind DM Enemy AC typed inputs
+      container.querySelectorAll('.init-enemy-ac-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const id = input.dataset.id;
+          this.setEnemyAc(id, e.target.value);
         });
         input.addEventListener('click', (e) => e.stopPropagation());
       });
@@ -898,13 +930,6 @@
 
         if (this.isInitiativeRoll(roll)) {
           this.handleNewRoll(roll);
-        } else if (this.selectedTargetId && roll.label && /damage|heal/i.test(roll.label)) {
-          // Target is selected: apply damage directly to target!
-          const total = typeof roll.total === 'number' ? roll.total : parseInt(roll.total, 10);
-          if (total && total > 0) {
-            const isDamage = /damage/i.test(roll.label);
-            this.applyTargetDamage(this.selectedTargetId, isDamage ? -total : total, roll.label);
-          }
         }
       });
 
@@ -922,11 +947,6 @@
         if (confirm('Reset initiative order back to original roll results?')) {
           this.resetOrder();
         }
-      });
-
-      // Target Banner Clear button
-      document.getElementById('init-target-clear-btn')?.addEventListener('click', () => {
-        this.clearTarget();
       });
 
       // Clear button

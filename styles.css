@@ -4597,7 +4597,7 @@ body.map-mode-active .map-filter-bar {
 
 .init-dm-grid {
   display: grid;
-  grid-template-columns: 2fr 1.15fr 1fr 0.9fr;
+  grid-template-columns: 2fr 1.05fr 0.9fr 0.95fr 0.8fr;
   gap: 0.35rem;
   margin-bottom: 0.5rem;
 }
@@ -4812,6 +4812,56 @@ body.map-mode-active .map-filter-bar {
   font-weight: 700;
   margin-left: 3px;
   font-family: var(--font-mono, monospace);
+}
+
+/* Player & Enemy Armor Class (AC) Badges */
+.init-player-ac-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 5px;
+  padding: 1px 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #7dd3fc;
+  margin-left: 3px;
+}
+
+.init-dm-enemy-ac-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+  padding: 1px 3px;
+  font-size: 0.75rem;
+  margin-left: 3px;
+}
+
+.init-ac-shield-icon {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.init-enemy-ac-input {
+  width: 28px;
+  text-align: center;
+  background: rgba(10, 14, 24, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0 1px;
+}
+
+.init-enemy-ac-input:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
 }
 
 /* DM Enemy Health Controls Container & Rows */
@@ -5142,38 +5192,69 @@ body.map-mode-active .map-filter-bar {
   50% { transform: scale(1.25); opacity: 1; }
 }
 
-.init-target-banner {
+/* Roll Log Hit / Miss Target Verdict Banner */
+.roll-log-target-banner,
+.dice-history-target-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.35rem 0.65rem;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  gap: 0.5rem;
+  padding: 4px 8px;
   border-radius: 6px;
-  margin: 0.4rem 0.65rem 0.2rem 0.65rem;
+  margin: 4px 0 3px 0;
   font-size: 0.78rem;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  animation: hitBannerPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes hitBannerPop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.roll-log-target-banner.tag-hit,
+.dice-history-target-banner.tag-hit {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #86efac;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.22);
+}
+
+.roll-log-target-banner.tag-crit-hit,
+.dice-history-target-banner.tag-crit-hit {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.25) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border-color: #facc15;
+  color: #fef08a;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.4);
+  font-weight: 800;
+}
+
+.roll-log-target-banner.tag-miss,
+.dice-history-target-banner.tag-miss {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+}
+
+.roll-log-target-banner.tag-fumble-miss,
+.dice-history-target-banner.tag-fumble-miss {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border-color: #ef4444;
   color: #fca5a5;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
 }
 
-.init-target-name {
-  color: #fff;
-  font-weight: 700;
-  margin-left: 0.25rem;
+.roll-log-target-verdict,
+.dice-target-verdict {
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
-.init-target-clear-btn {
-  background: none;
-  border: none;
-  color: #fca5a5;
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0 0.25rem;
-  line-height: 1;
-}
-
-.init-target-clear-btn:hover {
-  color: #fff;
+.roll-log-target-details,
+.dice-target-details {
+  font-size: 0.72rem;
+  opacity: 0.9;
 }
 
 .init-empty-state {

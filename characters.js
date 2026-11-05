@@ -2675,7 +2675,21 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         }
 
         const card = document.createElement('div');
-        card.className = `roll-log-card ${item.isCrit ? 'is-crit' : ''} ${item.isFumble ? 'is-fumble' : ''}`;
+        const critClass = item.isCrit ? 'is-crit' : (item.isFumble ? 'is-fumble' : '');
+        const targetClass = item.targetResult ? (item.targetResult.isHit ? 'has-hit' : 'has-miss') : '';
+        card.className = `roll-log-card ${critClass} ${targetClass}`.trim();
+
+        let targetResultHtml = '';
+        if (item.targetResult) {
+          const tr = item.targetResult;
+          targetResultHtml = `
+            <div class="roll-log-target-banner ${tr.hitBadgeCls}">
+              <span class="roll-log-target-verdict">${escapeHtml(tr.hitText)}</span>
+              <span class="roll-log-target-details">vs <strong>${escapeHtml(tr.targetName)}</strong> (${escapeHtml(tr.subText)})</span>
+            </div>
+          `;
+        }
+
         card.innerHTML = `
           <div class="roll-log-head">
             <strong class="roll-log-roller">${escapeHtml(item.roller)}</strong>
@@ -2685,8 +2699,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             <span class="roll-log-label">${escapeHtml(item.label)}</span>
             <span class="roll-log-total">${item.total}</span>
           </div>
-          ${item.isCrit ? '<div class="roll-log-tag tag-crit">✨ CRITICAL HIT (NAT 20)</div>' : ''}
-          ${item.isFumble ? '<div class="roll-log-tag tag-fumble">💀 CRITICAL FUMBLE (NAT 1)</div>' : ''}
+          ${targetResultHtml}
+          ${item.isCrit && !item.targetResult ? '<div class="roll-log-tag tag-crit">✨ CRITICAL HIT (NAT 20)</div>' : ''}
+          ${item.isFumble && !item.targetResult ? '<div class="roll-log-tag tag-fumble">💀 CRITICAL FUMBLE (NAT 1)</div>' : ''}
           <div class="roll-log-formula">${escapeHtml(item.formula)} ➔ ${escapeHtml(item.detailsText)}</div>
         `;
         feed.appendChild(card);
