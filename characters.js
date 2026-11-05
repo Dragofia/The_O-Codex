@@ -18,7 +18,7 @@
   const CHARACTERS_STORAGE_KEY = 'o_codex_characters';
   const ACTIVE_CHAR_KEY = 'o_codex_active_char_id';
   const ROSTER_VERSION_KEY = 'o_codex_roster_version';
-  const CURRENT_ROSTER_VERSION = 'v2_canon_sheets';
+  const CURRENT_ROSTER_VERSION = 'v3_tab_restructure';
 
   // Campaign Currency Configuration Framework (visible: false hides from UI while keeping framework & data intact)
   const CURRENCY_REGISTRY = [
@@ -148,25 +148,31 @@
           id: 'feat_v6',
           name: 'Spellbook & Prepared Spells',
           source: 'Artificer 1 / Wizard 5 (DC 15, +7 Atk)',
-          description: 'Cantrips: Guidance, Mold Earth, Minor Illusion, Prestidigitation, Message, Mind Sliver.\n1st Level (4 slots): Silent Image (At Will), Absorb Elements, Faerie Fire, Cure Wounds, Sanctuary, Shield, Feather Fall, Magic Missile, Tasha\'s Hideous Laughter, Magnify Gravity, Find Familiar, Comprehend Languages, Identify.\n2nd Level (3 slots): Suggestion, Invisibility, Web, Vortex Warp.\n3rd Level (2 slots): Haste, Counterspell, Hypnotic Pattern, Leomund\'s Tiny Hut.'
+          description: "Cantrips: Guidance, Mold Earth, Minor Illusion, Prestidigitation, Message, Mind Sliver.\n1st Level (4 slots): Silent Image (At Will), Absorb Elements, Faerie Fire, Cure Wounds, Sanctuary, Shield, Feather Fall, Magic Missile, Tasha's Hideous Laughter, Magnify Gravity, Find Familiar, Comprehend Languages, Identify.\n2nd Level (3 slots): Suggestion, Invisibility, Web, Vortex Warp.\n3rd Level (2 slots): Haste, Counterspell, Hypnotic Pattern, Leomund's Tiny Hut."
         },
         {
           id: 'feat_v7',
           name: 'Proficiencies & Languages',
           source: 'Class & Background',
-          description: 'Armor: Light Armor, Medium Armor, Shields.\nWeapons: Simple Weapons, Crossbows, Daggers, Darts, Slings, Quarterstaffs.\nTools: Thieves\' Tools, Tinkerer\'s Tools, Alchemist\'s Supplies, Playing Card Set, Piano.\nLanguages: Common, Celestial.\nPassive Perception: 14.'
+          description: "Armor: Light Armor, Medium Armor, Shields.\nWeapons: Simple Weapons, Crossbows, Daggers, Darts, Slings, Quarterstaffs.\nTools: Thieves' Tools, Tinkerer's Tools, Alchemist's Supplies, Playing Card Set, Piano.\nLanguages: Common, Celestial.\nPassive Perception: 14."
         }
       ],
       equipment: [
-        { id: 'eq_v1', name: 'Scale Mail +1', qty: 1, notes: 'Magical medium armor' },
-        { id: 'eq_v2', name: 'Spellbook (Shield)', qty: 1, notes: 'Shield doubles as arcane spellbook focus' },
-        { id: 'eq_v3', name: 'Dagger', qty: 1, notes: 'Simple melee / finesse' },
-        { id: 'eq_v4', name: 'Thieves\' Tools', qty: 1, notes: 'Lockpicks, file, pliers' },
+        { id: 'eq_v2', name: 'Spellbook (Shield)', qty: 1, notes: 'Shield doubles as arcane spellbook focus (+2 AC)' },
+        { id: 'eq_v4', name: "Thieves' Tools", qty: 1, notes: 'Lockpicks, file, pliers' },
         { id: 'eq_v5', name: 'Crowbar', qty: 1, notes: 'Advantage on Strength checks to pry open' },
-        { id: 'eq_v6', name: 'Dungeoneer\'s Pack', qty: 1, notes: 'Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope' },
         { id: 'eq_v7', name: 'Casual Dress', qty: 1, notes: 'Daywear' },
         { id: 'eq_v8', name: 'Winter Clothes', qty: 1, notes: '-1 Cold damage taken' },
         { id: 'eq_v9', name: 'Black Shard', qty: 1, notes: 'A mysterious key for something' }
+      ],
+      consumables: [
+        {
+          id: 'con_v1',
+          name: "Dungeoneer's Pack Supplies",
+          qty: 10,
+          type: 'Adventuring Gear',
+          notes: '10 torches, 10 rations, tinderbox, waterskin, 10 pitons, 50ft rope'
+        }
       ],
       currency: { cp: 0, sp: 2, gp: 45, pp: 0, aetherGems: 0 },
       notes: `AGE: 18 | HEIGHT: 5'5" | WEIGHT: 105 lbs | EYES: Faded Blue | SKIN: White | HAIR: Dark Brown
@@ -253,14 +259,6 @@ ALLIES & REMINDERS:
           notes: 'Expend 1st-level slot on melee hit (+1d8 per higher slot level, max 5d8; +1d8 extra vs fiends/undead)'
         },
         {
-          id: 'atk_b3',
-          name: 'Javelin (x4)',
-          bonus: 6,
-          damageFormula: '1d6+3',
-          damageType: 'Piercing',
-          notes: 'Thrown range 30/120ft'
-        },
-        {
           id: 'atk_b4',
           name: 'Interception Fighting Style',
           bonus: 0,
@@ -279,32 +277,7 @@ ALLIES & REMINDERS:
       ],
       divions: [],
       boons: [],
-      magicItems: [
-        {
-          id: 'item_b1',
-          name: 'Potion of Stoneskin',
-          rarity: 'Rare',
-          attuned: false,
-          charges: '1 use',
-          description: 'Grants resistance to nonmagical bludgeoning, piercing, and slashing damage for up to 1 hour (requires concentration).'
-        },
-        {
-          id: 'item_b2',
-          name: 'Potion of Healing',
-          rarity: 'Common',
-          attuned: false,
-          charges: '1 use',
-          description: 'Restores 2d4+2 hit points when consumed as an action.'
-        },
-        {
-          id: 'item_b3',
-          name: 'Tiny Potion of Healing',
-          rarity: 'Common',
-          attuned: false,
-          charges: '1 use',
-          description: 'Small pocket vial; restores 2d4+2 hit points when consumed.'
-        }
-      ],
+      magicItems: [],
       feats: [
         {
           id: 'feat_b1',
@@ -322,13 +295,13 @@ ALLIES & REMINDERS:
           id: 'feat_b3',
           name: 'Channel Divinity (1/short or long rest)',
           source: 'Oath of the Watchers',
-          description: '• Watcher\'s Will: As an action, choose up to 3 creatures within 30ft. For 1 minute, targets gain advantage on Int, Wis, and Cha saving throws.\n• Abjure the Extraplanar: Turn aberrations, celestials, elementals, fey, or fiends within 30ft that fail a DC 14 Wisdom save.'
+          description: "• Watcher's Will: As an action, choose up to 3 creatures within 30ft. For 1 minute, targets gain advantage on Int, Wis, and Cha saving throws.\n• Abjure the Extraplanar: Turn aberrations, celestials, elementals, fey, or fiends within 30ft that fail a DC 14 Wisdom save."
         },
         {
           id: 'feat_b4',
           name: 'Deathless Nature',
           source: 'Reborn Racial Feature',
-          description: '• Advantage on saves vs disease, poison, and death saving throws.\n• Resistance to poison damage.\n• Do not need to eat, drink, or breathe.\n• Don\'t need to sleep; 4 hours of motionless resting counts as a long rest.'
+          description: "• Advantage on saves vs disease, poison, and death saving throws.\n• Resistance to poison damage.\n• Do not need to eat, drink, or breathe.\n• Don't need to sleep; 4 hours of motionless resting counts as a long rest."
         },
         {
           id: 'feat_b5',
@@ -359,9 +332,49 @@ ALLIES & REMINDERS:
         { id: 'eq_b1', name: 'Longsword', qty: 1, notes: 'Versatile martial weapon (1d8/1d10)' },
         { id: 'eq_b2', name: 'Shield', qty: 1, notes: '+2 AC' },
         { id: 'eq_b3', name: 'Chain Mail', qty: 1, notes: 'AC 16, disadvantage on stealth' },
-        { id: 'eq_b4', name: 'Holy Symbol', qty: 1, notes: 'Paladin spellcasting focus' },
-        { id: 'eq_b5', name: 'Javelins', qty: 4, notes: 'Thrown weapons (range 30/120)' },
-        { id: 'eq_b6', name: 'Priest\'s Pack', qty: 1, notes: 'Backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks incense, censer, vestments, 2 days rations, waterskin' }
+        { id: 'eq_b4', name: 'Holy Symbol', qty: 1, notes: 'Paladin spellcasting focus' }
+      ],
+      consumables: [
+        {
+          id: 'con_b1',
+          name: 'Javelins',
+          qty: 4,
+          type: 'Thrown Weapon',
+          bonus: 6,
+          damageFormula: '1d6+3',
+          damageType: 'Piercing',
+          notes: 'Thrown weapon (range 30/120ft)'
+        },
+        {
+          id: 'con_b2',
+          name: 'Potion of Healing',
+          qty: 1,
+          type: 'Potion',
+          healFormula: '2d4+2',
+          notes: 'Restores 2d4+2 hit points when consumed as an action.'
+        },
+        {
+          id: 'con_b3',
+          name: 'Potion of Stoneskin',
+          qty: 1,
+          type: 'Potion',
+          notes: 'Grants resistance to nonmagical bludgeoning, piercing, and slashing damage for up to 1 hour (requires concentration).'
+        },
+        {
+          id: 'con_b4',
+          name: 'Tiny Potion of Healing',
+          qty: 1,
+          type: 'Potion',
+          healFormula: '2d4+2',
+          notes: 'Small pocket vial; restores 2d4+2 hit points when consumed.'
+        },
+        {
+          id: 'con_b5',
+          name: "Priest's Pack Supplies",
+          qty: 2,
+          type: 'Adventuring Gear',
+          notes: 'Blanket, 10 candles, tinderbox, alms box, 2 blocks incense, censer, vestments, 2 days rations, waterskin'
+        }
       ],
       currency: { cp: 0, sp: 6, gp: 7, pp: 0, aetherGems: 0 },
       notes: `AGE: 44 (when killed) [244] | HEIGHT: 6'3" | WEIGHT: 180 lbs | EYES: Grey | SKIN: Pale | HAIR: Grey
@@ -526,10 +539,46 @@ BACKSTORY & DEATH NOTE:
         { id: 'eq_t2', name: 'Shield', qty: 1, notes: '+2 AC' },
         { id: 'eq_t3', name: 'Warhammer', qty: 1, notes: 'Versatile martial weapon (1d8/1d10)' },
         { id: 'eq_t4', name: 'Longbow', qty: 1, notes: 'Ranged weapon (150/600)' },
-        { id: 'eq_t5', name: 'Hand Crossbow', qty: 1, notes: 'Light ranged weapon (30/120)' },
-        { id: 'eq_t6', name: 'Elderwood Bracelet', qty: 1, notes: 'Druidic focus / holy symbol' },
-        { id: 'eq_t7', name: 'Explorer\'s Pack', qty: 1, notes: 'Backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days rations, waterskin, 50ft rope' },
-        { id: 'eq_t8', name: 'Monster Hunter\'s Pack', qty: 1, notes: 'Chest, crowbar, hammer, 3 wooden stakes, holy symbol, holy water, manacles, steel mirror, oil flask, tinderbox, 3 torches' }
+        { id: 'eq_t5', name: 'Hand Crossbow', qty: 1, notes: 'Light ranged weapon (30/120)' }
+      ],
+      consumables: [
+        {
+          id: 'con_t1',
+          name: 'Holy Water (Flask)',
+          qty: 1,
+          type: 'Consumable',
+          damageFormula: '2d6',
+          damageType: 'Radiant',
+          notes: 'Ranged weapon attack (range 20ft). On hit, fiend or undead takes 2d6 radiant damage.'
+        },
+        {
+          id: 'con_t2',
+          name: 'Oil (Flask)',
+          qty: 1,
+          type: 'Consumable',
+          notes: 'Can splash creature within 20ft or pool on ground. If creature takes fire damage before oil dries, takes 5 extra fire damage.'
+        },
+        {
+          id: 'con_t3',
+          name: 'Wooden Stakes',
+          qty: 3,
+          type: 'Consumable',
+          notes: 'Sharpened stakes suitable for slaying vampires or piercing undead.'
+        },
+        {
+          id: 'con_t4',
+          name: "Explorer's Pack Supplies",
+          qty: 10,
+          type: 'Adventuring Gear',
+          notes: 'Backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days rations, waterskin, 50ft rope'
+        },
+        {
+          id: 'con_t5',
+          name: "Monster Hunter's Pack Supplies",
+          qty: 1,
+          type: 'Adventuring Gear',
+          notes: 'Chest, crowbar, hammer, holy symbol, manacles, steel mirror, tinderbox, 3 torches'
+        }
       ],
       currency: { cp: 0, sp: 5, gp: 6, pp: 0, aetherGems: 0 },
       notes: `AGE: 21 | HEIGHT: 6'0" | WEIGHT: 180 lbs | EYES: Gold | SKIN: Pale yellow | HAIR: Gold
@@ -553,13 +602,11 @@ BACKSTORY:
 Parents were important people - son of noble family Thornsong, kidnapped when adolescent. Poetry book.
 Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care of a massive tree, the Elderwood, in the capital's center. In Dynestea, people worshiped nature, I was supposed to become the tree's caretaker - but this was ruined bc ya boi got kidnapped. The people waited for me to come back. Lived five years without using Thaumic magic, since Hag hated it. Hag's name is Grettle. FUCKING DIABLO?! See discord for worship of previous god.`
     }
-  ];
-
-  class PartyCharacterManager {
+  ];  class PartyCharacterManager {
     constructor() {
       this.characters = [];
       this.activeCharId = null;
-      this.activeTab = 'combat'; // 'combat' | 'divions' | 'boons' | 'equipment' | 'magic' | 'feats' | 'notes'
+      this.activeTab = 'equipment'; // 'equipment' | 'divions' | 'items' | 'notes'
       this.isEditMode = false;   // Default: Play/View Mode (no typable boxes)
       this.rollsTab = 'personal'; // 'personal' | 'everyone'
       this.debounceTimer = null;
@@ -604,6 +651,20 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         }
       } catch (e) {
         this.characters = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+      }
+
+      // Ensure all schema arrays and objects exist on loaded characters
+      if (Array.isArray(this.characters)) {
+        this.characters.forEach(c => {
+          if (!Array.isArray(c.consumables)) c.consumables = [];
+          if (!Array.isArray(c.attacks)) c.attacks = [];
+          if (!Array.isArray(c.magicItems)) c.magicItems = [];
+          if (!Array.isArray(c.equipment)) c.equipment = [];
+          if (!Array.isArray(c.divions)) c.divions = [];
+          if (!Array.isArray(c.feats)) c.feats = [];
+          if (!Array.isArray(c.boons)) c.boons = [];
+          if (!c.currency) c.currency = { cp: 0, sp: 0, gp: 0, pp: 0, aetherGems: 0 };
+        });
       }
 
       this.activeCharId = localStorage.getItem(ACTIVE_CHAR_KEY) || (this.characters[0] ? this.characters[0].id : null);
@@ -1357,7 +1418,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       });
     }
 
-    // 4. SUB-TABS (Combat, Divions, Boons, Equipment, Magic, Feats, Notes)
+    // 4. CORE CONSOLIDATED TABS (Equipment & Manifests, Divions & Feats, Items & Gold, Lore & Notes)
     renderTabContent() {
       const char = this.getActiveCharacter();
       if (!char) return;
@@ -1366,39 +1427,33 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       if (!viewContainer) return;
 
       switch (this.activeTab) {
-        case 'combat':
-          this.renderCombatTab(viewContainer, char);
+        case 'equipment':
+          this.renderEquipmentTab(viewContainer, char);
           break;
         case 'divions':
           this.renderDivionsTab(viewContainer, char);
           break;
-        case 'boons':
-          this.renderBoonsTab(viewContainer, char);
-          break;
-        case 'equipment':
-          this.renderEquipmentTab(viewContainer, char);
-          break;
-        case 'magic':
-          this.renderMagicTab(viewContainer, char);
-          break;
-        case 'feats':
-          this.renderFeatsTab(viewContainer, char);
+        case 'items':
+          this.renderItemsTab(viewContainer, char);
           break;
         case 'notes':
           this.renderNotesTab(viewContainer, char);
           break;
         default:
-          this.renderCombatTab(viewContainer, char);
+          this.renderEquipmentTab(viewContainer, char);
       }
     }
 
-    // COMBAT & ATTACKS TAB
-    renderCombatTab(container, char) {
+    // TAB 1: EQUIPMENT & MANIFESTS (Weapons & Strikes, Magic Items & Relics, Armor & Carried Gear)
+    renderEquipmentTab(container, char) {
       if (!Array.isArray(char.attacks)) char.attacks = [];
+      if (!Array.isArray(char.magicItems)) char.magicItems = [];
+      if (!Array.isArray(char.equipment)) char.equipment = [];
 
+      // 1. Attacks & Combat Weapons
       let attacksHtml = '';
       if (char.attacks.length === 0) {
-        attacksHtml = `<div class="char-empty-msg">No attacks or weapons registered.${this.isEditMode ? ' Click "Add Attack" below!' : ''}</div>`;
+        attacksHtml = `<div class="char-empty-msg">No weapons or combat actions registered.${this.isEditMode ? ' Click "Add Weapon / Strike" to register!' : ''}</div>`;
       } else {
         attacksHtml = char.attacks.map((atk, index) => `
           <div class="char-item-card char-atk-card" data-index="${index}">
@@ -1406,7 +1461,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <strong class="item-card-title item-shareable-title" data-share-type="attack" data-index="${index}" title="Click to share action to party Roll Log">${escapeHtml(atk.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
               ${this.isEditMode ? `
                 <div class="item-card-controls">
-                  <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Attack">✕</button>
+                  <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Weapon / Action">✕</button>
                 </div>
               ` : ''}
             </div>
@@ -1427,46 +1482,90 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         `).join('');
       }
 
-      container.innerHTML = `
-        <div class="char-section-head">
-          <h3>Attacks & Combat Actions</h3>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Attack / Weapon</button>` : ''}
-        </div>
-        <div class="char-cards-grid">${attacksHtml}</div>
-      `;
-
-      // Handlers
-      if (this.isEditMode) {
-        container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
-          const name = prompt('Weapon / Attack Name (e.g. Shortsword, Fire Bolt):');
-          if (!name) return;
-          const bonus = parseInt(prompt('Attack Bonus (e.g. 5 for +5):', '5'), 10) || 0;
-          const damageFormula = prompt('Damage Formula (e.g., 1d8+3, 2d6):', '1d8+3') || '1d8';
-          const damageType = prompt('Damage Type (e.g. Slashing, Radiant):', 'Slashing') || '';
-          const notes = prompt('Additional Notes / Properties (optional):', '') || '';
-
-          char.attacks.push({ id: `atk_${Date.now()}`, name, bonus, damageFormula, damageType, notes });
-          this.saveStorage();
-          this.renderCombatTab(container, char);
-        });
-
-        container.querySelectorAll('.char-item-del-btn[data-type="attack"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index, 10);
-            if (confirm(`Remove "${char.attacks[idx].name}"?`)) {
-              char.attacks.splice(idx, 1);
-              this.saveStorage();
-              this.renderCombatTab(container, char);
-            }
-          });
-        });
+      // 2. Magic Items & Relics
+      let magicHtml = '';
+      if (char.magicItems.length === 0) {
+        magicHtml = `<div class="char-empty-msg">No magic items or relics registered.${this.isEditMode ? ' Click "Add Magic Item" to register!' : ''}</div>`;
+      } else {
+        magicHtml = char.magicItems.map((item, index) => `
+          <div class="char-item-card char-magic-card" data-index="${index}">
+            <div class="item-card-header">
+              <div>
+                <strong class="item-card-title item-shareable-title" data-share-type="magic" data-index="${index}" title="Click to share relic details to party Roll Log">${escapeHtml(item.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
+                ${item.attuned ? '<span class="magic-attuned-badge">✓ Attuned</span>' : ''}
+              </div>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>` : ''}
+            </div>
+            ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
+            <div class="magic-desc">${escapeHtml(item.description || '')}</div>
+          </div>
+        `).join('');
       }
 
+      // 3. Worn Armor & Standard Equipment
+      let eqHtml = '';
+      if (char.equipment.length === 0) {
+        eqHtml = `<div class="char-empty-msg">No armor or general equipment recorded.${this.isEditMode ? ' Click "Add Equipment / Gear" to register!' : ''}</div>`;
+      } else {
+        eqHtml = char.equipment.map((eq, index) => `
+          <div class="char-eq-row">
+            <span class="eq-qty">x${eq.qty || 1}</span>
+            <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></span>
+            <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
+            ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}" title="Remove Gear">✕</button>` : ''}
+          </div>
+        `).join('');
+      }
+
+      container.innerHTML = `
+        <div class="char-tab-intro">
+          <p class="tab-subtitle-lead">All weapons, combat actions, enchanted relics, and durable carried equipment.</p>
+        </div>
+
+        <!-- Section 1: Weapons & Strikes -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>⚔️ Weapons & Combat Strikes</h3>
+              <p class="section-subtitle">Weapons, cantrips, smites, and physical actions ready to roll</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Weapon / Strike</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${attacksHtml}</div>
+        </div>
+
+        <!-- Section 2: Magic Items & Relics -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>✨ Magic Items & Relics</h3>
+              <p class="section-subtitle">Attuned artifacts, enchanted armor, foci, and wondrous gear</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${magicHtml}</div>
+        </div>
+
+        <!-- Section 3: Worn Armor & Gear -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>🛡️ Worn Armor & Carried Gear</h3>
+              <p class="section-subtitle">Armor, shields, tools, apparel, and durable non-consumables</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment / Gear</button>` : ''}
+          </div>
+          <div class="char-eq-list">${eqHtml}</div>
+        </div>
+      `;
+
+      // Attack roll listeners
       container.querySelectorAll('.atk-roll-atk-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index, 10);
           const atk = char.attacks[idx];
-          if (window.DiceRoller) {
+          if (atk && window.DiceRoller) {
             window.DiceRoller.roll('1d20', `${atk.name} Attack`, char.name, 'normal', atk.bonus);
           }
         });
@@ -1476,20 +1575,87 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index, 10);
           const atk = char.attacks[idx];
-          if (window.DiceRoller) {
+          if (atk && window.DiceRoller) {
             window.DiceRoller.roll(atk.damageFormula, `${atk.name} Damage`, char.name, 'normal', 0);
           }
         });
       });
+
+      // Edit Mode handlers
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
+          const name = prompt('Weapon / Attack Name (e.g. Longsword, Fire Bolt):');
+          if (!name) return;
+          const bonus = parseInt(prompt('Attack Bonus (e.g. 5 for +5):', '5'), 10) || 0;
+          const damageFormula = prompt('Damage Formula (e.g., 1d8+3, 2d6):', '1d8+3') || '1d8';
+          const damageType = prompt('Damage Type (e.g. Slashing, Radiant):', 'Slashing') || '';
+          const notes = prompt('Additional Notes / Properties (optional):', '') || '';
+
+          char.attacks.push({ id: `atk_${Date.now()}`, name, bonus, damageFormula, damageType, notes });
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+
+        container.querySelector('#btn-add-magic')?.addEventListener('click', () => {
+          const name = prompt('Magic Item Name:');
+          if (!name) return;
+          const rarity = prompt('Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact):', 'Rare') || 'Uncommon';
+          const attuned = confirm('Is this item Attuned to your character?');
+          const charges = prompt('Charges / Uses (e.g. 3 / 3 daily, Passive):', 'Passive') || '';
+          const description = prompt('Item Description & Powers:') || '';
+
+          char.magicItems.push({ id: `item_${Date.now()}`, name, rarity, attuned, charges, description });
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+
+        container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
+          const name = prompt('Equipment Item Name:');
+          if (!name) return;
+          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
+          const notes = prompt('Notes / Details:') || '';
+
+          char.equipment.push({ id: `eq_${Date.now()}`, name, qty, notes });
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+
+        container.querySelectorAll('.char-item-del-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            const idx = parseInt(btn.dataset.index, 10);
+            if (type === 'attack') {
+              if (confirm(`Remove "${char.attacks[idx].name}"?`)) {
+                char.attacks.splice(idx, 1);
+                this.saveStorage();
+                this.renderEquipmentTab(container, char);
+              }
+            } else if (type === 'magic') {
+              if (confirm(`Remove "${char.magicItems[idx].name}"?`)) {
+                char.magicItems.splice(idx, 1);
+                this.saveStorage();
+                this.renderEquipmentTab(container, char);
+              }
+            } else if (type === 'equipment') {
+              char.equipment.splice(idx, 1);
+              this.saveStorage();
+              this.renderEquipmentTab(container, char);
+            }
+          });
+        });
+      }
     }
 
-    // DIVIONS & MANIFESTS TAB
+    // TAB 2: DIVIONS, FEATS, & BOONS (Divions & Manifests, Feats & Class Features, DM Boons & Blessings)
     renderDivionsTab(container, char) {
       if (!Array.isArray(char.divions)) char.divions = [];
+      if (!Array.isArray(char.feats)) char.feats = [];
+      if (!Array.isArray(char.boons)) char.boons = [];
 
+      // 1. Divions & Flow Manifestations
       let divionsHtml = '';
       if (char.divions.length === 0) {
-        divionsHtml = `<div class="char-empty-msg">No Divions recorded.${this.isEditMode ? ' Register manifests or Flow arts below!' : ''}</div>`;
+        divionsHtml = `<div class="char-empty-msg">No Divions recorded.${this.isEditMode ? ' Click "+ Add Divion" below to register manifests!' : ''}</div>`;
       } else {
         divionsHtml = char.divions.map((div, index) => `
           <div class="char-item-card char-divion-card">
@@ -1510,18 +1676,87 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         `).join('');
       }
 
-      container.innerHTML = `
-        <div class="char-section-head">
-          <div>
-            <h3>Divions & Manifestations</h3>
-            <p class="section-subtitle">Canon Magic System: Channeling Flow through divine domains and personal manifests.</p>
+      // 2. Feats & Traits
+      let featsHtml = '';
+      if (char.feats.length === 0) {
+        featsHtml = `<div class="char-empty-msg">No feats or special traits recorded.${this.isEditMode ? ' Click "+ Add Feat / Feature" to register!' : ''}</div>`;
+      } else {
+        featsHtml = char.feats.map((feat, index) => `
+          <div class="char-item-card" data-index="${index}">
+            <div class="item-card-header">
+              <div>
+                <strong class="item-card-title item-shareable-title" data-share-type="feat" data-index="${index}" title="Click to share feat info to party Roll Log">${escapeHtml(feat.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <span class="feat-source-badge">${escapeHtml(feat.source || 'Feat')}</span>
+              </div>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}" title="Remove Feat">✕</button>` : ''}
+            </div>
+            <div class="feat-desc">${escapeHtml(feat.description || '')}</div>
           </div>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-divion">+ Add Divion</button>` : ''}
+        `).join('');
+      }
+
+      // 3. DM Boons & Blessings
+      let boonsHtml = '';
+      if (char.boons.length === 0) {
+        boonsHtml = `<div class="char-empty-msg">No DM boons or divine blessings recorded.${this.isEditMode ? ' Click "+ Add Boon / Blessing" to register!' : ''}</div>`;
+      } else {
+        boonsHtml = char.boons.map((boon, index) => `
+          <div class="char-item-card char-boon-card" data-index="${index}">
+            <div class="item-card-header">
+              <div>
+                <strong class="item-card-title item-shareable-title" data-share-type="boon" data-index="${index}" title="Click to share boon to party Roll Log">${escapeHtml(boon.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <span class="boon-granted-by">Granted by: <em>${escapeHtml(boon.grantedBy || 'Dungeon Master')}</em></span>
+              </div>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
+            </div>
+            <div class="boon-effect">${escapeHtml(boon.effect || '')}</div>
+          </div>
+        `).join('');
+      }
+
+      container.innerHTML = `
+        <div class="char-tab-intro">
+          <p class="tab-subtitle-lead">Passive arts, divine Flow manifests, class features, racial traits, and special DM blessings.</p>
         </div>
-        <div class="char-cards-grid">${divionsHtml}</div>
+
+        <!-- Section 1: Divions & Flow Manifestations -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>🔮 Divions & Flow Manifestations</h3>
+              <p class="section-subtitle">Canon Magic System: Channeling Flow through divine domains and personal manifests</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-divion">+ Add Divion</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${divionsHtml}</div>
+        </div>
+
+        <!-- Section 2: Feats, Features & Traits -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>📜 Feats, Class Features & Traits</h3>
+              <p class="section-subtitle">Passive benefits, racial abilities, specializations, and prepared spells</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-feat">+ Add Feat / Feature</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${featsHtml}</div>
+        </div>
+
+        <!-- Section 3: DM Boons & Blessings -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>🎁 DM Boons & Divine Blessings</h3>
+              <p class="section-subtitle">Special campaign rewards, patron blessings, and narrative miracles bestowed by the DM</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-boon">+ Add Boon / Blessing</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${boonsHtml}</div>
+        </div>
       `;
 
-      // Handlers
+      // Divion channel buttons
       container.querySelectorAll('.divion-channel-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index, 10);
@@ -1534,6 +1769,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Edit Mode handlers
       if (this.isEditMode) {
         container.querySelector('#btn-add-divion')?.addEventListener('click', () => {
           const name = prompt('Divion / Manifest Name:');
@@ -1548,53 +1784,17 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           this.renderDivionsTab(container, char);
         });
 
-        container.querySelectorAll('.char-item-del-btn[data-type="divion"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index, 10);
-            if (confirm(`Remove "${char.divions[idx].name}"?`)) {
-              char.divions.splice(idx, 1);
-              this.saveStorage();
-              this.renderDivionsTab(container, char);
-            }
-          });
+        container.querySelector('#btn-add-feat')?.addEventListener('click', () => {
+          const name = prompt('Feat / Trait Name:');
+          if (!name) return;
+          const source = prompt('Source (e.g. Class Feature, Racial Trait, Feat):', 'Class Feature') || 'Feat';
+          const description = prompt('Feat Rules & Benefits:') || '';
+
+          char.feats.push({ id: `feat_${Date.now()}`, name, source, description });
+          this.saveStorage();
+          this.renderDivionsTab(container, char);
         });
-      }
-    }
 
-    // DM BOONS & BLESSINGS TAB
-    renderBoonsTab(container, char) {
-      if (!Array.isArray(char.boons)) char.boons = [];
-
-      let boonsHtml = '';
-      if (char.boons.length === 0) {
-        boonsHtml = `<div class="char-empty-msg">No DM boons or divine blessings recorded yet.</div>`;
-      } else {
-        boonsHtml = char.boons.map((boon, index) => `
-          <div class="char-item-card char-boon-card">
-            <div class="item-card-header">
-              <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="boon" data-index="${index}" title="Click to share boon to party Roll Log">${escapeHtml(boon.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
-                <span class="boon-granted-by">Granted by: <em>${escapeHtml(boon.grantedBy || 'Dungeon Master')}</em></span>
-              </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
-            </div>
-            <div class="boon-effect">${escapeHtml(boon.effect || '')}</div>
-          </div>
-        `).join('');
-      }
-
-      container.innerHTML = `
-        <div class="char-section-head">
-          <div>
-            <h3>DM Boons, Blessings & Divine Gifts</h3>
-            <p class="section-subtitle">Special campaign rewards, patron blessings, and narrative miracles bestowed by the DM.</p>
-          </div>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-boon">+ Add Boon / Blessing</button>` : ''}
-        </div>
-        <div class="char-cards-grid">${boonsHtml}</div>
-      `;
-
-      if (this.isEditMode) {
         container.querySelector('#btn-add-boon')?.addEventListener('click', () => {
           const name = prompt('Boon / Blessing Title:');
           if (!name) return;
@@ -1603,42 +1803,43 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
           char.boons.push({ id: `boon_${Date.now()}`, name, grantedBy, effect });
           this.saveStorage();
-          this.renderBoonsTab(container, char);
+          this.renderDivionsTab(container, char);
         });
 
-        container.querySelectorAll('.char-item-del-btn[data-type="boon"]').forEach(btn => {
+        container.querySelectorAll('.char-item-del-btn').forEach(btn => {
           btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
             const idx = parseInt(btn.dataset.index, 10);
-            if (confirm(`Remove "${char.boons[idx].name}"?`)) {
-              char.boons.splice(idx, 1);
-              this.saveStorage();
-              this.renderBoonsTab(container, char);
+            if (type === 'divion') {
+              if (confirm(`Remove "${char.divions[idx].name}"?`)) {
+                char.divions.splice(idx, 1);
+                this.saveStorage();
+                this.renderDivionsTab(container, char);
+              }
+            } else if (type === 'feat') {
+              if (confirm(`Remove "${char.feats[idx].name}"?`)) {
+                char.feats.splice(idx, 1);
+                this.saveStorage();
+                this.renderDivionsTab(container, char);
+              }
+            } else if (type === 'boon') {
+              if (confirm(`Remove "${char.boons[idx].name}"?`)) {
+                char.boons.splice(idx, 1);
+                this.saveStorage();
+                this.renderDivionsTab(container, char);
+              }
             }
           });
         });
       }
     }
 
-    // EQUIPMENT & CURRENCY TAB
-    renderEquipmentTab(container, char) {
-      if (!Array.isArray(char.equipment)) char.equipment = [];
+    // TAB 3: ITEMS & GOLD (Currencies & Wealth, Potions, Throwing Weapons & Consumables)
+    renderItemsTab(container, char) {
+      if (!Array.isArray(char.consumables)) char.consumables = [];
       const cur = char.currency || { cp: 0, sp: 0, gp: 0, pp: 0, aetherGems: 0 };
 
-      let eqHtml = '';
-      if (char.equipment.length === 0) {
-        eqHtml = `<div class="char-empty-msg">No equipment items recorded.</div>`;
-      } else {
-        eqHtml = char.equipment.map((eq, index) => `
-          <div class="char-eq-row">
-            <span class="eq-qty">x${eq.qty || 1}</span>
-            <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></span>
-            <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
-            ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}">✕</button>` : ''}
-          </div>
-        `).join('');
-      }
-
-      // Framework for all campaign currencies (visible: false hides PP and Aether from UI while keeping framework & data intact)
+      // 1. Currency Cards
       const visibleCurrencies = CURRENCY_REGISTRY.filter(c => c.visible);
       const currencyCardsHtml = visibleCurrencies.map(c => `
         <div class="currency-group" data-coin="${c.key}">
@@ -1656,17 +1857,103 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         </div>
       `).join('');
 
+      // 2. Consumable Cards
+      let consumablesHtml = '';
+      if (char.consumables.length === 0) {
+        consumablesHtml = `<div class="char-empty-msg">No consumable items or throwing weapons registered.${this.isEditMode ? ' Click "+ Add Consumable Item" below!' : ''}</div>`;
+      } else {
+        consumablesHtml = char.consumables.map((con, index) => {
+          const typeCls = (con.type || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const isHealing = Boolean(con.healFormula || (con.type && con.type.toLowerCase().includes('potion')) || (con.name && con.name.toLowerCase().includes('healing')));
+          const hasDamage = Boolean(con.damageFormula);
+          const hasBonus = con.bonus !== undefined;
+
+          return `
+            <div class="char-item-card char-consumable-card ${con.qty <= 0 ? 'is-depleted' : ''}" data-index="${index}">
+              <div class="item-card-header">
+                <div>
+                  <strong class="item-card-title item-shareable-title" data-share-type="consumable" data-index="${index}" title="Click to share item to party Roll Log">
+                    ${escapeHtml(con.name)} <span class="share-hint-icon" aria-hidden="true">📜</span>
+                  </strong>
+                  <span class="consumable-badge-type consumable-badge--${typeCls}">${escapeHtml(con.type || 'Consumable')}</span>
+                </div>
+                <div class="consumable-stepper-box">
+                  <div class="consumable-stepper" title="Adjust quantity">
+                    <button type="button" class="con-step-btn con-step-minus" data-index="${index}" title="Use / Decrease quantity">-</button>
+                    <span class="con-qty-display">${con.qty > 0 ? `x${con.qty}` : '<em class="con-depleted-text">Out</em>'}</span>
+                    <button type="button" class="con-step-btn con-step-plus" data-index="${index}" title="Add / Restock quantity">+</button>
+                  </div>
+                  ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="consumable" data-index="${index}" title="Remove Item">✕</button>` : ''}
+                </div>
+              </div>
+
+              ${(hasBonus || hasDamage || con.healFormula) ? `
+                <div class="con-card-details">
+                  ${hasBonus ? `<span class="atk-bonus-badge">Atk: ${con.bonus >= 0 ? '+' + con.bonus : con.bonus}</span>` : ''}
+                  ${hasDamage ? `<span class="atk-damage-badge">${escapeHtml(con.damageFormula)} ${escapeHtml(con.damageType || '')}</span>` : ''}
+                  ${con.healFormula ? `<span class="con-heal-badge">Heal: ${escapeHtml(con.healFormula)}</span>` : ''}
+                </div>
+              ` : ''}
+
+              <div class="con-desc">${escapeHtml(con.notes || con.description || '')}</div>
+
+              <div class="con-action-buttons">
+                ${isHealing ? `
+                  <button type="button" class="btn btn-secondary btn-sm con-drink-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Drink potion, roll healing, and decrement quantity">
+                    🧪 Drink / Heal (${con.healFormula || '2d4+2'})
+                  </button>
+                ` : ''}
+                ${hasDamage ? `
+                  <button type="button" class="btn btn-secondary btn-sm con-throw-atk-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''}>
+                    🎲 Throw Atk (${hasBonus ? (con.bonus >= 0 ? '+' + con.bonus : con.bonus) : '+0'})
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm con-throw-dmg-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''}>
+                    💥 Throw Dmg (${escapeHtml(con.damageFormula)})
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm con-throw-expend-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Expend 1 thrown weapon">
+                    🎯 Throw (-1)
+                  </button>
+                ` : ''}
+                ${(!isHealing && !hasDamage) ? `
+                  <button type="button" class="btn btn-secondary btn-sm con-use-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Use item and decrease quantity by 1">
+                    ✨ Use Item (-1)
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       container.innerHTML = `
-        <div class="char-section-head">
-          <h3>Equipment & Inventory</h3>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment</button>` : ''}
+        <div class="char-tab-intro">
+          <p class="tab-subtitle-lead">Consumable items, potions, thrown weapons, and campaign coinage.</p>
         </div>
 
-        <div class="char-currency-panel">
-          ${currencyCardsHtml}
+        <!-- Section 1: Campaign Wealth & Currencies -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>💰 Campaign Wealth & Currencies</h3>
+              <p class="section-subtitle">Live purse steppers with instant audio feedback and cloud sync</p>
+            </div>
+          </div>
+          <div class="char-currency-panel">
+            ${currencyCardsHtml}
+          </div>
         </div>
 
-        <div class="char-eq-list">${eqHtml}</div>
+        <!-- Section 2: Consumables & Throwing Weapons -->
+        <div class="char-sub-section">
+          <div class="char-section-head">
+            <div>
+              <h3>🧪 Potions, Throwing Weapons & Consumables</h3>
+              <p class="section-subtitle">Potions, thrown javelins/daggers, adventuring rations, and one-time glyphs</p>
+            </div>
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-consumable">+ Add Consumable Item</button>` : ''}
+          </div>
+          <div class="char-cards-grid">${consumablesHtml}</div>
+        </div>
       `;
 
       // Currency controls are ALWAYS active and directly editable (without needing "Edit Sheet" mode!)
@@ -1699,7 +1986,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (input) {
             input.value = newVal;
             input.classList.remove('pulse-change');
-            void input.offsetWidth; // trigger reflow
+            void input.offsetWidth;
             input.classList.add('pulse-change');
           }
 
@@ -1708,160 +1995,183 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
-      if (this.isEditMode) {
-        container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
-          const name = prompt('Equipment Item Name:');
-          if (!name) return;
-          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
-          const notes = prompt('Notes / Details:') || '';
-
-          char.equipment.push({ id: `eq_${Date.now()}`, name, qty, notes });
-          this.saveStorage();
-          this.renderEquipmentTab(container, char);
-        });
-
-        container.querySelectorAll('.char-item-del-btn[data-type="equipment"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index, 10);
-            char.equipment.splice(idx, 1);
+      // Consumable Steppers: [-] and [+]
+      container.querySelectorAll('.con-step-minus').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (con) {
+            con.qty = Math.max(0, (con.qty || 1) - 1);
+            this.playHpSound(-1);
             this.saveStorage();
-            this.renderEquipmentTab(container, char);
-          });
+            this.renderItemsTab(container, char);
+          }
         });
-      }
-    }
+      });
 
-    // MAGIC ITEMS & RELICS TAB
-    renderMagicTab(container, char) {
-      if (!Array.isArray(char.magicItems)) char.magicItems = [];
+      container.querySelectorAll('.con-step-plus').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (con) {
+            con.qty = (con.qty || 0) + 1;
+            this.playHpSound(1);
+            this.saveStorage();
+            this.renderItemsTab(container, char);
+          }
+        });
+      });
 
-      let itemsHtml = '';
-      if (char.magicItems.length === 0) {
-        itemsHtml = `<div class="char-empty-msg">No magic items or relics attuned.</div>`;
-      } else {
-        itemsHtml = char.magicItems.map((item, index) => `
-          <div class="char-item-card char-magic-card">
-            <div class="item-card-header">
-              <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="magic" data-index="${index}" title="Click to share relic details to party Roll Log">${escapeHtml(item.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
-                <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
-                ${item.attuned ? '<span class="magic-attuned-badge">✓ Attuned</span>' : ''}
-              </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}">✕</button>` : ''}
-            </div>
-            ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
-            <div class="magic-desc">${escapeHtml(item.description || '')}</div>
-          </div>
-        `).join('');
-      }
+      // Drink / Heal Action
+      container.querySelectorAll('.con-drink-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (!con || con.qty <= 0) return;
 
-      container.innerHTML = `
-        <div class="char-section-head">
-          <h3>Magic Items & Relics</h3>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
-        </div>
-        <div class="char-cards-grid">${itemsHtml}</div>
-      `;
+          const formula = con.healFormula || '2d4+2';
+          if (window.DiceRoller) {
+            const rollRes = window.DiceRoller.roll(formula, `Drink Potion: ${con.name}`, char.name, 'normal', 0);
+            const healed = (rollRes && typeof rollRes.total === 'number') ? rollRes.total : 0;
+            if (healed > 0) {
+              const vitals = char.vitals || {};
+              const curHp = vitals.hpCurrent || 0;
+              const maxHp = vitals.hpMax || 1;
+              vitals.hpCurrent = Math.min(maxHp, curHp + healed);
+              con.qty = Math.max(0, con.qty - 1);
+              this.playHpSound(5);
+              this.saveStorage();
+              this.renderVitals(char);
+              this.renderItemsTab(container, char);
+            }
+          }
+        });
+      });
 
-      if (this.isEditMode) {
-        container.querySelector('#btn-add-magic')?.addEventListener('click', () => {
-          const name = prompt('Magic Item Name:');
-          if (!name) return;
-          const rarity = prompt('Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact):', 'Rare') || 'Uncommon';
-          const attuned = confirm('Is this item Attuned to your character?');
-          const charges = prompt('Charges / Uses (e.g. 3 / 3 daily, Passive):', 'Passive') || '';
-          const description = prompt('Item Description & Powers:') || '';
+      // Thrown Attack & Damage Actions
+      container.querySelectorAll('.con-throw-atk-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (!con || con.qty <= 0) return;
+          if (window.DiceRoller) {
+            window.DiceRoller.roll('1d20', `Throw ${con.name} Attack`, char.name, 'normal', con.bonus || 0);
+          }
+        });
+      });
 
-          char.magicItems.push({ id: `item_${Date.now()}`, name, rarity, attuned, charges, description });
+      container.querySelectorAll('.con-throw-dmg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (!con || con.qty <= 0) return;
+          if (window.DiceRoller && con.damageFormula) {
+            window.DiceRoller.roll(con.damageFormula, `Throw ${con.name} Damage`, char.name, 'normal', 0);
+          }
+        });
+      });
+
+      // Throw expend (-1)
+      container.querySelectorAll('.con-throw-expend-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (!con || con.qty <= 0) return;
+          con.qty = Math.max(0, con.qty - 1);
+          this.playHpSound(-1);
           this.saveStorage();
-          this.renderMagicTab(container, char);
+          this.renderItemsTab(container, char);
+        });
+      });
+
+      // Generic Use Item (-1)
+      container.querySelectorAll('.con-use-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const con = char.consumables[idx];
+          if (!con || con.qty <= 0) return;
+          con.qty = Math.max(0, con.qty - 1);
+          this.playHpSound(-1);
+          this.saveStorage();
+          this.renderItemsTab(container, char);
+        });
+      });
+
+      // Edit Mode Add / Delete Consumables
+      if (this.isEditMode) {
+        container.querySelector('#btn-add-consumable')?.addEventListener('click', () => {
+          const name = prompt('Consumable Item Name (e.g. Potion of Greater Healing, Javelin):');
+          if (!name) return;
+          const type = prompt('Type (Potion, Thrown Weapon, Consumable, Adventuring Gear):', 'Potion') || 'Consumable';
+          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
+          const healFormula = prompt('Healing Formula (optional, e.g. 2d4+2, 4d4+4; leave blank if none):', '') || '';
+          const damageFormula = prompt('Damage Formula (optional, e.g. 1d6+3; leave blank if none):', '') || '';
+          let bonus = undefined;
+          if (damageFormula) {
+            bonus = parseInt(prompt('Attack Bonus (e.g. 6 for +6):', '0'), 10) || 0;
+          }
+          const notes = prompt('Description / Effects:', '') || '';
+
+          const newCon = {
+            id: `con_${Date.now()}`,
+            name,
+            type,
+            qty,
+            notes
+          };
+          if (healFormula) newCon.healFormula = healFormula;
+          if (damageFormula) {
+            newCon.damageFormula = damageFormula;
+            newCon.bonus = bonus;
+          }
+
+          char.consumables.push(newCon);
+          this.saveStorage();
+          this.renderItemsTab(container, char);
         });
 
-        container.querySelectorAll('.char-item-del-btn[data-type="magic"]').forEach(btn => {
+        container.querySelectorAll('.char-item-del-btn[data-type="consumable"]').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.index, 10);
-            if (confirm(`Remove "${char.magicItems[idx].name}"?`)) {
-              char.magicItems.splice(idx, 1);
+            if (confirm(`Remove "${char.consumables[idx].name}"?`)) {
+              char.consumables.splice(idx, 1);
               this.saveStorage();
-              this.renderMagicTab(container, char);
+              this.renderItemsTab(container, char);
             }
           });
         });
       }
     }
 
-    // FEATS & TRAITS TAB
-    renderFeatsTab(container, char) {
-      if (!Array.isArray(char.feats)) char.feats = [];
-
-      let featsHtml = '';
-      if (char.feats.length === 0) {
-        featsHtml = `<div class="char-empty-msg">No feats or special traits recorded yet.</div>`;
-      } else {
-        featsHtml = char.feats.map((feat, index) => `
-          <div class="char-item-card">
-            <div class="item-card-header">
-              <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="feat" data-index="${index}" title="Click to share feat info to party Roll Log">${escapeHtml(feat.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
-                <span class="feat-source-badge">${escapeHtml(feat.source || 'Feat')}</span>
-              </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}">✕</button>` : ''}
-            </div>
-            <div class="feat-desc">${escapeHtml(feat.description || '')}</div>
-          </div>
-        `).join('');
-      }
-
-      container.innerHTML = `
-        <div class="char-section-head">
-          <h3>Feats & Special Traits</h3>
-          ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-feat">+ Add Feat</button>` : ''}
-        </div>
-        <div class="char-cards-grid">${featsHtml}</div>
-      `;
-
-      if (this.isEditMode) {
-        container.querySelector('#btn-add-feat')?.addEventListener('click', () => {
-          const name = prompt('Feat / Trait Name:');
-          if (!name) return;
-          const source = prompt('Source (e.g. General Feat, Racial Trait):', 'General Feat') || 'Feat';
-          const description = prompt('Feat Rules & Benefits:') || '';
-
-          char.feats.push({ id: `feat_${Date.now()}`, name, source, description });
-          this.saveStorage();
-          this.renderFeatsTab(container, char);
-        });
-
-        container.querySelectorAll('.char-item-del-btn[data-type="feat"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index, 10);
-            char.feats.splice(idx, 1);
-            this.saveStorage();
-            this.renderFeatsTab(container, char);
-          });
-        });
-      }
-    }
-
-    // BACKSTORY & SESSION NOTES TAB
+    // TAB 4: LORE & NOTES (Backstory, Campaign Highlights & Allies)
     renderNotesTab(container, char) {
       if (!this.isEditMode) {
         const text = char.notes ? escapeHtml(char.notes).replace(/\n/g, '<br>') : '<em>No notes recorded. Click "Edit Sheet" above to write backstory and session reminders.</em>';
         container.innerHTML = `
-          <div class="char-section-head">
-            <h3>Character Lore & Session Notes</h3>
+          <div class="char-tab-intro">
+            <p class="tab-subtitle-lead">Character backstory, personal bonds, campaign reminders, and external Google Doc links.</p>
           </div>
-          <div class="char-notes-box char-notes-view">
-            <div class="notes-rendered-text">${text}</div>
+          <div class="char-sub-section">
+            <div class="char-section-head">
+              <h3>📝 Character Lore & Session Notes</h3>
+            </div>
+            <div class="char-notes-box char-notes-view">
+              <div class="notes-rendered-text">${text}</div>
+            </div>
           </div>
         `;
       } else {
         container.innerHTML = `
-          <div class="char-section-head">
-            <h3>Character Lore & Session Notes</h3>
+          <div class="char-tab-intro">
+            <p class="tab-subtitle-lead">Character backstory, personal bonds, campaign reminders, and external Google Doc links.</p>
           </div>
-          <div class="char-notes-box">
-            <textarea id="char-notes-textarea" class="char-notes-input" placeholder="Write backstory details, campaign reminders, personal goals, and session highlights...">${escapeHtml(char.notes || '')}</textarea>
+          <div class="char-sub-section">
+            <div class="char-section-head">
+              <h3>📝 Character Lore & Session Notes</h3>
+            </div>
+            <div class="char-notes-box">
+              <textarea id="char-notes-textarea" class="char-notes-input" placeholder="Write backstory details, campaign reminders, personal goals, and session highlights...">${escapeHtml(char.notes || '')}</textarea>
+            </div>
           </div>
         `;
 
@@ -1872,7 +2182,6 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       }
     }
-
     // 5. LEFT-SIDE ROLL TRACKER WINDOW (PERSONAL vs EVERYONE)
     renderRollTracker(newRemoteRoll) {
       const feed = document.getElementById('char-rolls-feed');
@@ -2021,6 +2330,16 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         category = 'FEAT / TRAIT';
         if (item.source) badges.push({ label: item.source, cls: 'prop-source' });
         description = item.description || 'Special trait or feat power.';
+      } else if (type === 'consumable') {
+        item = char.consumables && char.consumables[index];
+        if (!item) return;
+        category = 'ITEM / CONSUMABLE';
+        if (item.type) badges.push({ label: item.type, cls: 'prop-type' });
+        if (item.qty !== undefined) badges.push({ label: `Qty: ${item.qty}`, cls: 'prop-qty' });
+        if (item.bonus !== undefined) badges.push({ label: `Atk: ${item.bonus >= 0 ? '+' + item.bonus : item.bonus}`, cls: 'prop-atk' });
+        if (item.damageFormula) badges.push({ label: `${item.damageFormula} ${item.damageType || ''}`.trim(), cls: 'prop-dmg' });
+        if (item.healFormula) badges.push({ label: `Heal: ${item.healFormula}`, cls: 'prop-heal' });
+        description = item.notes || item.description || `Quantity: ${item.qty}`;
       }
 
       if (!item) return;
@@ -2139,6 +2458,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         magicItems: [],
         feats: [],
         equipment: [],
+        consumables: [],
         currency: { cp: 0, sp: 0, gp: 10, pp: 0, aetherGems: 0 },
         notes: ''
       };

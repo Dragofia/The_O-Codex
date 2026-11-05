@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=34">
+  <link rel="stylesheet" href="styles.css?v=35">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -365,15 +365,12 @@
                 </div>
               </section>
 
-              <!-- Ample Content Navigation Tabs -->
+              <!-- Ample Content Navigation Tabs (Consolidated 4 Core Tabs) -->
               <nav class="char-navigation-tabs" aria-label="Character Sheet Details">
-                <button type="button" class="char-nav-btn is-active" data-tab="combat">🗡️ Combat & Actions</button>
-                <button type="button" class="char-nav-btn" data-tab="divions">🔮 Divions & Manifests</button>
-                <button type="button" class="char-nav-btn" data-tab="boons">🎁 DM Boons & Blessings</button>
-                <button type="button" class="char-nav-btn" data-tab="equipment">⚔️ Equipment & Currency</button>
-                <button type="button" class="char-nav-btn" data-tab="magic">✨ Magic Items & Relics</button>
-                <button type="button" class="char-nav-btn" data-tab="feats">📜 Feats & Traits</button>
-                <button type="button" class="char-nav-btn" data-tab="notes">📝 Backstory & Notes</button>
+                <button type="button" class="char-nav-btn is-active" data-tab="equipment">⚔️ Equipment & Manifests</button>
+                <button type="button" class="char-nav-btn" data-tab="divions">🔮 Divions, Feats, & Boons</button>
+                <button type="button" class="char-nav-btn" data-tab="items">🧪 Items & Gold</button>
+                <button type="button" class="char-nav-btn" data-tab="notes">📝 Lore & Notes</button>
               </nav>
 
               <!-- Active Details Tab Content -->
@@ -1215,7 +1212,7 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=5" defer></script>
-  <script src="characters.js?v=13" defer></script>
+  <script src="characters.js?v=14" defer></script>
   <script src="initiative-tracker.js?v=2" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
