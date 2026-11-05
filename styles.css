@@ -5319,17 +5319,352 @@ body.map-mode-active .map-filter-bar {
   gap: 0.5rem;
 }
 
-/* Edit Sheet Button */
-#char-edit-toggle-btn {
-  font-weight: 700;
-  transition: all 0.2s ease;
+/* ============================================================================
+   UNIVERSAL THEMATIC BUTTON SYSTEM (Character Sheet & App Aesthetics)
+   ============================================================================ */
+
+/* Base Universal .btn class */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-family: var(--body-font);
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.46rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Primary Button (e.g. "✏️ Edit Sheet") */
+.btn-primary,
+#char-edit-toggle-btn {
+  background: linear-gradient(135deg, rgba(90, 232, 255, 0.22) 0%, rgba(122, 135, 255, 0.28) 100%);
+  border: 1px solid rgba(90, 232, 255, 0.42);
+  color: #eefaff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  font-weight: 700;
+}
+
+.btn-primary:hover,
+#char-edit-toggle-btn:hover {
+  background: linear-gradient(135deg, rgba(90, 232, 255, 0.35) 0%, rgba(122, 135, 255, 0.45) 100%);
+  border-color: #5ae8ff;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(90, 232, 255, 0.45), 0 4px 14px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Primary Button active edit state */
 #char-edit-toggle-btn.is-editing-active {
-  background: linear-gradient(135deg, #059669, #10b981) !important;
-  border-color: #34d399 !important;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.28) 0%, rgba(16, 185, 129, 0.4) 100%) !important;
+  border-color: rgba(74, 222, 128, 0.7) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+#char-edit-toggle-btn.is-editing-active:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.38) 0%, rgba(16, 185, 129, 0.52) 100%) !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.6) !important;
+}
+
+/* Secondary Button (e.g. "+ New", general controls) */
+.btn-secondary {
+  background: rgba(14, 23, 42, 0.75);
+  border: 1px solid rgba(90, 232, 255, 0.22);
+  color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+.btn-secondary:hover {
+  background: rgba(22, 38, 68, 0.9);
+  border-color: rgba(90, 232, 255, 0.48);
+  color: #eefaff;
+  box-shadow: 0 0 14px rgba(90, 232, 255, 0.28), 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Ghost Button (e.g. "Export", "Import") */
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #9dbfd4;
+  backdrop-filter: blur(4px);
+}
+
+.btn-ghost:hover {
+  background: rgba(90, 232, 255, 0.08);
+  border-color: rgba(90, 232, 255, 0.35);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(90, 232, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Sizes */
+.btn-sm {
+  padding: 0.38rem 0.8rem;
+  font-size: 0.8rem;
+  border-radius: 7px;
+}
+
+.btn-xs {
+  padding: 0.24rem 0.58rem;
+  font-size: 0.74rem;
+  border-radius: 6px;
+}
+
+/* ----------------------------------------------------------------------------
+   Combat & Action Roll Buttons (Attack, Damage, Thrown, Channel, Drink)
+   ---------------------------------------------------------------------------- */
+
+/* Attack Roll Button ("🎲 Roll Attack") */
+.atk-roll-atk-btn,
+.con-throw-atk-btn {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18) 0%, rgba(56, 189, 248, 0.26) 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #7dd3fc !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.atk-roll-atk-btn:hover:not(:disabled),
+.con-throw-atk-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.32) 0%, rgba(56, 189, 248, 0.44) 100%) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Damage Roll Button ("💥 Roll Damage") */
+.atk-roll-dmg-btn,
+.con-throw-dmg-btn {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.22) 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.42) !important;
+  color: #fde047 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.atk-roll-dmg-btn:hover:not(:disabled),
+.con-throw-dmg-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.32) 0%, rgba(239, 68, 68, 0.36) 100%) !important;
+  border-color: #fbbf24 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Channel Flow Button ("✨ Channel") */
+.divion-channel-btn {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(122, 135, 255, 0.28) 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.45) !important;
+  color: #e9d5ff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2) !important;
+}
+
+.divion-channel-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.36) 0%, rgba(122, 135, 255, 0.44) 100%) !important;
+  border-color: #c084fc !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Drink / Heal Button ("🧪 Drink / Heal") */
+.con-drink-btn {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%) !important;
+  border: 1px solid rgba(34, 197, 94, 0.45) !important;
+  color: #86efac !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2) !important;
+}
+
+.con-drink-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.34) 0%, rgba(16, 185, 129, 0.45) 100%) !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Thrown Expend & Generic Consumable Use Buttons */
+.con-throw-expend-btn {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.16) 0%, rgba(234, 88, 12, 0.24) 100%) !important;
+  border: 1px solid rgba(249, 115, 22, 0.38) !important;
+  color: #fdba74 !important;
+  font-weight: 600 !important;
+}
+
+.con-throw-expend-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.28) 0%, rgba(234, 88, 12, 0.38) 100%) !important;
+  border-color: #fb923c !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.con-use-btn {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16) 0%, rgba(99, 102, 241, 0.22) 100%) !important;
+  border: 1px solid rgba(90, 232, 255, 0.35) !important;
+  color: #7dd3fc !important;
+  font-weight: 600 !important;
+}
+
+.con-use-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.28) 0%, rgba(99, 102, 241, 0.35) 100%) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* Death Saving Throw Roll Button ("🎲 Roll d20") */
+.death-roll-btn,
+#char-roll-death-save-btn {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(185, 28, 28, 0.28) 100%) !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+  color: #fca5a5 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2) !important;
+}
+
+.death-roll-btn:hover:not(:disabled),
+#char-roll-death-save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.32) 0%, rgba(185, 28, 28, 0.44) 100%) !important;
+  border-color: #f87171 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Initiative Roll Button in Vitals ("🎲 Roll") */
+#char-roll-init-btn {
+  background: linear-gradient(135deg, rgba(90, 232, 255, 0.16) 0%, rgba(56, 189, 248, 0.24) 100%) !important;
+  border: 1px solid rgba(90, 232, 255, 0.38) !important;
+  color: #5ae8ff !important;
+  font-weight: 700 !important;
+  margin-top: 0.35rem;
+  width: 100%;
+}
+
+#char-roll-init-btn:hover {
+  background: linear-gradient(135deg, rgba(90, 232, 255, 0.28) 0%, rgba(56, 189, 248, 0.38) 100%) !important;
+  border-color: #5ae8ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(90, 232, 255, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+/* Add Item / Section Action Buttons */
+#btn-add-attack,
+#btn-add-magic,
+#btn-add-eq,
+#btn-add-divion,
+#btn-add-feat,
+#btn-add-boon,
+#btn-add-consumable {
+  background: rgba(14, 24, 44, 0.85);
+  border: 1px solid rgba(90, 232, 255, 0.32);
+  color: #5ae8ff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+#btn-add-attack:hover,
+#btn-add-magic:hover,
+#btn-add-eq:hover,
+#btn-add-divion:hover,
+#btn-add-feat:hover,
+#btn-add-boon:hover,
+#btn-add-consumable:hover {
+  background: rgba(22, 40, 72, 0.95);
+  border-color: #5ae8ff;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(90, 232, 255, 0.38), 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* HP Stepper Buttons in Vitals */
+.hp-step-btn {
+  background: rgba(14, 24, 44, 0.8);
+  border: 1px solid rgba(90, 232, 255, 0.22);
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.28rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.hp-step-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.hp-step-btn:active {
+  transform: scale(0.93);
+}
+
+/* Delete / Remove Item Buttons */
+.char-item-del-btn {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.18rem 0.45rem;
+  border-radius: 5px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.char-item-del-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  transform: scale(1.08);
 }
 
 /* Persona Header Card */
@@ -6453,29 +6788,7 @@ body.map-mode-active .map-filter-bar {
   margin-top: 0.4rem;
 }
 
-.con-drink-btn {
-  background: rgba(34, 197, 94, 0.16) !important;
-  border-color: rgba(34, 197, 94, 0.4) !important;
-  color: #86efac !important;
-}
-
-.con-drink-btn:hover:not(:disabled) {
-  background: rgba(34, 197, 94, 0.3) !important;
-  border-color: #4ade80 !important;
-  color: #ffffff !important;
-}
-
-.con-throw-atk-btn, .con-throw-dmg-btn, .con-throw-expend-btn {
-  background: rgba(249, 115, 22, 0.16) !important;
-  border-color: rgba(249, 115, 22, 0.35) !important;
-  color: #fdba74 !important;
-}
-
-.con-throw-atk-btn:hover:not(:disabled), .con-throw-dmg-btn:hover:not(:disabled), .con-throw-expend-btn:hover:not(:disabled) {
-  background: rgba(249, 115, 22, 0.28) !important;
-  border-color: #fb923c !important;
-  color: #ffffff !important;
-}
+/* Specific consumable actions styled in Universal Button System above */
 
 /* ============================================================================
    UNIVERSAL PARTY DICE ROLLER & DRAWER
