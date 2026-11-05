@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -244,6 +244,26 @@
     <!-- Party Character Sheets Mode View -->
     <div id="characters-mode-view" class="mode-view mode-view--characters">
       <div class="char-workspace-layout">
+        <!-- Left of Roll Log: Initiative Tracker Table -->
+        <aside class="char-init-sidebar is-collapsed" id="char-init-sidebar" aria-label="Initiative Tracker">
+          <div class="init-sidebar-header">
+            <div class="init-sidebar-title">
+              <span class="init-sidebar-icon">⚔️</span>
+              <span class="init-sidebar-heading">Initiative</span>
+              <span class="init-count-pill" id="init-count-pill">0</span>
+            </div>
+            <div class="init-sidebar-actions">
+              <button type="button" class="init-action-btn" id="init-clear-btn" title="Clear all initiative rolls">Clear</button>
+              <button type="button" class="init-action-btn init-close-btn" id="init-close-btn" title="Close initiative table">✕</button>
+            </div>
+          </div>
+
+          <!-- Scrollable Initiative Order List -->
+          <div id="init-list-body" class="init-list-body">
+            <!-- Dynamic initiative combatant rows rendered by initiative-tracker.js -->
+          </div>
+        </aside>
+
         <!-- Left Side: Dedicated Rolls Tracker Window -->
         <aside class="char-rolls-sidebar" id="char-rolls-sidebar" aria-label="Dice Roll Tracker">
           <div class="rolls-sidebar-header">
@@ -256,6 +276,7 @@
               <button type="button" class="rolls-tab-pill is-active" id="rolls-tab-personal" data-tab="personal" role="tab" aria-selected="true">Personal</button>
               <button type="button" class="rolls-tab-pill" id="rolls-tab-everyone" data-tab="everyone" role="tab" aria-selected="false">Everyone</button>
             </div>
+            <button type="button" class="rolls-init-toggle-btn" id="char-toggle-init-btn" title="Toggle Initiative Tracker">⚔️</button>
           </div>
 
           <!-- Scrollable Roll Feed -->
@@ -1143,6 +1164,7 @@
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=4" defer></script>
   <script src="characters.js?v=11" defer></script>
+  <script src="initiative-tracker.js?v=1" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
   <script src="script.js?v=22" defer></script>
