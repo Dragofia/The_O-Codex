@@ -17,6 +17,8 @@
 (function () {
   const CHARACTERS_STORAGE_KEY = 'o_codex_characters';
   const ACTIVE_CHAR_KEY = 'o_codex_active_char_id';
+  const ROSTER_VERSION_KEY = 'o_codex_roster_version';
+  const CURRENT_ROSTER_VERSION = 'v2_canon_sheets';
 
   // Campaign Currency Configuration Framework (visible: false hides from UI while keeping framework & data intact)
   const CURRENCY_REGISTRY = [
@@ -31,416 +33,525 @@
   const DEFAULT_ROSTER = [
     {
       id: 'char_valorie',
-      name: 'Valorie',
-      player: 'Valorie',
-      heritage: 'Human (Arcane Scholar)',
-      classLevel: 'Manifestor / Scholar 5',
-      level: 5,
+      name: 'Valorie Whispthorn',
+      player: 'Dawn',
+      heritage: 'Variant Human',
+      classLevel: 'Artificer 1 / Wizard 5 (Chronurgist)',
+      level: 6,
       alignment: 'Chaotic Good',
       vitals: {
-        hpCurrent: 32,
-        hpMax: 32,
+        hpCurrent: 48,
+        hpMax: 48,
         hpTemp: 0,
-        ac: 13,
-        initiative: 2,
+        ac: 19,
+        initiative: 6,
         speed: 30,
         profBonus: 3,
-        hitDice: '5d8',
+        hitDice: '1d8, 5d6',
         deathSaves: { successes: 0, failures: 0 }
       },
       stats: {
         str: 10,
         dex: 14,
-        con: 12,
+        con: 16,
         int: 18,
-        wis: 13,
-        cha: 15,
-        saveProfs: ['int', 'wis']
+        wis: 12,
+        cha: 10,
+        saveProfs: ['con', 'int']
       },
       attacks: [
         {
-          id: 'atk_1',
-          name: 'Manifestor Staff',
+          id: 'atk_v1',
+          name: 'Dagger',
           bonus: 5,
-          damageFormula: '1d6+2',
-          damageType: 'Bludgeoning / Arcane',
-          notes: 'Focus item; can channel Flow without verbal component'
+          damageFormula: '1d4+2',
+          damageType: 'Piercing',
+          notes: 'Finesse, Light, Thrown (range 20/60)'
         },
         {
-          id: 'atk_2',
-          name: 'Aether Dart',
+          id: 'atk_v2',
+          name: 'Mind Sliver (Cantrip)',
           bonus: 7,
-          damageFormula: '2d4+4',
-          damageType: 'Force / Divion',
-          notes: 'Range 120ft; pierces minor barriers'
-        }
-      ],
-      divions: [
-        {
-          id: 'div_1',
-          name: 'Weave Distortion',
-          type: 'Illusion / Manifest',
-          rank: 'Tier II',
-          cost: '1 Flow',
-          manifestEffect: 'Bends ambient light and sound in a 20ft sphere, masking ally movements.'
+          damageFormula: '1d6',
+          damageType: 'Psychic',
+          notes: 'Range 60ft; INT Save DC 15 or take 1d6 psychic damage and subtract 1d4 from next saving throw before end of next turn'
         },
         {
-          id: 'div_2',
-          name: 'Thalexus Resonator',
-          type: 'Forbidden Arcana',
-          rank: 'Tier III',
-          cost: '2 Flow',
-          manifestEffect: 'Reconstructs echoes of ancient necromantic vibrations to reveal hidden undead.'
-        }
-      ],
-      boons: [
+          id: 'atk_v3',
+          name: 'Shadow Blade (Staff)',
+          bonus: 7,
+          damageFormula: '2d8+2',
+          damageType: 'Psychic',
+          notes: 'Cast via Staff of Better Illusion (3 charges). Finesse, Light, Thrown (20/60). Advantage in dim light/darkness'
+        },
         {
-          id: 'boon_1',
-          name: "Azzie's Calming Aegis",
-          grantedBy: 'Azzie',
-          effect: 'Once per long rest, grant advantage on a saving throw against fear or mind control to self and Bones.'
+          id: 'atk_v4',
+          name: 'Magic Missile (1st Level)',
+          bonus: 0,
+          damageFormula: '3x(1d4+1)',
+          damageType: 'Force',
+          notes: 'Range 120ft; automatically creates 3 darts that hit unerringly'
         }
       ],
+      divions: [],
+      boons: [],
       magicItems: [
         {
-          id: 'item_1',
-          name: 'Stolen Thalexus Codex Grimoire',
+          id: 'item_v1',
+          name: 'Staff of Better Illusion',
           rarity: 'Rare',
           attuned: true,
-          charges: '3 / 3',
-          description: 'A leather-bound volume salvaged from Eryndor Thalexus cavern collapse.'
+          charges: '4 / 4',
+          description: 'Regains 2d2 charges daily at dawn. Spells:\n• Silent Image (1 charge)\n• Disguise Self (2 charges)\n• Distort Value (2 charges)\n• Shadow Blade (3 charges)'
         },
         {
-          id: 'item_2',
-          name: 'Luminescent Aether Vial',
-          rarity: 'Uncommon',
+          id: 'item_v2',
+          name: 'Scale Mail +1',
+          rarity: 'Rare',
           attuned: false,
-          charges: '1 use',
-          description: 'Restores 1d4+2 Flow when consumed during short rest.'
+          charges: 'Passive',
+          description: 'AC 15 + DEX (max 2) + 1 magic bonus = 17. Combined with Shield (+2 AC) = AC 19 total.'
         }
       ],
       feats: [
         {
-          id: 'feat_1',
-          name: 'Keen Mind & Archive Memory',
-          source: 'Scholar Feat',
-          description: 'Can accurately recall anything seen or read within the past month; always knows north.'
+          id: 'feat_v1',
+          name: 'Eldritch Adept: Eldritch Mind',
+          source: 'Feat (Variant Human)',
+          description: 'You have advantage on Constitution saving throws that you make to maintain concentration on a spell.'
         },
         {
-          id: 'feat_2',
-          name: 'Manifest Weaver',
-          source: 'Specialty Feat',
-          description: 'Adds Intelligence modifier to Divion concentration checks.'
+          id: 'feat_v2',
+          name: 'Temporal Awareness',
+          source: 'Chronurgy Wizard (Lv 2)',
+          description: 'You can add your Intelligence modifier (+4) to your initiative rolls, giving an Initiative of +6.'
+        },
+        {
+          id: 'feat_v3',
+          name: 'Chronal Shift',
+          source: 'Chronurgy Wizard (Lv 2)',
+          description: '2 uses per long rest. As a reaction when you or a creature you can see within 30ft makes an attack roll, ability check, or saving throw, force the creature to reroll and use the second result.'
+        },
+        {
+          id: 'feat_v4',
+          name: 'Arcane Recovery',
+          source: 'Wizard Class Feature',
+          description: 'Once per day when you finish a short rest, recover expended spell slots with a combined level up to 3 (half wizard level rounded up).'
+        },
+        {
+          id: 'feat_v5',
+          name: 'Magical Tinkering',
+          source: 'Artificer (Lv 1)',
+          description: 'Touch a Tiny nonmagical object to invest a spark of magic (up to 4 objects): shed 5ft light, emit 6-second recorded message, emit odor/sound, or show static visual effect.'
+        },
+        {
+          id: 'feat_v6',
+          name: 'Spellbook & Prepared Spells',
+          source: 'Artificer 1 / Wizard 5 (DC 15, +7 Atk)',
+          description: 'Cantrips: Guidance, Mold Earth, Minor Illusion, Prestidigitation, Message, Mind Sliver.\n1st Level (4 slots): Silent Image (At Will), Absorb Elements, Faerie Fire, Cure Wounds, Sanctuary, Shield, Feather Fall, Magic Missile, Tasha\'s Hideous Laughter, Magnify Gravity, Find Familiar, Comprehend Languages, Identify.\n2nd Level (3 slots): Suggestion, Invisibility, Web, Vortex Warp.\n3rd Level (2 slots): Haste, Counterspell, Hypnotic Pattern, Leomund\'s Tiny Hut.'
+        },
+        {
+          id: 'feat_v7',
+          name: 'Proficiencies & Languages',
+          source: 'Class & Background',
+          description: 'Armor: Light Armor, Medium Armor, Shields.\nWeapons: Simple Weapons, Crossbows, Daggers, Darts, Slings, Quarterstaffs.\nTools: Thieves\' Tools, Tinkerer\'s Tools, Alchemist\'s Supplies, Playing Card Set, Piano.\nLanguages: Common, Celestial.\nPassive Perception: 14.'
         }
       ],
       equipment: [
-        { id: 'eq_1', name: "Scholar's Robes & Satchel", qty: 1, notes: 'Waterproof ink containers' },
-        { id: 'eq_2', name: 'Arcane Focus Crystal', qty: 1, notes: 'Bound into cedar staff' },
-        { id: 'eq_3', name: 'Ration Pack (7 days)', qty: 1, notes: 'Hard biscuits and dried fruit' }
+        { id: 'eq_v1', name: 'Scale Mail +1', qty: 1, notes: 'Magical medium armor' },
+        { id: 'eq_v2', name: 'Spellbook (Shield)', qty: 1, notes: 'Shield doubles as arcane spellbook focus' },
+        { id: 'eq_v3', name: 'Dagger', qty: 1, notes: 'Simple melee / finesse' },
+        { id: 'eq_v4', name: 'Thieves\' Tools', qty: 1, notes: 'Lockpicks, file, pliers' },
+        { id: 'eq_v5', name: 'Crowbar', qty: 1, notes: 'Advantage on Strength checks to pry open' },
+        { id: 'eq_v6', name: 'Dungeoneer\'s Pack', qty: 1, notes: 'Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope' },
+        { id: 'eq_v7', name: 'Casual Dress', qty: 1, notes: 'Daywear' },
+        { id: 'eq_v8', name: 'Winter Clothes', qty: 1, notes: '-1 Cold damage taken' },
+        { id: 'eq_v9', name: 'Black Shard', qty: 1, notes: 'A mysterious key for something' }
       ],
-      currency: { cp: 12, sp: 45, gp: 130, pp: 3, aetherGems: 4 },
-      notes: 'Investigating Eryndor Thalexus hidden laboratory and the origins of the skeletal giant carcass.'
+      currency: { cp: 0, sp: 2, gp: 45, pp: 0, aetherGems: 0 },
+      notes: `AGE: 18 | HEIGHT: 5'5" | WEIGHT: 105 lbs | EYES: Faded Blue | SKIN: White | HAIR: Dark Brown
+
+PERSONALITY TRAITS:
+"I get bored easily and tend to start trouble just to keep things interesting."
+
+IDEALS:
+"Kindness. Even if I tease people, I'll always step in when someone truly needs help. (Good)"
+
+BONDS:
+"Magic is my way of understanding the world—it's the one constant I can rely on when everything else changes."
+
+FLAWS:
+"I have a hard time taking responsibility for my mistakes, blaming others or 'bad luck' instead."
+
+GOOGLE DOC BACKSTORY:
+https://docs.google.com/document/d/1mbFLHEUX9IQnIFy87m29QfroVF_t2S2w8-dA7Feqwow/edit?usp=sharing
+
+ALLIES & REMINDERS:
+• Bones (Max)
+• Thalexus (lich)
+• Aquiel Alden
+• Cassius
+• Marea
+• Astie
+• Azzie (human)
+• Hendrickson (Palace Guard)
+• Rennek (Guide)
+• Marrows (informants)
+• Tornga (Half orc)
+• Onera
+• Clarissa Faehand, Kaleb Faehand, Castro Faehand
+• Lottette (spider familiar)
+• Johnson (Fog Leviathan)
+• Tesara
+• hhgrevis
+• Eris
+• Swimmer (5:00 left)`
     },
     {
       id: 'char_bones',
-      name: 'Bones',
-      player: 'Bones',
-      heritage: 'Awakened Skeletal Colossus',
-      classLevel: 'Titan Juggernaut 5',
-      level: 5,
-      alignment: 'Neutral Good',
+      name: 'Garron Forworth (Bones)',
+      player: 'Max',
+      heritage: 'Human Reborn',
+      classLevel: 'Oath of the Watchers Paladin 6',
+      level: 6,
+      alignment: 'Chaotic Neutral',
       vitals: {
-        hpCurrent: 58,
-        hpMax: 58,
+        hpCurrent: 51,
+        hpMax: 51,
         hpTemp: 0,
         ac: 18,
         initiative: 0,
         speed: 30,
         profBonus: 3,
-        hitDice: '5d12',
+        hitDice: '6d10',
         deathSaves: { successes: 0, failures: 0 }
       },
       stats: {
-        str: 19,
-        dex: 10,
-        con: 18,
-        int: 9,
-        wis: 11,
-        cha: 8,
-        saveProfs: ['str', 'con']
+        str: 16,
+        dex: 11,
+        con: 15,
+        int: 8,
+        wis: 13,
+        cha: 16,
+        saveProfs: ['wis', 'cha']
       },
       attacks: [
         {
           id: 'atk_b1',
-          name: 'Enchanted Greatmaul',
-          bonus: 7,
-          damageFormula: '2d6+4',
-          damageType: 'Bludgeoning',
-          notes: 'Reroll 1s and 2s on damage dice.'
+          name: 'Longsword',
+          bonus: 6,
+          damageFormula: '1d8+3',
+          damageType: 'Slashing',
+          notes: 'Versatile (1d10+3). Extra Attack: can attack twice per Attack action.'
         },
         {
           id: 'atk_b2',
-          name: 'Armored Gauntlet Slam',
-          bonus: 7,
-          damageFormula: '1d8+4',
-          damageType: 'Bludgeoning',
-          notes: 'Target must succeed on DC 15 STR save or be knocked prone.'
-        }
-      ],
-      divions: [
+          name: 'Divine Smite',
+          bonus: 0,
+          damageFormula: '+2d8',
+          damageType: 'Radiant',
+          notes: 'Expend 1st-level slot on melee hit (+1d8 per higher slot level, max 5d8; +1d8 extra vs fiends/undead)'
+        },
         {
-          id: 'div_b1',
-          name: 'Sealed Colossus Roar',
-          type: 'Primal Kinetic',
-          rank: 'Tier I',
-          cost: '1 Flow',
-          manifestEffect: 'Vibrates the ground in a 15ft cone. Enemies make DC 14 STR save or stagger.'
-        }
-      ],
-      boons: [
+          id: 'atk_b3',
+          name: 'Javelin (x4)',
+          bonus: 6,
+          damageFormula: '1d6+3',
+          damageType: 'Piercing',
+          notes: 'Thrown range 30/120ft'
+        },
         {
-          id: 'boon_b1',
-          name: "Azzie's Humanoid Seal",
-          grantedBy: 'Azzie',
-          effect: 'Seals immense titan power into a humanoid shell. Resistance to necrotic and poison damage.'
+          id: 'atk_b4',
+          name: 'Interception Fighting Style',
+          bonus: 0,
+          damageFormula: '1d10+3',
+          damageType: 'Damage Reduction',
+          notes: 'Reaction: When a creature within 5ft is hit by an attack, reduce damage by 1d10 + prof (+3)'
+        },
+        {
+          id: 'atk_b5',
+          name: 'Lay on Hands',
+          bonus: 0,
+          damageFormula: 'Pool 30 HP',
+          damageType: 'Healing',
+          notes: 'Touch to restore HP from pool of 30, or expend 5 HP to cure disease/poison'
         }
       ],
+      divions: [],
+      boons: [],
       magicItems: [
         {
           id: 'item_b1',
-          name: 'Rune-Carved Plate of the Cavern',
-          rarity: 'Very Rare',
-          attuned: true,
-          charges: 'Passive',
-          description: 'Forged to restrain and channel the skeletal colossus kinetic mass.'
+          name: 'Potion of Stoneskin',
+          rarity: 'Rare',
+          attuned: false,
+          charges: '1 use',
+          description: 'Grants resistance to nonmagical bludgeoning, piercing, and slashing damage for up to 1 hour (requires concentration).'
+        },
+        {
+          id: 'item_b2',
+          name: 'Potion of Healing',
+          rarity: 'Common',
+          attuned: false,
+          charges: '1 use',
+          description: 'Restores 2d4+2 hit points when consumed as an action.'
+        },
+        {
+          id: 'item_b3',
+          name: 'Tiny Potion of Healing',
+          rarity: 'Common',
+          attuned: false,
+          charges: '1 use',
+          description: 'Small pocket vial; restores 2d4+2 hit points when consumed.'
         }
       ],
       feats: [
         {
           id: 'feat_b1',
-          name: 'Heavy Armor Master',
-          source: 'Combat Feat',
-          description: 'Nonmagical bludgeoning, piercing, and slashing damage is reduced by 3.'
+          name: 'Aura of Protection',
+          source: 'Paladin Level 6 Feature',
+          description: 'Whenever you or a friendly creature within 10 feet must make a saving throw, gain a +3 bonus (your Charisma modifier) to that saving throw.'
         },
         {
           id: 'feat_b2',
-          name: 'Guardian Instinct (Valorie)',
-          source: 'Bond Feat',
-          description: 'Can intercept an attack intended for Valorie when within 5ft as a reaction.'
+          name: 'Shield Master',
+          source: 'Feat',
+          description: '• If you take the Attack action, use a bonus action to shove a creature within 5ft.\n• Add +2 shield AC bonus to DEX saves against effects targeting only you.\n• Reaction: take 0 damage instead of half on successful DEX saving throw against area effects.'
+        },
+        {
+          id: 'feat_b3',
+          name: 'Channel Divinity (1/short or long rest)',
+          source: 'Oath of the Watchers',
+          description: '• Watcher\'s Will: As an action, choose up to 3 creatures within 30ft. For 1 minute, targets gain advantage on Int, Wis, and Cha saving throws.\n• Abjure the Extraplanar: Turn aberrations, celestials, elementals, fey, or fiends within 30ft that fail a DC 14 Wisdom save.'
+        },
+        {
+          id: 'feat_b4',
+          name: 'Deathless Nature',
+          source: 'Reborn Racial Feature',
+          description: '• Advantage on saves vs disease, poison, and death saving throws.\n• Resistance to poison damage.\n• Do not need to eat, drink, or breathe.\n• Don\'t need to sleep; 4 hours of motionless resting counts as a long rest.'
+        },
+        {
+          id: 'feat_b5',
+          name: 'Knowledge from a Past Life',
+          source: 'Reborn Racial Feature',
+          description: 'When you make an ability check that uses a skill, roll a d6 and add the number to the d20 roll (usable after seeing the d20 roll, 3 times per long rest).'
+        },
+        {
+          id: 'feat_b6',
+          name: 'Divine Sense & Divine Health',
+          source: 'Paladin Features',
+          description: '• Divine Sense (3/day): detect celestial, fiend, or undead within 60ft.\n• Divine Health: immune to disease.'
+        },
+        {
+          id: 'feat_b7',
+          name: 'Paladin Spells Prepared (DC 14, +6 Atk)',
+          source: 'Watchers Spellcasting (Slot Pool: 4x 1st, 2x 2nd)',
+          description: '1st Level (4 slots): Ceremony, Searing Smite, Shield of Faith, Command, Alarm, Detect Magic.\n2nd Level (2 slots): Lesser Restoration, Branding Smite, Moonbeam.'
+        },
+        {
+          id: 'feat_b8',
+          name: 'Proficiencies & Languages',
+          source: 'Paladin Proficiencies',
+          description: 'Armor: All armor, shields.\nWeapons: Simple weapons, martial weapons.\nLanguages: Common, Celestial, Deep Speech.\nPassive Perception: 12.'
         }
       ],
       equipment: [
-        { id: 'eq_b1', name: 'Titan Greatmaul', qty: 1, notes: 'Forged from deep iron' },
-        { id: 'eq_b2', name: 'Sealed Full Plate Armor', qty: 1, notes: 'Custom fit to skeleton' }
+        { id: 'eq_b1', name: 'Longsword', qty: 1, notes: 'Versatile martial weapon (1d8/1d10)' },
+        { id: 'eq_b2', name: 'Shield', qty: 1, notes: '+2 AC' },
+        { id: 'eq_b3', name: 'Chain Mail', qty: 1, notes: 'AC 16, disadvantage on stealth' },
+        { id: 'eq_b4', name: 'Holy Symbol', qty: 1, notes: 'Paladin spellcasting focus' },
+        { id: 'eq_b5', name: 'Javelins', qty: 4, notes: 'Thrown weapons (range 30/120)' },
+        { id: 'eq_b6', name: 'Priest\'s Pack', qty: 1, notes: 'Backpack, blanket, 10 candles, tinderbox, alms box, 2 blocks incense, censer, vestments, 2 days rations, waterskin' }
       ],
-      currency: { cp: 0, sp: 10, gp: 40, pp: 0, aetherGems: 1 },
-      notes: 'Awakened from Eryndor cave wall by Astie. Calmed and given armor seal by Azzie.'
-    },
-    {
-      id: 'char_eris',
-      name: 'Eris',
-      player: 'Eris',
-      heritage: 'Human (Avenger)',
-      classLevel: 'Shadow Stalker / Avenger 5',
-      level: 5,
-      alignment: 'Chaotic Neutral',
-      vitals: {
-        hpCurrent: 44,
-        hpMax: 44,
-        hpTemp: 0,
-        ac: 16,
-        initiative: 4,
-        speed: 35,
-        profBonus: 3,
-        hitDice: '5d10',
-        deathSaves: { successes: 0, failures: 0 }
-      },
-      stats: {
-        str: 13,
-        dex: 18,
-        con: 14,
-        int: 11,
-        wis: 15,
-        cha: 10,
-        saveProfs: ['dex', 'wis']
-      },
-      attacks: [
-        {
-          id: 'atk_e1',
-          name: 'Shadow Curved Shortsword',
-          bonus: 7,
-          damageFormula: '1d6+4',
-          damageType: 'Piercing / Dark',
-          notes: 'Finesse; extra 2d6 sneak damage if ally is within 5ft.'
-        },
-        {
-          id: 'atk_e2',
-          name: 'Twin Throwing Daggers',
-          bonus: 7,
-          damageFormula: '1d4+4',
-          damageType: 'Piercing',
-          notes: 'Range 20/60ft.'
-        }
-      ],
-      divions: [
-        {
-          id: 'div_e1',
-          name: 'Vow of Reckoning',
-          type: 'Avenger Domain',
-          rank: 'Tier II',
-          cost: '1 Flow',
-          manifestEffect: 'Designates a target for 1 minute; attacks against it score critical hits on 19-20.'
-        }
-      ],
-      boons: [
-        {
-          id: 'boon_e1',
-          name: "Mother's Unyielding Resolve",
-          grantedBy: 'Divine Encounter / Memory of Niamh',
-          effect: 'Cannot be charmed or frightened when fighting to protect or recover kidnapped innocents.'
-        }
-      ],
-      magicItems: [
-        {
-          id: 'item_e1',
-          name: "Niamh's Carved Wooden Locket",
-          rarity: 'Sentimental / Minor Warding',
-          attuned: true,
-          charges: 'Passive',
-          description: 'A hand-whittled pendant of protection holding a lock of Niamh hair.'
-        }
-      ],
-      feats: [
-        {
-          id: 'feat_e1',
-          name: 'Alert',
-          source: 'General Feat',
-          description: '+5 bonus to initiative; cannot be surprised while conscious.'
-        },
-        {
-          id: 'feat_e2',
-          name: 'Relentless Tracker',
-          source: 'Class Feature',
-          description: 'Advantage on Survival checks to track missing persons and captives.'
-        }
-      ],
-      equipment: [
-        { id: 'eq_e1', name: 'Studded Leather Armor', qty: 1, notes: 'Midnight dye' },
-        { id: 'eq_e2', name: 'Climber Kit & Grapple Hook', qty: 1, notes: '50ft silk rope' },
-        { id: 'eq_e3', name: 'Smoke Bombs', qty: 3, notes: '10ft fog cloud on impact' }
-      ],
-      currency: { cp: 5, sp: 20, gp: 95, pp: 1, aetherGems: 2 },
-      notes: 'Driven by the search for Niamh. Will cross any boundary to find the child she raised.'
+      currency: { cp: 0, sp: 6, gp: 7, pp: 0, aetherGems: 0 },
+      notes: `AGE: 44 (when killed) [244] | HEIGHT: 6'3" | WEIGHT: 180 lbs | EYES: Grey | SKIN: Pale | HAIR: Grey
+
+PERSONALITY TRAITS:
+"Extremely Stubborn"
+
+IDEALS:
+"Deception is a weapon. Strike from where your foes won't expect. (Chaotic)"
+
+BONDS:
+"Valorie (Doesn't remember)"
+
+FLAWS:
+"I see morality entirely in black and white."
+
+BACKSTORY & DEATH NOTE:
+"He was impaled by his longsword and that's how he seemingly died."`
     },
     {
       id: 'char_thiollier',
-      name: 'Thiollier',
-      player: 'Thiollier',
-      heritage: 'Half-Elf (Duelist)',
-      classLevel: 'Blade Master 5',
-      level: 5,
-      alignment: 'Neutral Good',
+      name: 'Thiollier Thornsong',
+      player: 'William',
+      heritage: 'Half-Elf',
+      classLevel: 'Paladin 2 / Druid 4 (Circle of Wildfire)',
+      level: 6,
+      alignment: 'Lawful Neutral',
       vitals: {
-        hpCurrent: 46,
-        hpMax: 46,
+        hpCurrent: 29,
+        hpMax: 34,
         hpTemp: 0,
-        ac: 17,
-        initiative: 3,
+        ac: 16,
+        initiative: -1,
         speed: 30,
         profBonus: 3,
-        hitDice: '5d10',
+        hitDice: '2d10 + 4d8',
         deathSaves: { successes: 0, failures: 0 }
       },
       stats: {
-        str: 12,
-        dex: 17,
-        con: 14,
-        int: 12,
-        wis: 13,
-        cha: 14,
-        saveProfs: ['str', 'dex']
-      },
-      attacks: [
-        {
-          id: 'atk_t1',
-          name: 'Fine Rapier of the Wind',
-          bonus: 6,
-          damageFormula: '1d8+3',
-          damageType: 'Piercing',
-          notes: 'Parry reaction adds +2 AC against one melee attack.'
-        }
-      ],
-      divions: [],
-      boons: [],
-      magicItems: [],
-      feats: [
-        { id: 'feat_t1', name: 'Dual Wielder', source: 'Combat Feat', description: '+1 AC when wielding separate weapons.' }
-      ],
-      equipment: [
-        { id: 'eq_t1', name: 'Fine Rapier', qty: 1, notes: 'Silver-pommel' },
-        { id: 'eq_t2', name: 'Duelist Leathers', qty: 1, notes: 'Lightweight' }
-      ],
-      currency: { cp: 0, sp: 15, gp: 80, pp: 0, aetherGems: 1 },
-      notes: 'Noble duelist honing their bladecraft alongside the party.'
-    },
-    {
-      id: 'char_dove',
-      name: 'Dove',
-      player: 'Dove',
-      heritage: 'Aasimar / Celestial Kin',
-      classLevel: 'Aether Mystic / Healer 5',
-      level: 5,
-      alignment: 'Lawful Good',
-      vitals: {
-        hpCurrent: 36,
-        hpMax: 36,
-        hpTemp: 0,
-        ac: 15,
-        initiative: 1,
-        speed: 30,
-        profBonus: 3,
-        hitDice: '5d8',
-        deathSaves: { successes: 0, failures: 0 }
-      },
-      stats: {
-        str: 10,
-        dex: 13,
-        con: 14,
-        int: 13,
-        wis: 18,
+        str: 14,
+        dex: 9,
+        con: 10,
+        int: 9,
+        wis: 16,
         cha: 14,
         saveProfs: ['wis', 'cha']
       },
       attacks: [
         {
-          id: 'atk_d1',
-          name: 'Radiant Ray',
-          bonus: 7,
-          damageFormula: '2d8+4',
-          damageType: 'Radiant',
-          notes: 'Target cannot benefit from invisibility until end of next turn.'
-        }
-      ],
-      divions: [
+          id: 'atk_t1',
+          name: 'Warhammer',
+          bonus: 5,
+          damageFormula: '1d8+2',
+          damageType: 'Bludgeoning',
+          notes: 'Versatile (1d10+2 two-handed)'
+        },
         {
-          id: 'div_d1',
-          name: 'Aether Resurgence',
-          type: 'Restoration',
-          rank: 'Tier II',
-          cost: '1 Flow',
-          manifestEffect: 'Heals target within 30ft for 2d8+4 HP and cures poison.'
+          id: 'atk_t2',
+          name: 'Sacred Flame (Cantrip)',
+          bonus: 6,
+          damageFormula: '1d8',
+          damageType: 'Radiant',
+          notes: 'Range 60ft, DC 14 DEX save or 1d8 radiant; ignores cover'
+        },
+        {
+          id: 'atk_t3',
+          name: 'Divine Smite',
+          bonus: 0,
+          damageFormula: '+2d8',
+          damageType: 'Radiant',
+          notes: 'Expend spell slot on melee hit (+1d8 per higher slot level, +1d8 vs fiends/undead)'
+        },
+        {
+          id: 'atk_t4',
+          name: 'Longbow',
+          bonus: 2,
+          damageFormula: '1d8-1',
+          damageType: 'Piercing',
+          notes: 'Range 150/600ft, two-handed, heavy'
+        },
+        {
+          id: 'atk_t5',
+          name: 'Hand Crossbow',
+          bonus: 2,
+          damageFormula: '1d6-1',
+          damageType: 'Piercing',
+          notes: 'Range 30/120ft, light, loading'
+        },
+        {
+          id: 'atk_t6',
+          name: 'Produce Flame (Cantrip)',
+          bonus: 6,
+          damageFormula: '1d8',
+          damageType: 'Fire',
+          notes: '10ft light; hurled 30ft as ranged spell attack'
         }
       ],
+      divions: [],
       boons: [],
-      magicItems: [],
+      magicItems: [
+        {
+          id: 'item_t1',
+          name: 'Elderwood Bracelet',
+          rarity: 'Uncommon',
+          attuned: true,
+          charges: 'Focus',
+          description: 'Carved from the sacred Elderwood tree in Il-Fiore. Serves as both Druidic Focus and Paladin Holy Symbol.'
+        }
+      ],
       feats: [
-        { id: 'feat_d1', name: 'Healer', source: 'General Feat', description: 'Can tend wounds using healer kit to restore 1d6+4+Level HP.' }
+        {
+          id: 'feat_t1',
+          name: 'Summon Wildfire Spirit',
+          source: 'Circle of Wildfire Feature',
+          description: 'Expend one Wild Shape use to summon a spirit of wildfire (lasts 1 hour, 15 HP, 30ft fly speed). On summon, each creature within 10ft must make DC 14 Dex save or take 2d6 fire damage. Spirit can use Flame Seed (+6 atk, 1d6+3 fire) or Fiery Teleportation (15ft teleport for spirit and willing allies within 5ft, dealing 1d6+3 fire to enemies adjacent to origin).'
+        },
+        {
+          id: 'feat_t2',
+          name: 'Wild Shape (2/short rest)',
+          source: 'Druid Level 2 Feature',
+          description: 'Transform into a beast of CR 1/2 or lower without a flying speed for up to 2 hours.'
+        },
+        {
+          id: 'feat_t3',
+          name: 'Blessed Warrior',
+          source: 'Paladin Fighting Style',
+          description: 'Learned Sacred Flame and Hand of Radiance cantrips from the Cleric spell list (Charisma based).'
+        },
+        {
+          id: 'feat_t4',
+          name: 'Divine Sense & Lay on Hands',
+          source: 'Paladin Level 1-2 Features',
+          description: '• Divine Sense (3 uses/long rest): detect celestials, fiends, and undead within 60ft.\n• Lay on Hands: Pool of 10 HP to restore hit points or cure diseases/poisons (5 HP each).'
+        },
+        {
+          id: 'feat_t5',
+          name: 'Fey Ancestry & Darkvision',
+          source: 'Half-Elf Racial Features',
+          description: '• Advantage on saving throws against being charmed; magic cannot put you to sleep.\n• Darkvision 60ft.\n• High Elf Cantrip: Mending.'
+        },
+        {
+          id: 'feat_t6',
+          name: 'Heart of Darkness',
+          source: 'Haunted One Background Feature',
+          description: 'Commoners recognize that you face horrific evil and will extend shelter, hospitality, and assistance to you and your allies.'
+        },
+        {
+          id: 'feat_t7',
+          name: 'Spells Prepared (DC 14, +6 Atk)',
+          source: 'Paladin 2 / Druid 4 (Slots: 4x 1st, 3x 2nd, 2x 3rd)',
+          description: 'Cantrips: Mending, Sacred Flame, Spare the Dying, Produce Flame, Control Flames.\n1st Level (4 slots): Thunderous Smite, Command, Detect Magic, Ceremony, Shield of Faith, Charm Person, Goodberry, Speak with Animals, Cure Wounds, Burning Hands.\n2nd Level (3 slots): Flame Blade, Enhance Ability, Air Bubble, Pass Without Trace.\n3rd Level (2 slots): Dispel Magic, Plant Growth, Revivify.'
+        },
+        {
+          id: 'feat_t8',
+          name: 'Proficiencies & Languages',
+          source: 'Proficiencies & Languages',
+          description: 'Armor: All armor, shields.\nWeapons: Simple weapons, martial weapons.\nTools: Herbalism Kit.\nLanguages: Common, Sylvan, Seraphian, Stygian.\nPassive Perception: 13.'
+        }
       ],
       equipment: [
-        { id: 'eq_d1', name: "Healer's Kit (10 charges)", qty: 2, notes: 'Herbs and clean bandages' }
+        { id: 'eq_t1', name: 'Ringmail', qty: 1, notes: 'AC 14, disadvantage on stealth' },
+        { id: 'eq_t2', name: 'Shield', qty: 1, notes: '+2 AC' },
+        { id: 'eq_t3', name: 'Warhammer', qty: 1, notes: 'Versatile martial weapon (1d8/1d10)' },
+        { id: 'eq_t4', name: 'Longbow', qty: 1, notes: 'Ranged weapon (150/600)' },
+        { id: 'eq_t5', name: 'Hand Crossbow', qty: 1, notes: 'Light ranged weapon (30/120)' },
+        { id: 'eq_t6', name: 'Elderwood Bracelet', qty: 1, notes: 'Druidic focus / holy symbol' },
+        { id: 'eq_t7', name: 'Explorer\'s Pack', qty: 1, notes: 'Backpack, bedroll, mess kit, tinderbox, 10 torches, 10 days rations, waterskin, 50ft rope' },
+        { id: 'eq_t8', name: 'Monster Hunter\'s Pack', qty: 1, notes: 'Chest, crowbar, hammer, 3 wooden stakes, holy symbol, holy water, manacles, steel mirror, oil flask, tinderbox, 3 torches' }
       ],
-      currency: { cp: 8, sp: 30, gp: 65, pp: 0, aetherGems: 3 },
-      notes: 'Support and spiritual anchor for the companions.'
+      currency: { cp: 0, sp: 5, gp: 6, pp: 0, aetherGems: 0 },
+      notes: `AGE: 21 | HEIGHT: 6'0" | WEIGHT: 180 lbs | EYES: Gold | SKIN: Pale yellow | HAIR: Gold
+
+PERSONALITY TRAITS:
+"I like to read and memorize poetry. It keeps me calm and brings me fleeting moments of happiness."
+
+IDEALS:
+"Logic. I like to know my enemy's capabilities and weaknesses before rushing into battle. (Lawful)"
+
+BONDS:
+"There's evil in me, I can feel it. It must never be set free."
+
+FLAWS:
+"I feel no compassion for the dead. They're the lucky ones."
+
+ORGANIZATIONS / ALLIES:
+Lurreko
+
+BACKSTORY:
+Parents were important people - son of noble family Thornsong, kidnapped when adolescent. Poetry book.
+Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care of a massive tree, the Elderwood, in the capital's center. In Dynestea, people worshiped nature, I was supposed to become the tree's caretaker - but this was ruined bc ya boi got kidnapped. The people waited for me to come back. Lived five years without using Thaumic magic, since Hag hated it. Hag's name is Grettle. FUCKING DIABLO?! See discord for worship of previous god.`
     }
   ];
 
@@ -471,6 +582,16 @@
 
     loadStorage() {
       try {
+        const rosterVersion = localStorage.getItem(ROSTER_VERSION_KEY);
+        if (rosterVersion !== CURRENT_ROSTER_VERSION) {
+          // Fresh migration to canon sheets: replace old dummy roster
+          this.characters = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+          this.activeCharId = 'char_valorie';
+          localStorage.setItem(ROSTER_VERSION_KEY, CURRENT_ROSTER_VERSION);
+          this.saveStorage(false);
+          return;
+        }
+
         const raw = localStorage.getItem(CHARACTERS_STORAGE_KEY);
         if (raw) {
           this.characters = JSON.parse(raw);
