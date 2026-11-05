@@ -115,6 +115,7 @@ const state = {
   selectedEntryId: null,
   isHelpOpen: false,
   appMode: "codex",
+  previousAppMode: null,
   isDmMode: false,
   playerName: "Adventurer"
 };
@@ -418,7 +419,10 @@ function showLoadError(error) {
 // View Mode Management (The O-Codex vs World Map)
 window.setAppMode = function(mode, options = {}) {
   const { syncUrl = true, pushHistory = true } = options;
-  state.appMode = mode;
+  if (state.appMode !== mode) {
+    state.previousAppMode = state.appMode;
+    state.appMode = mode;
+  }
 
   const stage = elements.viewportStage || document.getElementById("viewport-stage");
   const tabCodex = elements.modeTabCodex || document.getElementById("mode-tab-codex");
@@ -437,6 +441,9 @@ window.setAppMode = function(mode, options = {}) {
   if (mode === "map") {
     document.body.classList.add("map-mode-active");
     document.body.classList.remove("characters-mode-active");
+    if (window.DiceRoller && typeof window.DiceRoller.closeTray === 'function') {
+      window.DiceRoller.closeTray();
+    }
 
     if (syncUrl) {
       try {
@@ -484,6 +491,9 @@ window.setAppMode = function(mode, options = {}) {
   } else {
     // "codex" mode
     document.body.classList.remove("map-mode-active", "characters-mode-active");
+    if (window.DiceRoller && typeof window.DiceRoller.closeTray === 'function') {
+      window.DiceRoller.closeTray();
+    }
     if (window.mapEngine && window.mapEngine.activeTransientPinId) {
       window.mapEngine.activeTransientPinId = null;
       window.mapEngine.renderPins();
@@ -717,32 +727,45 @@ function bindEvents() {
       return;
     }
 
-    // 4. "m" or "M" : Toggle between Codex & World Map
-    if ((event.key === "m" || event.key === "M") && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      if (elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
+    // 4. "o", "c", "m" : Screen navigation with previous-screen return
+    //  - O / o : The O-Codex (pressing O while on Codex returns to previous screen)
+    //  - C / c : Character Sheets (pressing C while on Characters returns to previous screen)
+    //  - M / m : World Map (pressing M while on Map returns to previous screen)
+    const lowerKey = event.key.toLowerCase();
+    if (["o", "c", "m"].includes(lowerKey) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (!state.isHelpOpen) {
         event.preventDefault();
-        const next = state.appMode === "map" ? "codex" : "map";
-        window.setAppMode(next);
-        window.showToast?.(
-          next === "map" ? "🗺️ World Map Active (Press M to return)" : "📜 O-Codex Active (Press M for Map)",
-          "info",
-          1600
-        );
-        return;
-      }
-    }
 
-    // 5. "c" or "C" : Toggle Character Sheets Mode
-    if ((event.key === "c" || event.key === "C") && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      if (elements.modal.classList.contains("hidden") && !state.isHelpOpen) {
-        event.preventDefault();
-        const next = state.appMode === "characters" ? "codex" : "characters";
-        window.setAppMode(next);
-        window.showToast?.(
-          next === "characters" ? "⚔️ Character Sheets Active (Press C to return)" : "📜 O-Codex Active",
-          "info",
-          1600
-        );
+        // If an entry modal is currently open, close it cleanly
+        if (typeof window.closeModal === "function" && elements.modal && !elements.modal.classList.contains("hidden")) {
+          window.closeModal({ syncUrl: false });
+        }
+
+        const modeMap = {
+          o: "codex",
+          c: "characters",
+          m: "map"
+        };
+        const targetMode = modeMap[lowerKey];
+        let nextMode;
+
+        if (state.appMode === targetMode) {
+          // Pressing the button for the screen you're already on goes to whatever screen you were on just before!
+          nextMode = state.previousAppMode && state.previousAppMode !== targetMode
+            ? state.previousAppMode
+            : (targetMode === "codex" ? "map" : "codex");
+        } else {
+          nextMode = targetMode;
+        }
+
+        window.setAppMode(nextMode);
+
+        const toastLabels = {
+          codex: "📜 The O-Codex Active",
+          characters: "⚔️ Character Sheets Active",
+          map: "🗺️ World Map Active"
+        };
+        window.showToast?.(toastLabels[nextMode] || "Screen Switched", "info", 1400);
         return;
       }
     }

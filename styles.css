@@ -4394,6 +4394,38 @@ body.map-mode-active .map-filter-bar {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.35) rgba(10, 18, 30, 0.4);
+}
+
+/* Custom Themed Scrollbar for Roll Log Feed */
+.char-rolls-feed::-webkit-scrollbar {
+  width: 6px;
+}
+
+.char-rolls-feed::-webkit-scrollbar-track {
+  background: rgba(10, 18, 30, 0.35);
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+.char-rolls-feed::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.32);
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.char-rolls-feed::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+}
+
+.char-rolls-feed::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .roll-log-card {
@@ -5567,8 +5599,9 @@ body.map-mode-active .map-filter-bar {
 /* ============================================================================
    UNIVERSAL PARTY DICE ROLLER & DRAWER
    ============================================================================ */
-/* Floating Toggle Button */
+/* Floating Toggle Button — visible only when Characters mode is active */
 .dice-tray-toggle {
+  display: none;
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -5578,7 +5611,6 @@ body.map-mode-active .map-filter-bar {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   border: 2px solid rgba(90, 232, 255, 0.4);
   color: #ffffff;
-  display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
@@ -5586,6 +5618,10 @@ body.map-mode-active .map-filter-bar {
   z-index: 998;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(90, 232, 255, 0.2);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.characters-mode-active .dice-tray-toggle {
+  display: flex;
 }
 
 .dice-tray-toggle:hover {
@@ -5679,6 +5715,36 @@ body.map-mode-active .map-filter-bar {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.35) rgba(10, 18, 30, 0.4);
+}
+
+.dice-drawer-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dice-drawer-body::-webkit-scrollbar-track {
+  background: rgba(10, 18, 30, 0.35);
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+.dice-drawer-body::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.32);
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dice-drawer-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+}
+
+.dice-drawer-body::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Polyhedral Dice Selector */
