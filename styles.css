@@ -4814,14 +4814,22 @@ body.map-mode-active .map-filter-bar {
   font-family: var(--font-mono, monospace);
 }
 
-/* DM Enemy Health Controls Row */
-.init-enemy-hp-row {
+/* DM Enemy Health Controls Container & Rows */
+.init-enemy-hp-ctrls {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 0.3rem;
+  width: fit-content;
+}
+
+.init-enemy-hp-row,
+.init-enemy-hp-subrow {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-  margin-top: 0.3rem;
-  background: rgba(15, 23, 42, 0.7);
-  padding: 2px 4px;
+  gap: 0.25rem;
+  background: rgba(15, 23, 42, 0.72);
+  padding: 2px 5px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: fit-content;
@@ -4852,31 +4860,55 @@ body.map-mode-active .map-filter-bar {
   color: #fca5a5;
 }
 
-.init-hp-tick-btn.init-hp-half-btn {
-  background: rgba(168, 85, 247, 0.18);
-  border-color: rgba(168, 85, 247, 0.45);
-  color: #d8b4fe;
-  font-weight: 800;
-  font-size: 0.72rem;
-  padding: 1px 5px;
-  margin-left: 2px;
+/* 1-Click Resistance & Vulnerability/Weakness Calculators */
+.init-hp-calc-btn {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
 }
 
-.init-hp-tick-btn.init-hp-half-btn:hover {
+.init-hp-calc-btn.init-hp-half-btn {
+  background: rgba(168, 85, 247, 0.18);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #d8b4fe;
+}
+
+.init-hp-calc-btn.init-hp-half-btn:hover {
   background: rgba(168, 85, 247, 0.4);
   border-color: #c084fc;
   color: #fff;
   box-shadow: 0 0 8px rgba(168, 85, 247, 0.45);
 }
 
+.init-hp-calc-btn.init-hp-double-btn {
+  background: rgba(249, 115, 22, 0.18);
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  color: #fdba74;
+}
+
+.init-hp-calc-btn.init-hp-double-btn:hover {
+  background: rgba(249, 115, 22, 0.4);
+  border-color: #fb923c;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.45);
+}
+
 .init-enemy-hp-input {
-  width: 38px;
+  width: 34px;
   text-align: center;
   background: rgba(10, 14, 24, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: #f1f5f9;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 700;
   padding: 1px 2px;
 }
@@ -4987,22 +5019,6 @@ body.map-mode-active .map-filter-bar {
   margin-right: 0.2rem;
   background: rgba(255, 255, 255, 0.08);
   color: #94a3b8;
-}
-
-/* Initial roll badge left of creature's name */
-.init-card-start-roll {
-  font-size: 0.76rem;
-  font-weight: 700;
-  font-family: var(--font-mono, monospace);
-  color: #7dd3fc;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.28);
-  border-radius: 4px;
-  padding: 1px 4px;
-  line-height: 1;
-  margin-right: 0.4rem;
-  flex-shrink: 0;
-  letter-spacing: -0.02em;
 }
 
 /* Highlight the player / enemy who is currently taking their turn at the top */

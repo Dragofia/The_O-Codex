@@ -590,6 +590,33 @@
       }
     }
 
+    doubleEnemyDamage(id) {
+      const enemy = this.combatants.find(c => c.id === id);
+      if (!enemy) return;
+      const maxHp = enemy.hpMax || 10;
+      const curHp = typeof enemy.hpCurrent === 'number' ? enemy.hpCurrent : maxHp;
+      const damageTaken = Math.max(0, maxHp - curHp);
+
+      if (damageTaken <= 0 && (!enemy.lastDamage || enemy.lastDamage <= 0)) {
+        window.showToast?.(`${enemy.name} has taken no damage to double`, 'info', 1600);
+        return;
+      }
+
+      // If there was a recorded last hit (e.g. from targeted damage), double that hit
+      if (enemy.lastDamage && enemy.lastDamage > 0) {
+        const extraDmg = enemy.lastDamage;
+        const prevHit = enemy.lastDamage;
+        enemy.lastDamage = 0;
+        this.adjustEnemyHp(id, -extraDmg);
+        window.showToast?.(`⚡ Weakness: Dealt extra ${extraDmg} damage (doubled ${prevHit} damage hit to ${prevHit * 2})`, 'info', 2500);
+      } else {
+        // Otherwise double total damage taken so far
+        const extraDmg = damageTaken;
+        this.adjustEnemyHp(id, -extraDmg);
+        window.showToast?.(`⚡ Weakness: Doubled damage taken from ${damageTaken} to ${damageTaken * 2}`, 'info', 2500);
+      }
+    }
+
     render() {
       const isDm = typeof window.isDmMode === 'function' ? window.isDmMode() : false;
 
@@ -667,9 +694,8 @@
         // When moved: advantage lower score is hidden! Only active final score matters
         const showLowerScore = !this.hasMoved && c.lowerScore !== null;
         
-        // Initial rank and roll snapshots
+        // Initial rank snapshot
         const startRank = c.initialRank !== undefined ? c.initialRank : (index + 1);
-        const startRoll = c.initialRoll !== undefined ? c.initialRoll : c.activeScore;
 
         let nameHtml = '';
         let enemyCtrlsHtml = '';
@@ -764,14 +790,19 @@
           // Max HP & Controls display ONLY for the DM!
           if (isDm) {
             enemyCtrlsHtml = `
-              <div class="init-enemy-hp-row">
-                <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="-5" title="Subtract 5 HP">-5</button>
-                <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="-1" title="Subtract 1 HP">-1</button>
-                <input type="number" class="init-enemy-hp-input" value="${curHp}" min="0" max="${maxHp}" data-id="${c.id}" title="Type HP directly" />
-                <span class="init-enemy-hp-slash-dim">/${maxHp}</span>
-                <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="1" title="Add 1 HP">+1</button>
-                <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="5" title="Add 5 HP">+5</button>
-                <button type="button" class="init-hp-tick-btn init-hp-half-btn" data-id="${c.id}" title="Halve damage / apply resistance (1-click)">½</button>
+              <div class="init-enemy-hp-ctrls">
+                <div class="init-enemy-hp-row">
+                  <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="-5" title="Subtract 5 HP">-5</button>
+                  <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="-1" title="Subtract 1 HP">-1</button>
+                  <input type="number" class="init-enemy-hp-input" value="${curHp}" min="0" max="${maxHp}" data-id="${c.id}" title="Type HP directly" />
+                  <span class="init-enemy-hp-slash-dim">/${maxHp}</span>
+                  <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="1" title="Add 1 HP">+1</button>
+                  <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="5" title="Add 5 HP">+5</button>
+                </div>
+                <div class="init-enemy-hp-subrow">
+                  <button type="button" class="init-hp-calc-btn init-hp-half-btn" data-id="${c.id}" title="Halve damage / apply resistance (1-click)">🛡️ ½ Resist</button>
+                  <button type="button" class="init-hp-calc-btn init-hp-double-btn" data-id="${c.id}" title="Double damage / apply weakness (1-click)">⚡ 2× Weakness</button>
+                </div>
               </div>
             `;
           }
@@ -780,7 +811,6 @@
         html += `
           <div class="init-card ${isCurrentTurn ? 'is-active-turn' : ''} ${isLeader ? 'is-leader' : ''} ${isTargeted ? 'is-targeted' : ''} ${isEnemy ? 'is-enemy-card' : ''}" data-id="${c.id}" title="Click to target ${this.escapeHtml(c.name)}">
             <div class="init-card-rank">#${startRank}</div>
-            ${this.hasMoved ? `<span class="init-card-start-roll" title="Starting Initiative Roll">[${startRoll}]</span>` : ''}
             <div class="init-card-info">
               ${nameHtml}
               ${enemyCtrlsHtml}
@@ -805,7 +835,7 @@
       container.querySelectorAll('.init-card').forEach(card => {
         card.addEventListener('click', (e) => {
           // If clicking buttons or inputs, do not toggle targeting
-          if (e.target.closest('.init-row-del-btn, .init-hp-tick-btn, .init-enemy-hp-input')) {
+          if (e.target.closest('.init-row-del-btn, .init-hp-tick-btn, .init-hp-calc-btn, .init-enemy-hp-input')) {
             return;
           }
           const id = card.dataset.id;
@@ -831,7 +861,7 @@
         input.addEventListener('click', (e) => e.stopPropagation());
       });
 
-      // Bind DM Enemy HP Half button (½)
+      // Bind DM Enemy HP Half button (½ Resist)
       container.querySelectorAll('.init-hp-half-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -840,8 +870,17 @@
         });
       });
 
+      // Bind DM Enemy HP Double button (2× Weakness)
+      container.querySelectorAll('.init-hp-double-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          this.doubleEnemyDamage(id);
+        });
+      });
+
       // Bind DM Enemy HP tick buttons (-5, -1, +1, +5)
-      container.querySelectorAll('.init-hp-tick-btn:not(.init-hp-half-btn)').forEach(btn => {
+      container.querySelectorAll('.init-hp-tick-btn:not(.init-hp-calc-btn)').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const id = btn.dataset.id;
