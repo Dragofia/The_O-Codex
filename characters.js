@@ -632,6 +632,10 @@
       }
     }
 
+    playHealthSound(delta) {
+      this.playHpSound(typeof delta === 'number' ? delta : (delta ? 1 : -1));
+    }
+
     initDOM() {
       // Edit Mode Toggle
       document.getElementById('char-edit-toggle-btn')?.addEventListener('click', () => this.toggleEditMode());
@@ -1523,7 +1527,7 @@
             input.classList.add('pulse-change');
           }
 
-          this.playHealthSound(delta > 0);
+          this.playHpSound(delta);
           this.saveStorage();
         });
       });
