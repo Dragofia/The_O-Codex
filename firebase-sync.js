@@ -207,6 +207,17 @@
                 }
               }
             }
+
+            // 5. Sync Initiative Tracker (combatants and open state)
+            if (data.latestInitiative && data.initiativeSenderId !== this.clientId) {
+              const initJson = JSON.stringify(data.latestInitiative);
+              if (initJson !== this.lastInitiativeJson) {
+                this.lastInitiativeJson = initJson;
+                if (window.InitiativeTracker && typeof window.InitiativeTracker.onRemoteUpdate === 'function') {
+                  window.InitiativeTracker.onRemoteUpdate({ payload: data.latestInitiative });
+                }
+              }
+            }
           }
         }, err => {
           console.warn('[CloudSync] Realtime sync listener warning:', err);
@@ -439,6 +450,28 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push characters to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushInitiative(initPayload) {
+      if (!this.isReady || !this.db || !initPayload) return false;
+      try {
+        const initJson = JSON.stringify(initPayload);
+        this.lastInitiativeJson = initJson;
+        const now = Date.now();
+
+        const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
+        await pinsRef.set({
+          latestInitiative: initPayload,
+          initiativeSenderId: this.clientId,
+          updatedAt: now,
+          updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
+        }, { merge: true });
+
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push initiative to Firebase:', e);
         return false;
       }
     }

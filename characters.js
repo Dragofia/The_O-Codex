@@ -634,6 +634,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           window.CampaignCloudSync.pushCharacters(this.characters);
         }, 600);
       }
+
+      if (window.InitiativeTracker && typeof window.InitiativeTracker.render === 'function') {
+        window.InitiativeTracker.render();
+      }
     }
 
     hasPendingLocalChanges() {
@@ -662,6 +666,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.renderRosterBar();
       this.renderCurrentSheet();
       this.renderRollTracker();
+      if (window.InitiativeTracker && typeof window.InitiativeTracker.render === 'function') {
+        window.InitiativeTracker.render();
+      }
     }
 
     getActiveCharacter() {
@@ -701,6 +708,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.renderRosterBar();
       this.renderCurrentSheet();
       this.renderRollTracker();
+      if (window.InitiativeTracker && typeof window.InitiativeTracker.render === 'function') {
+        window.InitiativeTracker.render();
+      }
     }
 
     playHpSound(delta) {

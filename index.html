@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=33">
+  <link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -244,52 +244,80 @@
     <!-- Party Character Sheets Mode View -->
     <div id="characters-mode-view" class="mode-view mode-view--characters">
       <div class="char-workspace-layout">
-        <!-- Left of Roll Log: Initiative Tracker Table -->
-        <aside class="char-init-sidebar is-collapsed" id="char-init-sidebar" aria-label="Initiative Tracker">
-          <div class="init-sidebar-header">
-            <div class="init-sidebar-title">
-              <span class="init-sidebar-icon">⚔️</span>
-              <span class="init-sidebar-heading">Initiative</span>
-              <span class="init-count-pill" id="init-count-pill">0</span>
+        <!-- Left Dock: Holds Roll Log and Absolute Initiative Tracker -->
+        <div class="char-left-dock" id="char-left-dock">
+          <!-- Left of Roll Log: Initiative Tracker Table -->
+          <aside class="char-init-sidebar is-collapsed" id="char-init-sidebar" aria-label="Initiative Tracker">
+            <div class="init-sidebar-header">
+              <div class="init-sidebar-title">
+                <span class="init-sidebar-icon">⚔️</span>
+                <span class="init-sidebar-heading">Initiative</span>
+                <span class="init-count-pill" id="init-count-pill">0</span>
+              </div>
+              <div class="init-sidebar-actions">
+                <button type="button" class="init-action-btn" id="init-clear-btn" title="Clear all initiative rolls">Clear</button>
+                <button type="button" class="init-sword-toggle-btn" id="char-toggle-init-btn" title="Toggle Initiative Tracker">⚔️</button>
+              </div>
             </div>
-            <div class="init-sidebar-actions">
-              <button type="button" class="init-action-btn" id="init-clear-btn" title="Clear all initiative rolls">Clear</button>
-              <button type="button" class="init-action-btn init-close-btn" id="init-close-btn" title="Close initiative table">✕</button>
+
+            <!-- DM Quick-Add Enemy Section (Visible only in DM Mode) -->
+            <div id="init-dm-panel" class="init-dm-panel hidden">
+              <div class="init-dm-panel-header">
+                <span class="init-dm-badge">👑 Quick-Add Enemy</span>
+              </div>
+              <div class="init-dm-grid">
+                <div class="init-dm-field init-dm-field--name">
+                  <label for="init-enemy-name">Name</label>
+                  <input type="text" id="init-enemy-name" class="init-dm-input" placeholder="e.g. Goblin" />
+                </div>
+                <div class="init-dm-field init-dm-field--hp">
+                  <label for="init-enemy-hp">Max HP</label>
+                  <input type="number" id="init-enemy-hp" class="init-dm-input" placeholder="15" min="1" />
+                </div>
+                <div class="init-dm-field init-dm-field--mod">
+                  <label for="init-enemy-mod">Init +/-</label>
+                  <input type="number" id="init-enemy-mod" class="init-dm-input" placeholder="+0" />
+                </div>
+                <div class="init-dm-field init-dm-field--count">
+                  <label for="init-enemy-count">Qty</label>
+                  <input type="number" id="init-enemy-count" class="init-dm-input" placeholder="1" min="1" value="1" />
+                </div>
+              </div>
+              <button type="button" id="init-enemy-add-btn" class="init-dm-add-btn">⚔️ Roll & Add to Order</button>
             </div>
-          </div>
 
-          <!-- Scrollable Initiative Order List -->
-          <div id="init-list-body" class="init-list-body">
-            <!-- Dynamic initiative combatant rows rendered by initiative-tracker.js -->
-          </div>
-        </aside>
-
-        <!-- Left Side: Dedicated Rolls Tracker Window -->
-        <aside class="char-rolls-sidebar" id="char-rolls-sidebar" aria-label="Dice Roll Tracker">
-          <div class="rolls-sidebar-header">
-            <div class="rolls-sidebar-title">
-              <span class="rolls-sidebar-icon">🎲</span>
-              <span class="rolls-sidebar-heading">Roll Log</span>
+            <!-- Scrollable Initiative Order List -->
+            <div id="init-list-body" class="init-list-body">
+              <!-- Dynamic initiative combatant rows rendered by initiative-tracker.js -->
             </div>
-            <!-- Two Tabs: Personal vs Everyone -->
-            <div class="rolls-tab-toggle" role="tablist">
-              <button type="button" class="rolls-tab-pill is-active" id="rolls-tab-personal" data-tab="personal" role="tab" aria-selected="true">Personal</button>
-              <button type="button" class="rolls-tab-pill" id="rolls-tab-everyone" data-tab="everyone" role="tab" aria-selected="false">Everyone</button>
+          </aside>
+
+          <!-- Left Side: Dedicated Rolls Tracker Window -->
+          <aside class="char-rolls-sidebar" id="char-rolls-sidebar" aria-label="Dice Roll Tracker">
+            <div class="rolls-sidebar-header">
+              <div class="rolls-sidebar-title">
+                <span class="rolls-sidebar-icon">🎲</span>
+                <span class="rolls-sidebar-heading">Roll Log</span>
+              </div>
+              <!-- Two Tabs: Personal vs Everyone -->
+              <div class="rolls-tab-toggle" role="tablist">
+                <button type="button" class="rolls-tab-pill is-active" id="rolls-tab-personal" data-tab="personal" role="tab" aria-selected="true">Personal</button>
+                <button type="button" class="rolls-tab-pill" id="rolls-tab-everyone" data-tab="everyone" role="tab" aria-selected="false">Everyone</button>
+              </div>
             </div>
-            <button type="button" class="rolls-init-toggle-btn" id="char-toggle-init-btn" title="Toggle Initiative Tracker">⚔️</button>
-          </div>
 
-          <!-- Scrollable Roll Feed -->
-          <div id="char-rolls-feed" class="char-rolls-feed">
-            <!-- Dynamic roll cards rendered by characters.js -->
-          </div>
+            <!-- Scrollable Roll Feed -->
+            <div id="char-rolls-feed" class="char-rolls-feed">
+              <!-- Dynamic roll cards rendered by characters.js -->
+            </div>
 
-          <!-- Sidebar Footer: Quick d20 & Open Full Tray -->
-          <div class="rolls-sidebar-footer">
-            <button type="button" class="rolls-quick-btn" id="char-quick-d20-btn" title="Roll 1d20 directly">🎲 Quick d20</button>
-            <button type="button" class="rolls-drawer-btn" id="char-open-drawer-btn" title="Open full polyhedral dice tray">Full Tray ➔</button>
-          </div>
-        </aside>
+            <!-- Sidebar Footer: Quick d20 & Open Full Tray -->
+            <div class="rolls-sidebar-footer">
+              <button type="button" class="rolls-quick-btn" id="char-quick-d20-btn" title="Roll 1d20 directly">🎲 Quick d20</button>
+              <button type="button" class="rolls-drawer-btn" id="char-open-drawer-btn" title="Open full polyhedral dice tray">Full Tray ➔</button>
+            </div>
+          </aside>
+        </div>
 
         <!-- Right Side: Character Sheet (Slightly shifted right) -->
         <div class="char-sheet-stage">
@@ -1184,14 +1212,14 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-sync.js?v=8" defer></script>
+  <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=5" defer></script>
-  <script src="characters.js?v=12" defer></script>
-  <script src="initiative-tracker.js?v=1" defer></script>
+  <script src="characters.js?v=13" defer></script>
+  <script src="initiative-tracker.js?v=2" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
-  <script src="script.js?v=23" defer></script>
+  <script src="script.js?v=24" defer></script>
   <script src="quickbar.js?v=4" defer></script>
   <script src="map.js?v=14" defer></script>
   <script src="map-tactics.js?v=2" defer></script>

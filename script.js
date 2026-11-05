@@ -251,6 +251,11 @@ window.setDmMode = function(enabled, notify = true) {
     window.mapEngine.updateDmModeUI();
   }
 
+  if (window.InitiativeTracker && typeof window.InitiativeTracker.render === "function") {
+    window.InitiativeTracker.render();
+  }
+  window.dispatchEvent(new CustomEvent("dm-mode-changed", { detail: { isDm: state.isDmMode } }));
+
   if (notify) {
     if (state.isDmMode) {
       window.showToast("👑 Dungeon Master Mode Enabled — Map tools, boundaries, and secrets unlocked.", "dm");
