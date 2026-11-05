@@ -732,7 +732,6 @@
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name ${isCurrentTurn ? 'is-turn-name' : ''}" title="${this.escapeHtml(c.name)}">
-                ${isTargeted ? '<span class="init-card-target-reticle" title="Targeted">🎯</span>' : ''}
                 ${this.escapeHtml(c.name)}
                 ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               </strong>
@@ -783,7 +782,6 @@
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name init-enemy-name ${isCurrentTurn ? 'is-turn-name' : ''}" ${styleAttr} title="${this.escapeHtml(c.name)} ${isDead ? '(Defeated)' : ''}">
-                ${isTargeted ? '<span class="init-card-target-reticle" title="Targeted">🎯</span>' : ''}
                 ${this.escapeHtml(c.name)} ${isDead ? '💀' : ''}
                 ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               </strong>

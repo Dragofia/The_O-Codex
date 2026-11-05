@@ -4734,9 +4734,10 @@ body.map-mode-active .map-filter-bar {
 
 .init-card-name-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .init-card-name {
@@ -4745,6 +4746,16 @@ body.map-mode-active .map-filter-bar {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.init-card-hp,
+.init-player-ac-badge,
+.init-dm-enemy-ac-badge,
+.init-enemy-dmg-badge,
+.init-turn-badge {
+  flex-shrink: 0;
 }
 
 .init-card-name.init-enemy-name {
@@ -4978,9 +4989,10 @@ body.map-mode-active .map-filter-bar {
 
 .init-card-scores {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 3px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .init-score-active {
@@ -5048,7 +5060,9 @@ body.map-mode-active .map-filter-bar {
   border: 1px solid rgba(56, 189, 248, 0.28);
   border-radius: 5px;
   text-shadow: none;
-  margin-left: auto;
+  display: inline-block;
+  text-align: center;
+  min-width: 22px;
 }
 
 /* Numbered order rank moves further to the left and shrinks slightly */
@@ -5170,17 +5184,8 @@ body.map-mode-active .map-filter-bar {
   box-shadow: 0 0 16px rgba(239, 68, 68, 0.45) !important;
 }
 
-.init-card-target-reticle {
-  font-size: 0.85rem;
-  margin-right: 0.2rem;
-  display: inline-block;
-  vertical-align: middle;
-  animation: reticlePulse 1.5s infinite ease-in-out;
-}
-
-@keyframes reticlePulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.25); opacity: 1; }
+.init-card.is-targeted .init-card-name {
+  font-weight: inherit !important;
 }
 
 /* Roll Log Hit / Miss Target Verdict Banner */
