@@ -823,6 +823,32 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         window.DiceRoller?.toggleTray();
       });
 
+      // Character Item / Power Inspect Modal Close Handlers
+      document.getElementById('char-inspect-close')?.addEventListener('click', () => this.closeInspectModal());
+      document.getElementById('char-inspect-backdrop')?.addEventListener('click', () => this.closeInspectModal());
+
+      // Delegated click handler on #char-tab-view for shareable titles
+      document.getElementById('char-tab-view')?.addEventListener('click', (e) => {
+        const titleTarget = e.target.closest('.item-shareable-title');
+        if (!titleTarget) return;
+
+        const type = titleTarget.dataset.shareType;
+        const index = parseInt(titleTarget.dataset.index, 10);
+        if (type && !isNaN(index)) {
+          this.shareItemByType(type, index, this.getActiveCharacter(), titleTarget);
+        }
+      });
+
+      // Escape key listener for character inspect modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const inspectModal = document.getElementById('char-inspect-modal');
+          if (inspectModal && !inspectModal.classList.contains('hidden')) {
+            this.closeInspectModal();
+          }
+        }
+      });
+
       // Listen for dice roll events to live-update roll sidebar
       window.addEventListener('diceroller:new-roll', () => {
         this.renderRollTracker();
@@ -1367,7 +1393,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         attacksHtml = char.attacks.map((atk, index) => `
           <div class="char-item-card char-atk-card" data-index="${index}">
             <div class="item-card-header">
-              <strong class="item-card-title">${escapeHtml(atk.name)}</strong>
+              <strong class="item-card-title item-shareable-title" data-share-type="attack" data-index="${index}" title="Click to share action to party Roll Log">${escapeHtml(atk.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
               ${this.isEditMode ? `
                 <div class="item-card-controls">
                   <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Attack">✕</button>
@@ -1459,7 +1485,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-divion-card">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title">${escapeHtml(div.name)}</strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="divion" data-index="${index}" title="Click to share manifestation lore to party Roll Log">${escapeHtml(div.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
                 <span class="divion-badge-type">${escapeHtml(div.type || 'Manifest')}</span>
                 <span class="divion-badge-rank">${escapeHtml(div.rank || 'Tier I')}</span>
               </div>
@@ -1537,7 +1563,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-boon-card">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title">${escapeHtml(boon.name)}</strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="boon" data-index="${index}" title="Click to share boon to party Roll Log">${escapeHtml(boon.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
                 <span class="boon-granted-by">Granted by: <em>${escapeHtml(boon.grantedBy || 'Dungeon Master')}</em></span>
               </div>
               ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
@@ -1595,7 +1621,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         eqHtml = char.equipment.map((eq, index) => `
           <div class="char-eq-row">
             <span class="eq-qty">x${eq.qty || 1}</span>
-            <span class="eq-name">${escapeHtml(eq.name)}</span>
+            <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></span>
             <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
             ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}">✕</button>` : ''}
           </div>
@@ -1707,7 +1733,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-magic-card">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title">${escapeHtml(item.name)}</strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="magic" data-index="${index}" title="Click to share relic details to party Roll Log">${escapeHtml(item.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
                 <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
                 ${item.attuned ? '<span class="magic-attuned-badge">✓ Attuned</span>' : ''}
               </div>
@@ -1766,7 +1792,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title">${escapeHtml(feat.name)}</strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="feat" data-index="${index}" title="Click to share feat info to party Roll Log">${escapeHtml(feat.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
                 <span class="feat-source-badge">${escapeHtml(feat.source || 'Feat')}</span>
               </div>
               ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}">✕</button>` : ''}
@@ -1880,6 +1906,38 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
       feed.innerHTML = '';
       rolls.forEach(item => {
+        if (item.type === 'share' || item.isShare) {
+          const card = document.createElement('div');
+          card.className = 'roll-log-card roll-log-share-card';
+          const payload = item.itemData || item;
+          const badgesHtml = (payload.badges || []).slice(0, 3).map(b => 
+            `<span class="roll-log-share-pill ${escapeHtml(b.cls || '')}">${escapeHtml(b.label)}</span>`
+          ).join('');
+
+          card.innerHTML = `
+            <div class="roll-log-head">
+              <strong class="roll-log-roller">${escapeHtml(item.roller)}</strong>
+              <span class="roll-log-time">${this.formatTime(item.timestamp)}</span>
+            </div>
+            <div class="roll-log-share-body">
+              <div class="roll-log-share-info">
+                <span class="roll-log-share-category">${escapeHtml(item.category || payload.category || 'Shared Item')}</span>
+                <strong class="roll-log-share-title">📜 ${escapeHtml(item.label || payload.name)}</strong>
+              </div>
+              <button type="button" class="roll-log-inspect-btn" title="Inspect item details">Inspect ➔</button>
+            </div>
+            ${badgesHtml ? `<div class="roll-log-share-badges">${badgesHtml}</div>` : ''}
+          `;
+
+          card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openInspectModal(payload);
+          });
+
+          feed.appendChild(card);
+          return;
+        }
+
         const card = document.createElement('div');
         card.className = `roll-log-card ${item.isCrit ? 'is-crit' : ''} ${item.isFumble ? 'is-fumble' : ''}`;
         card.innerHTML = `
@@ -1897,6 +1955,148 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         `;
         feed.appendChild(card);
       });
+    }
+
+    shareItemByType(type, index, char, titleEl) {
+      if (!char) char = this.getActiveCharacter();
+      if (!char) return;
+
+      let item = null;
+      let category = 'CHARACTER SHEET';
+      const badges = [];
+      let description = '';
+
+      if (type === 'attack') {
+        item = char.attacks && char.attacks[index];
+        if (!item) return;
+        category = 'COMBAT ACTION';
+        if (item.bonus !== undefined) {
+          badges.push({ label: `Atk: ${item.bonus >= 0 ? '+' + item.bonus : item.bonus}`, cls: 'prop-atk' });
+        }
+        if (item.damageFormula) {
+          badges.push({ label: `${item.damageFormula} ${item.damageType || ''}`.trim(), cls: 'prop-dmg' });
+        }
+        description = item.notes || `Combat action: ${item.name}.\nAttack Bonus: ${item.bonus >= 0 ? '+' + item.bonus : item.bonus}\nDamage: ${item.damageFormula} ${item.damageType || ''}`;
+      } else if (type === 'divion') {
+        item = char.divions && char.divions[index];
+        if (!item) return;
+        category = 'DIVION & MANIFEST';
+        if (item.type) badges.push({ label: item.type, cls: 'prop-type' });
+        if (item.rank) badges.push({ label: item.rank, cls: 'prop-rank' });
+        if (item.cost) badges.push({ label: `Cost: ${item.cost}`, cls: 'prop-cost' });
+        description = item.manifestEffect || 'Divine flow manifestation.';
+      } else if (type === 'boon') {
+        item = char.boons && char.boons[index];
+        if (!item) return;
+        category = 'DM BOON';
+        if (item.grantedBy) badges.push({ label: `Granted by ${item.grantedBy}`, cls: 'prop-granted' });
+        description = item.effect || 'A campaign boon or divine blessing bestowed by the DM.';
+      } else if (type === 'equipment') {
+        item = char.equipment && char.equipment[index];
+        if (!item) return;
+        category = 'EQUIPMENT';
+        if (item.qty) badges.push({ label: `Qty: ${item.qty}`, cls: 'prop-qty' });
+        description = item.notes || `Equipment item carried in personal inventory.`;
+      } else if (type === 'magic') {
+        item = char.magicItems && char.magicItems[index];
+        if (!item) return;
+        category = 'MAGIC ITEM';
+        if (item.rarity) badges.push({ label: item.rarity, cls: `prop-rarity prop-${item.rarity.toLowerCase().replace(/\s+/g, '-')}` });
+        if (item.attuned) badges.push({ label: '✓ Attuned', cls: 'prop-attuned' });
+        if (item.charges) badges.push({ label: `Charges: ${item.charges}`, cls: 'prop-charges' });
+        description = item.description || 'A wondrous magical relic or enchanted item.';
+      } else if (type === 'feat') {
+        item = char.feats && char.feats[index];
+        if (!item) return;
+        category = 'FEAT / TRAIT';
+        if (item.source) badges.push({ label: item.source, cls: 'prop-source' });
+        description = item.description || 'Special trait or feat power.';
+      }
+
+      if (!item) return;
+
+      const payload = {
+        name: item.name,
+        roller: char.name,
+        category: category,
+        sourceType: type,
+        badges: badges,
+        description: description,
+        raw: item
+      };
+
+      // Subtle pulse visual feedback on clicked title
+      if (titleEl) {
+        titleEl.classList.remove('share-pulse');
+        void titleEl.offsetWidth;
+        titleEl.classList.add('share-pulse');
+      }
+
+      // Audio blip
+      this.playHpSound(1);
+
+      // Share through dice roller history, channels, and Firebase sync
+      if (window.DiceRoller && typeof window.DiceRoller.shareItem === 'function') {
+        window.DiceRoller.shareItem(payload);
+      }
+    }
+
+    openInspectModal(data) {
+      const modal = document.getElementById('char-inspect-modal');
+      if (!modal || !data) return;
+
+      const item = data.itemData || data;
+      const categoryEl = document.getElementById('char-inspect-category');
+      const rollerEl = document.getElementById('char-inspect-roller');
+      const titleEl = document.getElementById('char-inspect-title');
+      const badgesEl = document.getElementById('char-inspect-badges');
+      const descEl = document.getElementById('char-inspect-description');
+
+      if (categoryEl) categoryEl.textContent = item.category || 'CHARACTER DETAIL';
+      if (rollerEl) {
+        const roller = data.roller || item.roller;
+        if (roller) {
+          rollerEl.textContent = `Shared by ${roller}`;
+          rollerEl.style.display = 'inline-flex';
+        } else {
+          rollerEl.style.display = 'none';
+        }
+      }
+      if (titleEl) titleEl.textContent = item.name || item.label || 'Item Details';
+
+      if (badgesEl) {
+        badgesEl.innerHTML = '';
+        const badges = Array.isArray(item.badges) ? item.badges : [];
+        badges.forEach(b => {
+          const span = document.createElement('span');
+          span.className = `char-prop-tag ${b.cls || ''}`;
+          span.textContent = b.label;
+          badgesEl.appendChild(span);
+        });
+      }
+
+      if (descEl) {
+        const rawDesc = item.description || item.notes || item.effect || item.manifestEffect || 'No additional details provided.';
+        const paragraphs = rawDesc.split(/\n\n+/).map(p => {
+          return `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`;
+        }).join('');
+        descEl.innerHTML = paragraphs || '<p>No description recorded.</p>';
+      }
+
+      modal.classList.remove('hidden', 'is-closing');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    closeInspectModal() {
+      const modal = document.getElementById('char-inspect-modal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      modal.classList.add('is-closing');
+      modal.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('is-closing');
+      }, 180);
     }
 
     formatTime(ts) {

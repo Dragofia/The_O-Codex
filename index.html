@@ -6,7 +6,7 @@
   <title>The O-Codex & World Map</title>
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -992,6 +992,30 @@
     </div>
   </div>
 
+  <!-- Character Item / Power Inspect Modal -->
+  <div id="char-inspect-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop" id="char-inspect-backdrop"></div>
+    <div class="modal__dialog modal__dialog--inspect" role="dialog" aria-modal="true" aria-labelledby="char-inspect-title">
+      <div class="modal__actions">
+        <button id="char-inspect-close" class="modal__close" type="button" aria-label="Close details">Close</button>
+      </div>
+      <div class="modal__header">
+        <div class="modal__meta-row">
+          <p id="char-inspect-category" class="modal__category">MAGIC ITEM</p>
+          <span id="char-inspect-roller" class="char-inspect-roller-badge">Shared by Valorie</span>
+        </div>
+        <h2 id="char-inspect-title">Item Title</h2>
+        <div id="char-inspect-badges" class="char-inspect-badges-row"></div>
+      </div>
+      <div class="modal__body">
+        <div class="modal__section">
+          <h3>Details & Description</h3>
+          <div id="char-inspect-description" class="char-inspect-desc-text"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Tactical Map Pin Filter Bar Dock (Swaps with Quick-Bar in Map Mode) -->
   <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
     <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
@@ -1162,12 +1186,12 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="firebase-sync.js?v=8" defer></script>
   <!-- Core Scripts -->
-  <script src="dice-roller.js?v=4" defer></script>
-  <script src="characters.js?v=11" defer></script>
+  <script src="dice-roller.js?v=5" defer></script>
+  <script src="characters.js?v=12" defer></script>
   <script src="initiative-tracker.js?v=1" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
   <script src="codex-notes.js?v=1" defer></script>
-  <script src="script.js?v=22" defer></script>
+  <script src="script.js?v=23" defer></script>
   <script src="quickbar.js?v=4" defer></script>
   <script src="map.js?v=14" defer></script>
   <script src="map-tactics.js?v=2" defer></script>

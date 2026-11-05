@@ -652,6 +652,11 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     // 1. Escape: universal close / cancel / blur
     if (event.key === "Escape") {
+      const charInspectModal = document.getElementById("char-inspect-modal");
+      if (charInspectModal && !charInspectModal.classList.contains("hidden")) {
+        window.CharacterSheet?.closeInspectModal();
+        return;
+      }
       if (window.DiceRoller && window.DiceRoller.isOpen) {
         window.DiceRoller.closeTray();
         return;

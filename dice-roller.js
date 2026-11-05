@@ -418,6 +418,52 @@
       return rollResult;
     }
 
+    /**
+     * Share character sheet powers, magic items, or traits to the party Roll Log
+     */
+    shareItem(itemPayload) {
+      if (!itemPayload || !itemPayload.name) return null;
+
+      const roller = itemPayload.roller || (window.CharacterSheet?.getActiveCharacter()?.name) || 'Adventurer';
+      const shareRecord = {
+        id: `share_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        type: 'share',
+        isShare: true,
+        roller: roller,
+        label: itemPayload.name,
+        category: itemPayload.category || 'Character Sheet',
+        itemData: itemPayload,
+        timestamp: Date.now()
+      };
+
+      // Add to history
+      this.history.unshift(shareRecord);
+      if (this.history.length > MAX_HISTORY) this.history.pop();
+      this.saveStorage();
+
+      this.renderHistory();
+
+      // Notify Character Sheet left-hand roll tracker
+      window.dispatchEvent(new CustomEvent('diceroller:new-roll', { detail: shareRecord }));
+      if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
+        window.CharacterSheet.renderRollTracker(shareRecord);
+      }
+
+      // Broadcast to other open windows/tabs on the same browser instantly
+      if (this.bc) {
+        try {
+          this.bc.postMessage({ type: 'DICE_ROLL', roll: shareRecord });
+        } catch (e) {}
+      }
+
+      // Broadcast to Firebase Firestore for real-time party sync
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushDiceRoll === 'function') {
+        window.CampaignCloudSync.pushDiceRoll(shareRecord);
+      }
+
+      return shareRecord;
+    }
+
     renderLatestResult(result) {
       const container = document.getElementById('dice-latest-result');
       if (!container) return;
@@ -458,6 +504,27 @@
       listEl.innerHTML = '';
       this.history.forEach(item => {
         const el = document.createElement('div');
+        if (item.type === 'share' || item.isShare) {
+          el.className = 'dice-history-item is-shared-item';
+          el.innerHTML = `
+            <div class="dice-history-head">
+              <strong class="dice-history-roller">${escapeHtml(item.roller)}</strong>
+              <span class="dice-history-time">${this.formatTime(item.timestamp)}</span>
+            </div>
+            <div class="dice-history-body">
+              <span class="dice-history-label">📜 ${escapeHtml(item.label)}</span>
+              <span class="dice-history-share-badge">Inspect ➔</span>
+            </div>
+          `;
+          el.addEventListener('click', () => {
+            if (window.CharacterSheet && typeof window.CharacterSheet.openInspectModal === 'function') {
+              window.CharacterSheet.openInspectModal(item.itemData || item);
+            }
+          });
+          listEl.appendChild(el);
+          return;
+        }
+
         el.className = `dice-history-item ${item.isCrit ? 'is-crit' : ''} ${item.isFumble ? 'is-fumble' : ''}`;
         el.innerHTML = `
           <div class="dice-history-head">
@@ -477,12 +544,17 @@
     }
 
     showRollToast(roll) {
-      // In Characters mode, rolls are live-tracked in the dedicated left panel — no top-right toast needed!
-      if (document.body.classList.contains('characters-mode-active') || (window.state && window.state.appMode === 'characters')) {
+      if (typeof window.showToast !== 'function') return;
+
+      if (roll.type === 'share' || roll.isShare) {
+        window.showToast(`📜 ${roll.roller} shared "${roll.label}" to Roll Log`, 'info', 3000);
         return;
       }
 
-      if (typeof window.showToast !== 'function') return;
+      // In Characters mode, normal rolls are live-tracked in the dedicated left panel — no top-right toast needed!
+      if (document.body.classList.contains('characters-mode-active') || (window.state && window.state.appMode === 'characters')) {
+        return;
+      }
 
       let msg = `🎲 ${roll.roller} rolled ${roll.total} for ${roll.label}`;
       if (roll.isCrit) msg += ` · ✨ NAT 20!`;
@@ -505,11 +577,13 @@
       // Notify Character Sheet left-hand roll tracker
       window.dispatchEvent(new CustomEvent('diceroller:new-roll', { detail: remoteRoll }));
       if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
-        window.CharacterSheet.renderRollTracker();
+        window.CharacterSheet.renderRollTracker(remoteRoll);
       }
 
       this.showRollToast(remoteRoll);
-      this.playDiceSound();
+      if (remoteRoll.type !== 'share' && !remoteRoll.isShare) {
+        this.playDiceSound();
+      }
     }
 
     playDiceSound() {
