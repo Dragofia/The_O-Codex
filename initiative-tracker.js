@@ -372,6 +372,7 @@
       this.playHitSound();
 
       if (target.isEnemy) {
+        target.lastDamage = absDelta;
         this.adjustEnemyHp(target.id, delta);
         const remaining = target.hpCurrent || 0;
         window.showToast?.(`💥 Subtracted ${absDelta} HP from ${target.name}! (${remaining} HP left)`, 'info', 2500);
@@ -531,9 +532,11 @@
     setEnemyHp(id, newHp) {
       const enemy = this.combatants.find(c => c.id === id);
       if (!enemy) return;
-      const val = Math.max(0, parseInt(newHp, 10) || 0);
+      const maxHp = enemy.hpMax || 10;
+      const val = Math.max(0, Math.min(maxHp, parseInt(newHp, 10) || 0));
       const delta = val - (enemy.hpCurrent || 0);
       enemy.hpCurrent = val;
+      enemy.lastDamage = null;
       this.saveStorage(true);
       this.render();
 
@@ -545,13 +548,45 @@
     adjustEnemyHp(id, delta) {
       const enemy = this.combatants.find(c => c.id === id);
       if (!enemy) return;
-      const current = typeof enemy.hpCurrent === 'number' ? enemy.hpCurrent : (enemy.hpMax || 10);
-      enemy.hpCurrent = Math.max(0, current + delta);
+      const maxHp = enemy.hpMax || 10;
+      const current = typeof enemy.hpCurrent === 'number' ? enemy.hpCurrent : maxHp;
+      enemy.hpCurrent = Math.max(0, Math.min(maxHp, current + delta));
       this.saveStorage(true);
       this.render();
 
       if (window.CharacterSheet && typeof window.CharacterSheet.playHpSound === 'function') {
         window.CharacterSheet.playHpSound(delta);
+      }
+    }
+
+    halveEnemyDamage(id) {
+      const enemy = this.combatants.find(c => c.id === id);
+      if (!enemy) return;
+      const maxHp = enemy.hpMax || 10;
+      const curHp = typeof enemy.hpCurrent === 'number' ? enemy.hpCurrent : maxHp;
+      const damageTaken = Math.max(0, maxHp - curHp);
+
+      if (damageTaken <= 0) {
+        window.showToast?.(`${enemy.name} has taken no damage to halve`, 'info', 1600);
+        return;
+      }
+
+      // If there was a recorded last hit (e.g. from targeted damage), halve that hit
+      if (enemy.lastDamage && enemy.lastDamage > 0 && enemy.lastDamage <= damageTaken) {
+        const refund = Math.ceil(enemy.lastDamage / 2);
+        const prevHit = enemy.lastDamage;
+        enemy.lastDamage = 0;
+        this.adjustEnemyHp(id, refund);
+        window.showToast?.(`🛡️ Resisted: Refunded ${refund} HP (halved ${prevHit} damage hit)`, 'info', 2500);
+      } else {
+        // Otherwise halve total damage taken
+        const newDamageTaken = Math.floor(damageTaken / 2);
+        const newHp = Math.min(maxHp, maxHp - newDamageTaken);
+        const refund = newHp - curHp;
+        if (refund > 0) {
+          this.adjustEnemyHp(id, refund);
+          window.showToast?.(`🛡️ Resisted: Halved total damage from ${damageTaken} to ${newDamageTaken}`, 'info', 2500);
+        }
       }
     }
 
@@ -682,6 +717,7 @@
           // Enemy Card: Name color transitions green -> yellow -> red
           const curHp = typeof c.hpCurrent === 'number' ? c.hpCurrent : (c.hpMax || 10);
           const maxHp = c.hpMax || 10;
+          const damageTaken = Math.max(0, maxHp - curHp);
           const pct = Math.max(0, Math.min(100, Math.round((curHp / maxHp) * 100)));
 
           let nameColor = '#22c55e'; // Green (> 50%)
@@ -699,6 +735,20 @@
             ? `style="color: ${nameColor}; text-decoration: line-through; opacity: 0.65;"`
             : `style="color: ${nameColor};"`;
 
+          // Total damage badge shown to party (e.g. -73)
+          const playerDmgBadge = (!isDm && damageTaken > 0)
+            ? `<span class="init-enemy-dmg-badge" title="Total damage taken: ${damageTaken}">-${damageTaken}</span>`
+            : '';
+
+          // DM gets exact HP / maxHp and (-damageTaken)
+          const dmHpBadge = isDm
+            ? `<span class="init-card-hp init-dm-enemy-hp-badge" title="Current: ${curHp} / Max: ${maxHp} (Damage taken: ${damageTaken})">
+                <span class="init-hp-cur" style="color: ${nameColor}; font-weight: 700;">${curHp}</span>
+                <span class="init-hp-slash-dim">/${maxHp}</span>
+                ${damageTaken > 0 ? `<span class="init-enemy-dmg-sub" title="Total damage taken">(-${damageTaken})</span>` : ''}
+              </span>`
+            : '';
+
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name init-enemy-name ${isCurrentTurn ? 'is-turn-name' : ''}" ${styleAttr} title="${this.escapeHtml(c.name)} ${isDead ? '(Defeated)' : ''}">
@@ -706,6 +756,8 @@
                 ${this.escapeHtml(c.name)} ${isDead ? '💀' : ''}
                 ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               </strong>
+              ${playerDmgBadge}
+              ${dmHpBadge}
             </div>
           `;
 
@@ -719,6 +771,7 @@
                 <span class="init-enemy-hp-slash-dim">/${maxHp}</span>
                 <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="1" title="Add 1 HP">+1</button>
                 <button type="button" class="init-hp-tick-btn" data-id="${c.id}" data-delta="5" title="Add 5 HP">+5</button>
+                <button type="button" class="init-hp-tick-btn init-hp-half-btn" data-id="${c.id}" title="Halve damage / apply resistance (1-click)">½</button>
               </div>
             `;
           }
@@ -778,8 +831,17 @@
         input.addEventListener('click', (e) => e.stopPropagation());
       });
 
+      // Bind DM Enemy HP Half button (½)
+      container.querySelectorAll('.init-hp-half-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          this.halveEnemyDamage(id);
+        });
+      });
+
       // Bind DM Enemy HP tick buttons (-5, -1, +1, +5)
-      container.querySelectorAll('.init-hp-tick-btn').forEach(btn => {
+      container.querySelectorAll('.init-hp-tick-btn:not(.init-hp-half-btn)').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const id = btn.dataset.id;

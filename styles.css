@@ -4777,6 +4777,43 @@ body.map-mode-active .map-filter-bar {
   margin-left: 1px;
 }
 
+/* Total Damage Taken Badge shown to Party beside enemy name */
+.init-enemy-dmg-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  line-height: 1;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 6px rgba(239, 68, 68, 0.45);
+  animation: initDmgBadgePop 0.25s ease-out;
+}
+
+@keyframes initDmgBadgePop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* DM Enemy HP Badge in name row */
+.init-card-hp.init-dm-enemy-hp-badge {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.init-enemy-dmg-sub {
+  font-size: 0.72rem;
+  color: #f87171;
+  font-weight: 700;
+  margin-left: 3px;
+  font-family: var(--font-mono, monospace);
+}
+
 /* DM Enemy Health Controls Row */
 .init-enemy-hp-row {
   display: flex;
@@ -4813,6 +4850,23 @@ body.map-mode-active .map-filter-bar {
   background: rgba(239, 68, 68, 0.25);
   border-color: #ef4444;
   color: #fca5a5;
+}
+
+.init-hp-tick-btn.init-hp-half-btn {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #d8b4fe;
+  font-weight: 800;
+  font-size: 0.72rem;
+  padding: 1px 5px;
+  margin-left: 2px;
+}
+
+.init-hp-tick-btn.init-hp-half-btn:hover {
+  background: rgba(168, 85, 247, 0.4);
+  border-color: #c084fc;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.45);
 }
 
 .init-enemy-hp-input {
