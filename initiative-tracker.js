@@ -489,21 +489,6 @@
       this.render();
     }
 
-    getPartySubtext(name) {
-      if (window.CharacterSheet && Array.isArray(window.CharacterSheet.characters)) {
-        const found = window.CharacterSheet.characters.find(c => 
-          (c.name && c.name.toLowerCase() === name.toLowerCase()) ||
-          (c.player && c.player.toLowerCase() === name.toLowerCase())
-        );
-        if (found) {
-          const player = found.player ? found.player : '';
-          const cls = found.classLevel ? found.classLevel.split('/')[0].trim() : '';
-          return player && cls ? `${player} • ${cls}` : (player || cls || '');
-        }
-      }
-      return '';
-    }
-
     addEnemy() {
       const nameInput = document.getElementById('init-enemy-name');
       const hpInput = document.getElementById('init-enemy-hp');
@@ -744,8 +729,6 @@
             `;
           }
 
-          const subtext = this.getPartySubtext(c.name);
-
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name ${isCurrentTurn ? 'is-turn-name' : ''}" title="${this.escapeHtml(c.name)}">
@@ -755,7 +738,6 @@
               </strong>
               ${hpBadge}
             </div>
-            ${subtext ? `<span class="init-card-sub">${this.escapeHtml(subtext)}</span>` : ''}
           `;
         } else {
           // Enemy Card: Name color transitions green -> yellow -> red

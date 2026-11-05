@@ -4976,15 +4976,6 @@ body.map-mode-active .map-filter-bar {
   margin-right: 2px;
 }
 
-.init-card-sub {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 2px;
-}
-
 .init-card-scores {
   display: flex;
   align-items: baseline;
