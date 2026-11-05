@@ -636,11 +636,24 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       }
     }
 
+    hasPendingLocalChanges() {
+      return Boolean(this.debounceTimer);
+    }
+
     onRemoteCharacters(remoteParty, broadcast = false) {
       if (!Array.isArray(remoteParty) || remoteParty.length === 0) return;
 
+      if (this.debounceTimer) {
+        console.warn('[CharacterSheet] Ignoring remote characters update due to pending local modifications.');
+        return;
+      }
+
+      if (JSON.stringify(remoteParty) === JSON.stringify(this.characters)) {
+        return;
+      }
+
       this.characters = remoteParty;
-      this.saveStorage(broadcast);
+      localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(this.characters));
 
       if (!this.characters.some(c => c.id === this.activeCharId) && this.characters.length > 0) {
         this.activeCharId = this.characters[0].id;
@@ -937,9 +950,11 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const container = document.getElementById('char-vitals-section');
       if (!container) return;
 
-      const vitals = char.vitals || {
-        hpCurrent: 10, hpMax: 10, hpTemp: 0, ac: 10, initiative: 0, speed: 30, profBonus: 2, deathSaves: { successes: 0, failures: 0 }
-      };
+      if (!char.vitals) char.vitals = {};
+      const vitals = char.vitals;
+      if (!vitals.deathSaves) vitals.deathSaves = { successes: 0, failures: 0 };
+      if (typeof vitals.deathSaves.successes !== 'number') vitals.deathSaves.successes = 0;
+      if (typeof vitals.deathSaves.failures !== 'number') vitals.deathSaves.failures = 0;
 
       const hpPercent = Math.min(100, Math.max(0, (vitals.hpCurrent / (vitals.hpMax || 1)) * 100));
       const hpColor = hpPercent > 50 ? '#38bdf8' : (hpPercent > 25 ? '#f59e0b' : '#ef4444');
@@ -1152,11 +1167,11 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         if (window.DiceRoller) {
           const result = window.DiceRoller.roll('1d20', 'Death Saving Throw', char.name, 'normal', 0);
           if (result) {
-            const deathSaves = vitals.deathSaves || { successes: 0, failures: 0 };
+            const deathSaves = vitals.deathSaves;
             if (result.total >= 10) {
               if (result.isCrit) {
                 // Natural 20: Regain 1 HP and stabilize
-                vitals.hpCurrent = Math.max(1, vitals.hpCurrent || 1);
+                vitals.hpCurrent = Math.max(1, (vitals.hpCurrent || 0) + 1);
                 deathSaves.successes = Math.min(3, deathSaves.successes + 2);
                 this.playHpSound(5);
               } else {
@@ -1180,22 +1195,26 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       });
 
       // Death Saves Checkboxes
-      const deathSaves = vitals.deathSaves || { successes: 0, failures: 0 };
+      const deathSaves = vitals.deathSaves;
       for (let i = 1; i <= 3; i++) {
-        container.querySelector(`#death-succ-${i}`)?.addEventListener('change', () => {
-          let count = 0;
+        container.querySelector(`#death-succ-${i}`)?.addEventListener('click', (e) => {
+          const isChecked = e.target.checked;
+          deathSaves.successes = isChecked ? i : i - 1;
           for (let j = 1; j <= 3; j++) {
-            if (container.querySelector(`#death-succ-${j}`)?.checked) count++;
+            const cb = container.querySelector(`#death-succ-${j}`);
+            if (cb) cb.checked = j <= deathSaves.successes;
           }
-          deathSaves.successes = count;
+          this.playHpSound(isChecked ? 1 : -1);
           this.saveStorage();
         });
-        container.querySelector(`#death-fail-${i}`)?.addEventListener('change', () => {
-          let count = 0;
+        container.querySelector(`#death-fail-${i}`)?.addEventListener('click', (e) => {
+          const isChecked = e.target.checked;
+          deathSaves.failures = isChecked ? i : i - 1;
           for (let j = 1; j <= 3; j++) {
-            if (container.querySelector(`#death-fail-${j}`)?.checked) count++;
+            const cb = container.querySelector(`#death-fail-${j}`);
+            if (cb) cb.checked = j <= deathSaves.failures;
           }
-          deathSaves.failures = count;
+          this.playHpSound(isChecked ? -1 : 1);
           this.saveStorage();
         });
       }

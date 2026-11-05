@@ -28,6 +28,12 @@
       this.unsubscribeChars = null;
       this.isReady = false;
       this.status = 'unconfigured'; // 'unconfigured' | 'connected' | 'error'
+      this.clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+      this.lastRollId = null;
+      this.lastPartyJson = null;
+      this.lastPinsJson = null;
+      this.lastLocationJson = null;
+      this.lastPartyUpdatedAt = 0;
     }
 
     getConfig() {
@@ -156,27 +162,50 @@
           if (doc && doc.exists) {
             const data = doc.data();
 
-            // 1. Sync custom player pins
-            const cloudPins = Array.isArray(data.playerPins) ? data.playerPins : [];
-            if (window.mapEngine && typeof window.mapEngine.syncCloudPins === 'function') {
-              window.mapEngine.syncCloudPins(cloudPins);
-            }
-
-            // 2. Sync Party Dice Rolls
-            if (data.latestRoll && window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
-              window.DiceRoller.onRemoteRoll(data.latestRoll);
-            }
-
-            // 3. Sync Party Location
-            if (data.partyLocation && typeof data.partyLocation.x === 'number' && typeof data.partyLocation.y === 'number') {
-              if (window.MapTactics && typeof window.MapTactics.onRemotePartyLocation === 'function') {
-                window.MapTactics.onRemotePartyLocation(data.partyLocation);
+            // 1. Sync custom player pins (only if pins changed and not sent by self)
+            if (Array.isArray(data.playerPins)) {
+              const pinsJson = JSON.stringify(data.playerPins);
+              if (pinsJson !== this.lastPinsJson && data.playerPinsSenderId !== this.clientId) {
+                this.lastPinsJson = pinsJson;
+                if (window.mapEngine && typeof window.mapEngine.syncCloudPins === 'function') {
+                  window.mapEngine.syncCloudPins(data.playerPins);
+                }
               }
             }
 
-            // 4. Sync Characters Roster
-            if (Array.isArray(data.party) && window.CharacterSheet && typeof window.CharacterSheet.onRemoteCharacters === 'function') {
-              window.CharacterSheet.onRemoteCharacters(data.party);
+            // 2. Sync Party Dice Rolls (only if new roll and not sent by self)
+            if (data.latestRoll && data.latestRoll.id && data.latestRoll.id !== this.lastRollId && data.rollSenderId !== this.clientId) {
+              this.lastRollId = data.latestRoll.id;
+              if (window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
+                window.DiceRoller.onRemoteRoll(data.latestRoll);
+              }
+            }
+
+            // 3. Sync Party Location (only if location changed and not sent by self)
+            if (data.partyLocation && typeof data.partyLocation.x === 'number' && typeof data.partyLocation.y === 'number') {
+              const locJson = JSON.stringify(data.partyLocation);
+              if (locJson !== this.lastLocationJson && data.locationSenderId !== this.clientId) {
+                this.lastLocationJson = locJson;
+                if (window.MapTactics && typeof window.MapTactics.onRemotePartyLocation === 'function') {
+                  window.MapTactics.onRemotePartyLocation(data.partyLocation);
+                }
+              }
+            }
+
+            // 4. Sync Characters Roster (only if party actually changed, was not sent by self, and no pending local changes)
+            if (Array.isArray(data.party)) {
+              const partyJson = JSON.stringify(data.party);
+              const isFromSelf = Boolean(data.partySenderId && data.partySenderId === this.clientId);
+              const isDifferent = partyJson !== this.lastPartyJson;
+              const hasPendingLocal = window.CharacterSheet && typeof window.CharacterSheet.hasPendingLocalChanges === 'function' && window.CharacterSheet.hasPendingLocalChanges();
+
+              if (!isFromSelf && isDifferent && !hasPendingLocal) {
+                this.lastPartyJson = partyJson;
+                if (data.partyUpdatedAt) this.lastPartyUpdatedAt = data.partyUpdatedAt;
+                if (window.CharacterSheet && typeof window.CharacterSheet.onRemoteCharacters === 'function') {
+                  window.CharacterSheet.onRemoteCharacters(data.party);
+                }
+              }
             }
           }
         }, err => {
@@ -192,8 +221,12 @@
           if (doc && doc.exists) {
             const data = doc.data();
             if (data && typeof data.x === 'number' && typeof data.y === 'number') {
-              if (window.MapTactics && typeof window.MapTactics.onRemotePartyLocation === 'function') {
-                window.MapTactics.onRemotePartyLocation(data);
+              const locJson = JSON.stringify(data);
+              if (locJson !== this.lastLocationJson && data.locationSenderId !== this.clientId) {
+                this.lastLocationJson = locJson;
+                if (window.MapTactics && typeof window.MapTactics.onRemotePartyLocation === 'function') {
+                  window.MapTactics.onRemotePartyLocation(data);
+                }
               }
             }
           }
@@ -226,8 +259,11 @@
         this.unsubscribeRolls = rollsRef.onSnapshot(doc => {
           if (doc && doc.exists) {
             const data = doc.data();
-            if (data && data.latestRoll && window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
-              window.DiceRoller.onRemoteRoll(data.latestRoll);
+            if (data && data.latestRoll && data.latestRoll.id && data.latestRoll.id !== this.lastRollId && data.rollSenderId !== this.clientId) {
+              this.lastRollId = data.latestRoll.id;
+              if (window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
+                window.DiceRoller.onRemoteRoll(data.latestRoll);
+              }
             }
           }
         }, err => {
@@ -243,8 +279,19 @@
         this.unsubscribeChars = charsRef.onSnapshot(doc => {
           if (doc && doc.exists) {
             const data = doc.data();
-            if (data && Array.isArray(data.party) && window.CharacterSheet && typeof window.CharacterSheet.onRemoteCharacters === 'function') {
-              window.CharacterSheet.onRemoteCharacters(data.party);
+            if (data && Array.isArray(data.party)) {
+              const partyJson = JSON.stringify(data.party);
+              const isFromSelf = Boolean(data.partySenderId && data.partySenderId === this.clientId);
+              const isDifferent = partyJson !== this.lastPartyJson;
+              const hasPendingLocal = window.CharacterSheet && typeof window.CharacterSheet.hasPendingLocalChanges === 'function' && window.CharacterSheet.hasPendingLocalChanges();
+
+              if (!isFromSelf && isDifferent && !hasPendingLocal) {
+                this.lastPartyJson = partyJson;
+                if (data.partyUpdatedAt) this.lastPartyUpdatedAt = data.partyUpdatedAt;
+                if (window.CharacterSheet && typeof window.CharacterSheet.onRemoteCharacters === 'function') {
+                  window.CharacterSheet.onRemoteCharacters(data.party);
+                }
+              }
             }
           }
         }, err => {
@@ -259,8 +306,11 @@
       if (!this.isReady || !this.db) return false;
       try {
         const docRef = this.db.collection('codex_campaign').doc('world_pins');
+        this.lastPinsJson = JSON.stringify(pins);
         await docRef.set({
           playerPins: pins,
+          playerPinsSenderId: this.clientId,
+          playerPinsUpdatedAt: Date.now(),
           updatedAt: Date.now(),
           updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
         }, { merge: true });
@@ -276,8 +326,11 @@
       try {
         // Write to world_pins (verified authorized Firestore document)
         const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
+        this.lastLocationJson = JSON.stringify(location);
         await pinsRef.set({
           partyLocation: location,
+          locationSenderId: this.clientId,
+          locationUpdatedAt: Date.now(),
           updatedAt: Date.now(),
           updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
         }, { merge: true });
@@ -287,6 +340,7 @@
           const docRef = this.db.collection('codex_campaign').doc('party_location');
           docRef.set({
             ...location,
+            locationSenderId: this.clientId,
             updatedAt: Date.now(),
             updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
           }, { merge: true }).catch(() => {});
@@ -323,10 +377,13 @@
     async pushDiceRoll(rollData) {
       if (!this.isReady || !this.db || !rollData) return false;
       try {
+        this.lastRollId = rollData.id;
         // Write to world_pins (verified authorized Firestore document)
         const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
         await pinsRef.set({
           latestRoll: rollData,
+          rollSenderId: this.clientId,
+          rollUpdatedAt: Date.now(),
           updatedAt: Date.now(),
           updatedBy: rollData.roller || localStorage.getItem('o_codex_player_name') || 'Adventurer'
         }, { merge: true });
@@ -336,6 +393,7 @@
           const docRef = this.db.collection('codex_campaign').doc('dice_rolls');
           docRef.set({
             latestRoll: rollData,
+            rollSenderId: this.clientId,
             updatedAt: Date.now(),
             updatedBy: rollData.roller || localStorage.getItem('o_codex_player_name') || 'Adventurer'
           }, { merge: true }).catch(() => {});
@@ -351,11 +409,18 @@
     async pushCharacters(charactersList) {
       if (!this.isReady || !this.db || !Array.isArray(charactersList)) return false;
       try {
+        const partyJson = JSON.stringify(charactersList);
+        this.lastPartyJson = partyJson;
+        const now = Date.now();
+        this.lastPartyUpdatedAt = now;
+
         // Write to world_pins (verified authorized Firestore document)
         const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
         await pinsRef.set({
           party: charactersList,
-          updatedAt: Date.now(),
+          partySenderId: this.clientId,
+          partyUpdatedAt: now,
+          updatedAt: now,
           updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
         }, { merge: true });
 
@@ -364,7 +429,9 @@
           const docRef = this.db.collection('codex_campaign').doc('characters');
           docRef.set({
             party: charactersList,
-            updatedAt: Date.now(),
+            partySenderId: this.clientId,
+            partyUpdatedAt: now,
+            updatedAt: now,
             updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
           }, { merge: true }).catch(() => {});
         } catch (subErr) {}
