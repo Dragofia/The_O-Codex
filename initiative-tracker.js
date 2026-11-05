@@ -729,13 +729,26 @@
             `;
           }
 
+          const scoreHtml = `
+            <div class="init-card-scores">
+              <span class="init-score-active" title="Final Initiative">${c.activeScore}</span>
+              ${showLowerScore ? `
+                <span class="init-score-lower" title="Lower roll (Advantage)">${c.lowerScore}</span>
+              ` : ''}
+            </div>
+            ${(isDm || !isEnemy) ? `
+              <button type="button" class="init-row-del-btn" data-id="${c.id}" title="Remove ${this.escapeHtml(c.name)}">✕</button>
+            ` : ''}
+          `;
+
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name ${isCurrentTurn ? 'is-turn-name' : ''}" title="${this.escapeHtml(c.name)}">
                 ${this.escapeHtml(c.name)}
-                ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               </strong>
+              ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               ${hpBadge}
+              ${scoreHtml}
             </div>
           `;
         } else {
@@ -779,14 +792,27 @@
               </span>`
             : '';
 
+          const scoreHtml = `
+            <div class="init-card-scores">
+              <span class="init-score-active" title="Final Initiative">${c.activeScore}</span>
+              ${showLowerScore ? `
+                <span class="init-score-lower" title="Lower roll (Advantage)">${c.lowerScore}</span>
+              ` : ''}
+            </div>
+            ${(isDm || !isEnemy) ? `
+              <button type="button" class="init-row-del-btn" data-id="${c.id}" title="Remove ${this.escapeHtml(c.name)}">✕</button>
+            ` : ''}
+          `;
+
           nameHtml = `
             <div class="init-card-name-row">
               <strong class="init-card-name init-enemy-name ${isCurrentTurn ? 'is-turn-name' : ''}" ${styleAttr} title="${this.escapeHtml(c.name)} ${isDead ? '(Defeated)' : ''}">
                 ${this.escapeHtml(c.name)} ${isDead ? '💀' : ''}
-                ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               </strong>
+              ${isCurrentTurn ? '<span class="init-turn-badge">⚔️ Turn</span>' : ''}
               ${playerDmgBadge}
               ${dmHpBadge}
+              ${scoreHtml}
             </div>
           `;
 
@@ -818,15 +844,6 @@
               ${nameHtml}
               ${enemyCtrlsHtml}
             </div>
-            <div class="init-card-scores">
-              <span class="init-score-active" title="Final Initiative">${c.activeScore}</span>
-              ${showLowerScore ? `
-                <span class="init-score-lower" title="Lower roll (Advantage)">${c.lowerScore}</span>
-              ` : ''}
-            </div>
-            ${(isDm || !isEnemy) ? `
-              <button type="button" class="init-row-del-btn" data-id="${c.id}" title="Remove ${this.escapeHtml(c.name)}">✕</button>
-            ` : ''}
           </div>
         `;
       });

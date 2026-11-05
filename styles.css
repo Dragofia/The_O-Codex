@@ -4429,7 +4429,7 @@ body.map-mode-active .map-filter-bar {
 
 /* Left-of-Roll-Log Initiative Tracker Table (Docked left without shifting layout) */
 .char-init-sidebar {
-  width: 290px;
+  width: 320px;
   position: absolute;
   top: 0;
   right: calc(100% + 14px);
@@ -4655,7 +4655,8 @@ body.map-mode-active .map-filter-bar {
 .init-list-body {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;
+  overflow-x: hidden;
+  padding: 0.65rem 0.6rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(245, 158, 11, 0.35) rgba(10, 16, 30, 0.5);
 }
@@ -4686,14 +4687,16 @@ body.map-mode-active .map-filter-bar {
 
 .init-card {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.65rem;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.5rem 0.6rem;
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   transition: all 0.15s ease;
   position: relative;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .init-card:hover {
@@ -4713,10 +4716,12 @@ body.map-mode-active .map-filter-bar {
   color: #fbbf24;
   background: rgba(245, 158, 11, 0.15);
   border-radius: 6px;
-  padding: 2px 5px;
-  min-width: 26px;
+  padding: 2px 4px;
+  min-width: 24px;
   text-align: center;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
 }
 
 .init-card.is-leader .init-card-rank {
@@ -4729,7 +4734,9 @@ body.map-mode-active .map-filter-bar {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 3px;
   line-height: 1.2;
+  width: calc(100% - 30px);
 }
 
 .init-card-name-row {
@@ -4738,6 +4745,7 @@ body.map-mode-active .map-filter-bar {
   gap: 0.35rem;
   flex-wrap: nowrap;
   min-width: 0;
+  width: 100%;
 }
 
 .init-card-name {
@@ -4747,7 +4755,8 @@ body.map-mode-active .map-filter-bar {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  flex-shrink: 1;
+  flex: 0 1 auto;
+  max-width: 110px;
 }
 
 .init-card-hp,
@@ -4880,20 +4889,21 @@ body.map-mode-active .map-filter-bar {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 0.3rem;
-  width: fit-content;
+  margin-top: 0.25rem;
+  width: 100%;
 }
 
 .init-enemy-hp-row,
 .init-enemy-hp-subrow {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   background: rgba(15, 23, 42, 0.72);
-  padding: 2px 5px;
+  padding: 2px 4px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: fit-content;
+  max-width: 100%;
 }
 
 .init-hp-tick-btn {
@@ -4923,9 +4933,9 @@ body.map-mode-active .map-filter-bar {
 
 /* 1-Click Resistance & Vulnerability/Weakness Calculators */
 .init-hp-calc-btn {
-  font-size: 0.66rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   cursor: pointer;
   line-height: 1.2;
@@ -4993,6 +5003,7 @@ body.map-mode-active .map-filter-bar {
   gap: 3px;
   flex-shrink: 0;
   margin-left: auto;
+  white-space: nowrap;
 }
 
 .init-score-active {
@@ -5029,13 +5040,14 @@ body.map-mode-active .map-filter-bar {
   background: transparent;
   border: none;
   color: #64748b;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   cursor: pointer;
-  padding: 2px;
+  padding: 1px 3px;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
   flex-shrink: 0;
   line-height: 1;
+  margin-left: 1px;
 }
 
 .init-card:hover .init-row-del-btn {
@@ -5053,16 +5065,17 @@ body.map-mode-active .map-filter-bar {
 
 /* Once initiative has moved: rolls shrink slightly and move further to the right */
 .init-has-moved .init-score-active {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 2px 6px;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(56, 189, 248, 0.28);
   border-radius: 5px;
   text-shadow: none;
   display: inline-block;
   text-align: center;
-  min-width: 22px;
+  min-width: 20px;
+  line-height: 1;
 }
 
 /* Numbered order rank moves further to the left and shrinks slightly */
@@ -5071,7 +5084,7 @@ body.map-mode-active .map-filter-bar {
   font-weight: 700;
   padding: 1px 4px;
   opacity: 0.75;
-  margin-right: 0.2rem;
+  margin-right: 0.15rem;
   background: rgba(255, 255, 255, 0.08);
   color: #94a3b8;
 }
