@@ -1066,7 +1066,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             </div>
           </div>
           <div class="persona-display-sub">
-            <span class="persona-tag"><strong>Heritage:</strong> ${escapeHtml(char.heritage || 'Human')}</span>
+            <span class="persona-tag"><strong>Race:</strong> ${escapeHtml(char.heritage || 'Human')}</span>
             <span class="persona-tag"><strong>Alignment:</strong> ${escapeHtml(char.alignment || 'Neutral')}</span>
           </div>
         `;
@@ -1090,7 +1090,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           </div>
           <div class="persona-row persona-row-secondary">
             <div class="persona-field">
-              <label for="char-heritage-input">Heritage / Race</label>
+              <label for="char-heritage-input">Race</label>
               <input type="text" id="char-heritage-input" class="persona-input" value="${escapeHtml(char.heritage || '')}" placeholder="e.g. Human" />
             </div>
             <div class="persona-field">
