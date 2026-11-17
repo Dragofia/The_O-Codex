@@ -651,7 +651,66 @@ BACKSTORY:
 Parents were important people - son of noble family Thornsong, kidnapped when adolescent. Poetry book.
 Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care of a massive tree, the Elderwood, in the capital's center. In Dynestea, people worshiped nature, I was supposed to become the tree's caretaker - but this was ruined bc ya boi got kidnapped. The people waited for me to come back. Lived five years without using Thaumic magic, since Hag hated it. Hag's name is Grettle. FUCKING DIABLO?! See discord for worship of previous god.`
     }
-  ];  class PartyCharacterManager {
+  ];
+
+  // Standard D&D 5e SRD Weapons & Common Combat Actions Compendium
+  const SRD_WEAPONS = [
+    // Simple Melee
+    { name: 'Club', category: 'Simple Melee', dice: '1d4', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Light' },
+    { name: 'Dagger', category: 'Simple Melee', dice: '1d4', type: 'Piercing', finesse: true, ranged: false, notes: 'Finesse, light, thrown (range 20/60)' },
+    { name: 'Greatclub', category: 'Simple Melee', dice: '1d8', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Two-handed' },
+    { name: 'Handaxe', category: 'Simple Melee', dice: '1d6', type: 'Slashing', finesse: false, ranged: false, notes: 'Light, thrown (range 20/60)' },
+    { name: 'Javelin', category: 'Simple Melee', dice: '1d6', type: 'Piercing', finesse: false, ranged: false, notes: 'Thrown (range 30/120)' },
+    { name: 'Light Hammer', category: 'Simple Melee', dice: '1d4', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Light, thrown (range 20/60)' },
+    { name: 'Mace', category: 'Simple Melee', dice: '1d6', type: 'Bludgeoning', finesse: false, ranged: false, notes: '' },
+    { name: 'Quarterstaff', category: 'Simple Melee', dice: '1d6', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Versatile (1d8)' },
+    { name: 'Sickle', category: 'Simple Melee', dice: '1d4', type: 'Slashing', finesse: false, ranged: false, notes: 'Light' },
+    { name: 'Spear', category: 'Simple Melee', dice: '1d6', type: 'Piercing', finesse: false, ranged: false, notes: 'Thrown (range 20/60), versatile (1d8)' },
+    { name: 'Unarmed Strike', category: 'Simple Melee', dice: '1', type: 'Bludgeoning', finesse: false, ranged: false, notes: '' },
+
+    // Simple Ranged
+    { name: 'Crossbow, Light', category: 'Simple Ranged', dice: '1d8', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 80/320), loading, two-handed' },
+    { name: 'Dart', category: 'Simple Ranged', dice: '1d4', type: 'Piercing', finesse: true, ranged: true, notes: 'Finesse, thrown (range 20/60)' },
+    { name: 'Shortbow', category: 'Simple Ranged', dice: '1d6', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 80/320), two-handed' },
+    { name: 'Sling', category: 'Simple Ranged', dice: '1d4', type: 'Bludgeoning', finesse: false, ranged: true, notes: 'Ammunition (range 30/120)' },
+
+    // Martial Melee
+    { name: 'Battleaxe', category: 'Martial Melee', dice: '1d8', type: 'Slashing', finesse: false, ranged: false, notes: 'Versatile (1d10)' },
+    { name: 'Flail', category: 'Martial Melee', dice: '1d8', type: 'Bludgeoning', finesse: false, ranged: false, notes: '' },
+    { name: 'Glaive', category: 'Martial Melee', dice: '1d10', type: 'Slashing', finesse: false, ranged: false, notes: 'Heavy, reach, two-handed' },
+    { name: 'Greataxe', category: 'Martial Melee', dice: '1d12', type: 'Slashing', finesse: false, ranged: false, notes: 'Heavy, two-handed' },
+    { name: 'Greatsword', category: 'Martial Melee', dice: '2d6', type: 'Slashing', finesse: false, ranged: false, notes: 'Heavy, two-handed' },
+    { name: 'Halberd', category: 'Martial Melee', dice: '1d10', type: 'Slashing', finesse: false, ranged: false, notes: 'Heavy, reach, two-handed' },
+    { name: 'Lance', category: 'Martial Melee', dice: '1d12', type: 'Piercing', finesse: false, ranged: false, notes: 'Reach, special' },
+    { name: 'Longsword', category: 'Martial Melee', dice: '1d8', type: 'Slashing', finesse: false, ranged: false, notes: 'Versatile (1d10)' },
+    { name: 'Maul', category: 'Martial Melee', dice: '2d6', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Heavy, two-handed' },
+    { name: 'Morningstar', category: 'Martial Melee', dice: '1d8', type: 'Piercing', finesse: false, ranged: false, notes: '' },
+    { name: 'Pike', category: 'Martial Melee', dice: '1d10', type: 'Piercing', finesse: false, ranged: false, notes: 'Heavy, reach, two-handed' },
+    { name: 'Rapier', category: 'Martial Melee', dice: '1d8', type: 'Piercing', finesse: true, ranged: false, notes: 'Finesse' },
+    { name: 'Scimitar', category: 'Martial Melee', dice: '1d6', type: 'Slashing', finesse: true, ranged: false, notes: 'Finesse, light' },
+    { name: 'Shortsword', category: 'Martial Melee', dice: '1d6', type: 'Piercing', finesse: true, ranged: false, notes: 'Finesse, light' },
+    { name: 'Trident', category: 'Martial Melee', dice: '1d6', type: 'Piercing', finesse: false, ranged: false, notes: 'Thrown (range 20/60), versatile (1d8)' },
+    { name: 'War Pick', category: 'Martial Melee', dice: '1d8', type: 'Piercing', finesse: false, ranged: false, notes: '' },
+    { name: 'Warhammer', category: 'Martial Melee', dice: '1d8', type: 'Bludgeoning', finesse: false, ranged: false, notes: 'Versatile (1d10)' },
+    { name: 'Whip', category: 'Martial Melee', dice: '1d4', type: 'Slashing', finesse: true, ranged: false, notes: 'Finesse, reach' },
+
+    // Martial Ranged
+    { name: 'Blowgun', category: 'Martial Ranged', dice: '1', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 25/100), loading' },
+    { name: 'Crossbow, Hand', category: 'Martial Ranged', dice: '1d6', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 30/120), light, loading' },
+    { name: 'Crossbow, Heavy', category: 'Martial Ranged', dice: '1d10', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 100/400), heavy, loading, two-handed' },
+    { name: 'Longbow', category: 'Martial Ranged', dice: '1d8', type: 'Piercing', finesse: false, ranged: true, notes: 'Ammunition (range 150/600), heavy, two-handed' },
+    { name: 'Net', category: 'Martial Ranged', dice: '0', type: 'Special', finesse: false, ranged: true, notes: 'Special, thrown (range 5/15)' },
+
+    // Common Spell Attacks
+    { name: 'Eldritch Blast', category: 'Spell Attack', dice: '1d10', type: 'Force', finesse: false, ranged: true, spell: true, notes: 'Range 120 ft, beam attack' },
+    { name: 'Fire Bolt', category: 'Spell Attack', dice: '1d10', type: 'Fire', finesse: false, ranged: true, spell: true, notes: 'Range 120 ft' },
+    { name: 'Ray of Frost', category: 'Spell Attack', dice: '1d8', type: 'Cold', finesse: false, ranged: true, spell: true, notes: 'Range 60 ft, speed reduced 10 ft' },
+    { name: 'Sacred Flame', category: 'Spell Attack', dice: '1d8', type: 'Radiant', finesse: false, ranged: true, spell: true, notes: 'Range 60 ft, DEX save' },
+    { name: 'Toll the Dead', category: 'Spell Attack', dice: '1d8', type: 'Necrotic', finesse: false, ranged: true, spell: true, notes: 'Range 60 ft, 1d12 if target wounded' },
+    { name: 'Guiding Bolt', category: 'Spell Attack', dice: '4d6', type: 'Radiant', finesse: false, ranged: true, spell: true, notes: 'Range 120 ft, advantage on next attack' }
+  ];
+
+  class PartyCharacterManager {
     constructor() {
       this.characters = [];
       this.activeCharId = null;
@@ -1030,6 +1089,33 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Populate D&D 5e SRD weapons datalist for quick autocomplete
+      const datalist = document.getElementById('atk-srd-weapons-list');
+      if (datalist && datalist.children.length === 0) {
+        SRD_WEAPONS.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w.name;
+          opt.label = `${w.dice} ${w.type} (${w.category})`;
+          datalist.appendChild(opt);
+        });
+      }
+
+      // Attack modal preset dropdown listener
+      document.getElementById('atk-form-preset-select')?.addEventListener('change', (e) => {
+        if (e.target.value) {
+          this.applyWeaponPreset(e.target.value);
+        }
+      });
+
+      // Attack modal name input autocomplete detection
+      document.getElementById('atk-form-name')?.addEventListener('input', (e) => {
+        const val = (e.target.value || '').trim();
+        const matched = SRD_WEAPONS.find(w => w.name.toLowerCase() === val.toLowerCase());
+        if (matched) {
+          this.applyWeaponPreset(matched.name, false);
+        }
+      });
+
       // Attack modal inputs dynamic preview listeners
       ['atk-form-ability', 'atk-form-proficient', 'atk-form-extra-hit', 'atk-form-dmg-dice', 'atk-form-dmg-type', 'atk-form-add-ability-dmg', 'atk-form-extra-dmg'].forEach(id => {
         const el = document.getElementById(id);
@@ -1100,6 +1186,70 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       return '1d8';
     }
 
+    // D&D 5e SRD WEAPON AUTOFILL & OPTIMAL ABILITY SCALING
+    determineOptimalAbility(char, weapon) {
+      if (!char || !char.stats) return 'str';
+      if (weapon.spell) {
+        const intMod = this.getStatMod(char.stats.int);
+        const wisMod = this.getStatMod(char.stats.wis);
+        const chaMod = this.getStatMod(char.stats.cha);
+        if (chaMod >= intMod && chaMod >= wisMod) return 'cha';
+        if (wisMod >= intMod) return 'wis';
+        return 'int';
+      }
+      if (weapon.finesse) {
+        // Compare DEX vs STR and take the higher of whatever modifiers they can use for it
+        const dexMod = this.getStatMod(char.stats.dex);
+        const strMod = this.getStatMod(char.stats.str);
+        return dexMod >= strMod ? 'dex' : 'str';
+      }
+      if (weapon.ranged) {
+        return 'dex';
+      }
+      return 'str';
+    }
+
+    applyWeaponPreset(weaponName, preserveCustomName = false) {
+      if (!weaponName) return;
+      const weapon = SRD_WEAPONS.find(w => w.name.toLowerCase() === weaponName.trim().toLowerCase());
+      if (!weapon) return;
+
+      const char = this.getActiveCharacter();
+      const nameInput = document.getElementById('atk-form-name');
+      const presetSelect = document.getElementById('atk-form-preset-select');
+      const abilitySelect = document.getElementById('atk-form-ability');
+      const diceInput = document.getElementById('atk-form-dmg-dice');
+      const typeInput = document.getElementById('atk-form-dmg-type');
+      const notesInput = document.getElementById('atk-form-notes');
+      const profCheck = document.getElementById('atk-form-proficient');
+      const addAbilityCheck = document.getElementById('atk-form-add-ability-dmg');
+
+      if (!preserveCustomName && nameInput) {
+        if (!nameInput.value || SRD_WEAPONS.some(w => w.name.toLowerCase() === nameInput.value.trim().toLowerCase())) {
+          nameInput.value = weapon.name;
+        }
+      }
+
+      if (presetSelect && presetSelect.value !== weapon.name) {
+        presetSelect.value = weapon.name;
+      }
+
+      const optimalAbility = this.determineOptimalAbility(char, weapon);
+      if (abilitySelect) abilitySelect.value = optimalAbility;
+      if (diceInput) diceInput.value = weapon.dice;
+      if (typeInput) typeInput.value = weapon.type;
+      if (profCheck) profCheck.checked = true;
+      if (addAbilityCheck) addAbilityCheck.checked = !weapon.spell || weapon.name === 'Eldritch Blast';
+
+      if (notesInput) {
+        if (!notesInput.value || SRD_WEAPONS.some(w => w.notes && w.notes === notesInput.value.trim())) {
+          notesInput.value = weapon.notes || '';
+        }
+      }
+
+      this.updateAttackModalPreview();
+    }
+
     // MODAL CONTROLLERS
     openAttackModal(index = null) {
       const char = this.getActiveCharacter();
@@ -1107,6 +1257,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const modal = document.getElementById('attack-modal');
       const form = document.getElementById('attack-modal-form');
       const title = document.getElementById('attack-modal-title');
+      const presetSelect = document.getElementById('atk-form-preset-select');
       if (!modal || !form) return;
 
       const profVal = char.vitals?.profBonus || 2;
@@ -1127,10 +1278,20 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         document.getElementById('atk-form-add-ability-dmg').checked = atk.addAbilityToDamage !== false;
         document.getElementById('atk-form-extra-dmg').value = atk.extraDamageBonus || 0;
         document.getElementById('atk-form-notes').value = atk.notes || '';
+
+        if (presetSelect) {
+          const matched = SRD_WEAPONS.find(w => 
+            w.name.toLowerCase() === (atk.name || '').toLowerCase() ||
+            (atk.name || '').toLowerCase().includes(w.name.toLowerCase())
+          );
+          presetSelect.value = matched ? matched.name : '';
+        }
       } else {
         title.textContent = 'Add Weapon / Action';
         form.reset();
         document.getElementById('atk-form-edit-index').value = '';
+        if (presetSelect) presetSelect.value = '';
+
         const dexMod = this.getStatMod(char.stats?.dex);
         const strMod = this.getStatMod(char.stats?.str);
         document.getElementById('atk-form-ability').value = (strMod > dexMod) ? 'str' : 'dex';
@@ -1907,12 +2068,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
                 <strong class="item-card-title item-shareable-title" data-share-type="attack" data-index="${index}" title="Click to share action to party Roll Log">${escapeHtml(atk.name)}</strong>
                 ${abilityBadge}
               </div>
-              ${this.isEditMode ? `
-                <div class="item-card-controls">
-                  <button type="button" class="char-item-edit-btn" data-type="attack" data-index="${index}" title="Edit Weapon / Action">Edit</button>
-                  <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Weapon / Action">✕</button>
-                </div>
-              ` : ''}
+              <div class="item-card-controls">
+                <button type="button" class="char-item-edit-btn" data-type="attack" data-index="${index}" title="Edit Weapon / Action">Edit</button>
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Weapon / Action">✕</button>` : ''}
+              </div>
             </div>
             <div class="atk-card-details">
               <span class="atk-bonus-badge">Atk: ${bonusStr}</span>
@@ -1945,12 +2104,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
                 <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
                 ${item.attuned ? '<span class="magic-attuned-badge">Attuned</span>' : ''}
               </div>
-              ${this.isEditMode ? `
-                <div class="item-card-controls">
-                  <button type="button" class="char-item-edit-btn" data-type="magic" data-index="${index}" title="Edit Magic Item">Edit</button>
-                  <button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>
-                </div>
-              ` : ''}
+              <div class="item-card-controls">
+                <button type="button" class="char-item-edit-btn" data-type="magic" data-index="${index}" title="Edit Magic Item">Edit</button>
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>` : ''}
+              </div>
             </div>
             ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
             <div class="magic-desc">${escapeHtml(item.description || '')}</div>
@@ -1968,12 +2125,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             <span class="eq-qty">x${eq.qty || 1}</span>
             <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)}</span>
             <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
-            ${this.isEditMode ? `
-              <div class="item-card-controls" style="display:inline-flex; align-items:center;">
-                <button type="button" class="char-item-edit-btn" data-type="equipment" data-index="${index}" title="Edit Gear">Edit</button>
-                <button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}" title="Remove Gear">✕</button>
-              </div>
-            ` : ''}
+            <div class="item-card-controls" style="display:inline-flex; align-items:center;">
+              <button type="button" class="char-item-edit-btn" data-type="equipment" data-index="${index}" title="Edit Gear">Edit</button>
+              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}" title="Remove Gear">✕</button>` : ''}
+            </div>
           </div>
         `).join('');
       }
@@ -2346,6 +2501,17 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Item Edit button listeners (Available in both play and edit modes)
+      container.querySelectorAll('.char-item-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const type = btn.dataset.type;
+          const idx = parseInt(btn.dataset.index, 10);
+          if (type === 'attack') this.openAttackModal(idx);
+          else if (type === 'magic') this.openMagicItemModal(idx);
+          else if (type === 'equipment') this.openEquipmentModal(idx);
+        });
+      });
+
       // Edit Mode handlers
       if (this.isEditMode) {
         container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
@@ -2358,16 +2524,6 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
         container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
           this.openEquipmentModal(null);
-        });
-
-        container.querySelectorAll('.char-item-edit-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const type = btn.dataset.type;
-            const idx = parseInt(btn.dataset.index, 10);
-            if (type === 'attack') this.openAttackModal(idx);
-            else if (type === 'magic') this.openMagicItemModal(idx);
-            else if (type === 'equipment') this.openEquipmentModal(idx);
-          });
         });
 
         container.querySelector('#btn-add-slot-level')?.addEventListener('click', () => {

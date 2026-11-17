@@ -8742,6 +8742,20 @@ body.characters-mode-active .dice-tray-toggle {
   line-height: 1.45;
 }
 
+.char-form-preset-row {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 9px;
+  padding: 0.8rem 1rem;
+}
+
+.char-preset-hint {
+  font-size: 0.73rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+
 .char-form-highlight-box {
   background: rgba(56, 189, 248, 0.06);
   border: 1px solid rgba(56, 189, 248, 0.2);

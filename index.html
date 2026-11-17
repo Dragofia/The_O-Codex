@@ -9,7 +9,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=45">
+  <link rel="stylesheet" href="styles.css?v=46">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -1183,11 +1183,77 @@
       <form id="attack-modal-form" class="char-modal-form">
         <input type="hidden" id="atk-form-edit-index" value="" />
 
+        <!-- Row 0: D&D 5e Weapon Preset / Base Template -->
+        <div class="char-form-row char-form-preset-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="atk-form-preset-select">D&D 5e Weapon Preset / Base Template</label>
+            <select id="atk-form-preset-select" class="char-form-select">
+              <option value="">-- Choose a D&D Weapon to Autofill (or custom below) --</option>
+              <optgroup label="Simple Melee Weapons">
+                <option value="Club">Club (1d4 bludgeoning, light)</option>
+                <option value="Dagger">Dagger (1d4 piercing, finesse, light, thrown 20/60)</option>
+                <option value="Greatclub">Greatclub (1d8 bludgeoning, two-handed)</option>
+                <option value="Handaxe">Handaxe (1d6 slashing, light, thrown 20/60)</option>
+                <option value="Javelin">Javelin (1d6 piercing, thrown 30/120)</option>
+                <option value="Light Hammer">Light Hammer (1d4 bludgeoning, light, thrown 20/60)</option>
+                <option value="Mace">Mace (1d6 bludgeoning)</option>
+                <option value="Quarterstaff">Quarterstaff (1d6 bludgeoning, versatile 1d8)</option>
+                <option value="Sickle">Sickle (1d4 slashing, light)</option>
+                <option value="Spear">Spear (1d6 piercing, thrown 20/60, versatile 1d8)</option>
+                <option value="Unarmed Strike">Unarmed Strike (1 bludgeoning)</option>
+              </optgroup>
+              <optgroup label="Simple Ranged Weapons">
+                <option value="Crossbow, Light">Crossbow, Light (1d8 piercing, range 80/320, loading, two-handed)</option>
+                <option value="Dart">Dart (1d4 piercing, finesse, thrown 20/60)</option>
+                <option value="Shortbow">Shortbow (1d6 piercing, range 80/320, two-handed)</option>
+                <option value="Sling">Sling (1d4 bludgeoning, range 30/120)</option>
+              </optgroup>
+              <optgroup label="Martial Melee Weapons">
+                <option value="Battleaxe">Battleaxe (1d8 slashing, versatile 1d10)</option>
+                <option value="Flail">Flail (1d8 bludgeoning)</option>
+                <option value="Glaive">Glaive (1d10 slashing, heavy, reach, two-handed)</option>
+                <option value="Greataxe">Greataxe (1d12 slashing, heavy, two-handed)</option>
+                <option value="Greatsword">Greatsword (2d6 slashing, heavy, two-handed)</option>
+                <option value="Halberd">Halberd (1d10 slashing, heavy, reach, two-handed)</option>
+                <option value="Lance">Lance (1d12 piercing, reach, special)</option>
+                <option value="Longsword">Longsword (1d8 slashing, versatile 1d10)</option>
+                <option value="Maul">Maul (2d6 bludgeoning, heavy, two-handed)</option>
+                <option value="Morningstar">Morningstar (1d8 piercing)</option>
+                <option value="Pike">Pike (1d10 piercing, heavy, reach, two-handed)</option>
+                <option value="Rapier">Rapier (1d8 piercing, finesse)</option>
+                <option value="Scimitar">Scimitar (1d6 slashing, finesse, light)</option>
+                <option value="Shortsword">Shortsword (1d6 piercing, finesse, light)</option>
+                <option value="Trident">Trident (1d6 piercing, thrown 20/60, versatile 1d8)</option>
+                <option value="War Pick">War Pick (1d8 piercing)</option>
+                <option value="Warhammer">Warhammer (1d8 bludgeoning, versatile 1d10)</option>
+                <option value="Whip">Whip (1d4 slashing, finesse, reach)</option>
+              </optgroup>
+              <optgroup label="Martial Ranged Weapons">
+                <option value="Blowgun">Blowgun (1 piercing, range 25/100, loading)</option>
+                <option value="Crossbow, Hand">Crossbow, Hand (1d6 piercing, range 30/120, light, loading)</option>
+                <option value="Crossbow, Heavy">Crossbow, Heavy (1d10 piercing, range 100/400, heavy, loading, two-handed)</option>
+                <option value="Longbow">Longbow (1d8 piercing, range 150/600, heavy, two-handed)</option>
+                <option value="Net">Net (Special, thrown 5/15)</option>
+              </optgroup>
+              <optgroup label="Common Spell Attacks">
+                <option value="Eldritch Blast">Eldritch Blast (1d10 force, range 120 ft)</option>
+                <option value="Fire Bolt">Fire Bolt (1d10 fire, range 120 ft)</option>
+                <option value="Ray of Frost">Ray of Frost (1d8 cold, range 60 ft)</option>
+                <option value="Sacred Flame">Sacred Flame (1d8 radiant, range 60 ft)</option>
+                <option value="Toll the Dead">Toll the Dead (1d8/1d12 necrotic, range 60 ft)</option>
+                <option value="Guiding Bolt">Guiding Bolt (4d6 radiant, range 120 ft)</option>
+              </optgroup>
+            </select>
+            <span class="char-preset-hint">Auto-fills damage dice, type, properties, and selects the higher modifier (e.g. Finesse picks DEX or STR). Modify any field below to create a +1 weapon or custom magic item.</span>
+          </div>
+        </div>
+
         <!-- Row 1: Attack Name & Scaling Ability -->
         <div class="char-form-row">
           <div class="char-form-field" style="flex: 2;">
             <label for="atk-form-name">Action / Weapon Name <span class="req">*</span></label>
-            <input type="text" id="atk-form-name" class="char-form-input" placeholder="e.g. Rapier, Longsword, Eldritch Blast, Dagger" required />
+            <input type="text" id="atk-form-name" class="char-form-input" placeholder="e.g. Trident, Rapier, +1 Longsword" list="atk-srd-weapons-list" required />
+            <datalist id="atk-srd-weapons-list"></datalist>
           </div>
           <div class="char-form-field" style="flex: 1.2;">
             <label for="atk-form-ability">Ability Scaling</label>
@@ -1554,7 +1620,7 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=6" defer></script>
-  <script src="characters.js?v=20" defer></script>
+  <script src="characters.js?v=21" defer></script>
   <script src="grimoire.js?v=1" defer></script>
   <script src="initiative-tracker.js?v=9" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
