@@ -31,11 +31,6 @@
         <span class="mode-tab__icon">✨</span>
         <span class="mode-tab__label">Grimoire</span>
       </button>
-      <div class="mode-bar-separator" aria-hidden="true"></div>
-      <button type="button" class="mode-tab mode-tab--dm" id="dm-mode-toggle" title="Toggle Dungeon Master Mode (Ctrl+Shift+D)">
-        <span class="mode-tab__icon" id="dm-toggle-icon">🛡️</span>
-        <span class="mode-tab__label" id="dm-toggle-label">Player</span>
-      </button>
     </div>
     <div class="mode-bar-handle" aria-hidden="true">
       <span class="mode-bar-grip"></span>
@@ -354,11 +349,7 @@
               </div>
 
               <div class="char-roster-actions">
-                <button type="button" class="btn btn-primary btn-sm" id="char-edit-toggle-btn" title="Toggle edit mode">✏️ Edit Sheet</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="char-add-btn" title="Add a new character to the party">+ New</button>
-                <button type="button" class="btn btn-ghost btn-sm" id="char-export-btn" title="Export party roster as JSON">Export</button>
-                <button type="button" class="btn btn-ghost btn-sm" id="char-import-btn" title="Import party roster JSON">Import</button>
-                <input type="file" id="char-import-file" class="hidden" accept=".json" />
+                <button type="button" class="btn btn-primary btn-sm" id="char-edit-toggle-btn" title="Toggle edit mode">Edit Sheet</button>
               </div>
             </header>
 
@@ -1654,6 +1645,49 @@
       </form>
     </div>
   </div>
+
+  <!-- Spell Slot Level Modal -->
+  <div id="slot-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="slot-modal-title">
+    <div class="modal__backdrop" id="slot-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">SPELLCASTING & ARCANUM</span>
+          <h2 id="slot-modal-title" class="modal__title">Configure Spell Slots</h2>
+        </div>
+        <button type="button" class="modal__close" id="slot-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="slot-modal-form" class="char-modal-form">
+        <input type="hidden" id="slot-form-edit-level" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="slot-form-level">Spell Slot Level <span class="req">*</span></label>
+            <select id="slot-form-level" class="char-form-select">
+              <option value="1">1st Level</option>
+              <option value="2">2nd Level</option>
+              <option value="3">3rd Level</option>
+              <option value="4">4th Level</option>
+              <option value="5">5th Level</option>
+              <option value="6">6th Level</option>
+              <option value="7">7th Level</option>
+              <option value="8">8th Level</option>
+              <option value="9">9th Level</option>
+            </select>
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="slot-form-max">Maximum Slots <span class="req">*</span></label>
+            <input type="number" id="slot-form-max" class="char-form-input" min="1" max="9" value="2" required />
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="slot-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="slot-modal-save">Save Spell Slots</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
     <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
       <span>All</span>
@@ -1824,7 +1858,7 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=6" defer></script>
-  <script src="characters.js?v=22" defer></script>
+  <script src="characters.js?v=23" defer></script>
   <script src="grimoire.js?v=1" defer></script>
   <script src="initiative-tracker.js?v=9" defer></script>
   <script src="codex-linker.js?v=1" defer></script>

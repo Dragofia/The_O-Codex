@@ -763,6 +763,13 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
       // Ensure all schema arrays and objects exist on loaded characters
       if (Array.isArray(this.characters)) {
+        // Clean up test characters (e.g. 'awd')
+        const initCount = this.characters.length;
+        this.characters = this.characters.filter(c => c && c.name && c.name.trim().toLowerCase() !== 'awd');
+        if (this.characters.length !== initCount) {
+          this.saveStorage(false);
+        }
+
         this.characters.forEach(c => {
           if (!Array.isArray(c.consumables)) c.consumables = [];
           if (!Array.isArray(c.attacks)) c.attacks = [];
@@ -865,7 +872,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.isEditMode = !this.isEditMode;
       const btn = document.getElementById('char-edit-toggle-btn');
       if (btn) {
-        btn.textContent = this.isEditMode ? '✓ Done Editing' : '✏️ Edit Sheet';
+        btn.textContent = this.isEditMode ? 'Done Editing' : 'Edit Sheet';
         btn.classList.toggle('is-editing-active', this.isEditMode);
       }
       this.renderCurrentSheet();
@@ -974,16 +981,6 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
     initDOM() {
       // Edit Mode Toggle
       document.getElementById('char-edit-toggle-btn')?.addEventListener('click', () => this.toggleEditMode());
-
-      // "+ New Character" button
-      document.getElementById('char-add-btn')?.addEventListener('click', () => this.createNewCharacter());
-
-      // Export / Import buttons
-      document.getElementById('char-export-btn')?.addEventListener('click', () => this.exportPartyJSON());
-      document.getElementById('char-import-btn')?.addEventListener('click', () => {
-        document.getElementById('char-import-file')?.click();
-      });
-      document.getElementById('char-import-file')?.addEventListener('change', (e) => this.importPartyJSON(e));
 
       // Character Sub-tabs (Combat, Divions, Boons, Equipment, Magic Items, Feats, Notes)
       document.querySelectorAll('.char-nav-btn').forEach(btn => {
@@ -1159,6 +1156,12 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       document.getElementById('consumable-modal-cancel')?.addEventListener('click', () => this.closeConsumableModal());
       document.getElementById('consumable-modal-form')?.addEventListener('submit', (e) => this.saveConsumableFromModal(e));
 
+      // Spell Slot Modal
+      document.getElementById('slot-modal-close')?.addEventListener('click', () => this.closeSlotModal());
+      document.getElementById('slot-modal-backdrop')?.addEventListener('click', () => this.closeSlotModal());
+      document.getElementById('slot-modal-cancel')?.addEventListener('click', () => this.closeSlotModal());
+      document.getElementById('slot-modal-form')?.addEventListener('submit', (e) => this.saveSlotFromModal(e));
+
       // Escape key listener for all character form modals
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -1169,6 +1172,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!document.getElementById('feat-modal')?.classList.contains('hidden')) this.closeFeatModal();
           if (!document.getElementById('boon-modal')?.classList.contains('hidden')) this.closeBoonModal();
           if (!document.getElementById('consumable-modal')?.classList.contains('hidden')) this.closeConsumableModal();
+          if (!document.getElementById('slot-modal')?.classList.contains('hidden')) this.closeSlotModal();
         }
       });
     }
@@ -1827,6 +1831,85 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.renderTabContent();
     }
 
+    // SPELL SLOT MODAL
+    openSlotModal(level = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('slot-modal');
+      const form = document.getElementById('slot-modal-form');
+      const title = document.getElementById('slot-modal-title');
+      const levelSelect = document.getElementById('slot-form-level');
+      const maxInput = document.getElementById('slot-form-max');
+      const editInput = document.getElementById('slot-form-edit-level');
+      if (!modal || !form) return;
+
+      if (level !== null && level !== undefined && char.spellSlots && char.spellSlots[level]) {
+        const lvlStr = String(level);
+        const ordinal = lvlStr === '1' ? '1st' : lvlStr === '2' ? '2nd' : lvlStr === '3' ? '3rd' : `${lvlStr}th`;
+        if (title) title.textContent = `Configure ${ordinal} Level Spell Slots`;
+        if (editInput) editInput.value = lvlStr;
+        if (levelSelect) {
+          levelSelect.value = lvlStr;
+          levelSelect.disabled = true;
+        }
+        if (maxInput) maxInput.value = char.spellSlots[lvlStr]?.max || 1;
+      } else {
+        if (title) title.textContent = 'Add Spell Slot Level';
+        if (editInput) editInput.value = '';
+        if (levelSelect) {
+          levelSelect.disabled = false;
+          let chosen = '1';
+          if (char.spellSlots) {
+            for (let i = 1; i <= 9; i++) {
+              if (!char.spellSlots[String(i)]) {
+                chosen = String(i);
+                break;
+              }
+            }
+          }
+          levelSelect.value = chosen;
+        }
+        if (maxInput) maxInput.value = '2';
+      }
+
+      modal.classList.remove('hidden');
+      maxInput?.focus();
+    }
+
+    closeSlotModal() {
+      const modal = document.getElementById('slot-modal');
+      if (modal) modal.classList.add('hidden');
+      const levelSelect = document.getElementById('slot-form-level');
+      if (levelSelect) levelSelect.disabled = false;
+    }
+
+    saveSlotFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!char.spellSlots || typeof char.spellSlots !== 'object') char.spellSlots = {};
+
+      const editInput = document.getElementById('slot-form-edit-level');
+      const levelSelect = document.getElementById('slot-form-level');
+      const maxInput = document.getElementById('slot-form-max');
+
+      const lvl = (editInput && editInput.value) ? editInput.value : (levelSelect ? levelSelect.value : '1');
+      const max = Math.max(1, parseInt(maxInput?.value, 10) || 1);
+
+      if (char.spellSlots[lvl]) {
+        char.spellSlots[lvl].max = max;
+        if (char.spellSlots[lvl].used > max) char.spellSlots[lvl].used = max;
+      } else {
+        char.spellSlots[lvl] = { max, used: 0 };
+      }
+
+      this.saveStorage();
+      this.closeSlotModal();
+      const container = document.getElementById('char-tab-view');
+      if (container) this.renderEquipmentTab(container, char);
+      window.showToast?.(`Spell slots updated for Level ${lvl}`, 'success', 2000);
+    }
+
     renderRosterBar() {
       const rosterContainer = document.getElementById('char-roster-list');
       if (!rosterContainer) return;
@@ -2451,7 +2534,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const lvlLabel = lvl === '1' ? '1st' : lvl === '2' ? '2nd' : lvl === '3' ? '3rd' : `${lvl}th`;
           let pips = '';
           for (let i = 0; i < max; i++) {
-            const isUsed = i < used;
+            const isUsed = i >= (max - used);
             pips += `<button type="button" class="slot-pip ${isUsed ? 'is-used' : ''}" data-slot-level="${lvl}" data-pip-index="${i}" title="${isUsed ? 'Slot Expended (Click to restore)' : 'Slot Available (Click to expend)'}"></button>`;
           }
           return `
@@ -2465,6 +2548,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               </div>
               ${this.isEditMode ? `
                 <div class="slot-edit-controls">
+                  <button type="button" class="btn btn-ghost btn-xs btn-slot-edit" data-slot-level="${lvl}" title="Configure max slots">⚙</button>
                   <button type="button" class="btn btn-ghost btn-xs btn-slot-dec" data-slot-level="${lvl}" title="Decrease max slots">-</button>
                   <button type="button" class="btn btn-ghost btn-xs btn-slot-inc" data-slot-level="${lvl}" title="Increase max slots">+</button>
                   <button type="button" class="char-item-del-btn" data-type="slot-level" data-slot-level="${lvl}" title="Delete slot level">✕</button>
@@ -2690,7 +2774,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
-      // Spell Slot Pip listeners (Interactive slot clicking)
+      // Spell Slot Pip listeners (Interactive slot clicking, consuming right-to-left)
       container.querySelectorAll('.slot-pip').forEach(pip => {
         pip.addEventListener('click', () => {
           const lvl = pip.dataset.slotLevel;
@@ -2698,10 +2782,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!slot) return;
           const pipIdx = parseInt(pip.dataset.pipIndex, 10);
           if (pip.classList.contains('is-used')) {
-            slot.used = Math.max(0, pipIdx);
+            slot.used = Math.max(0, slot.max - pipIdx - 1);
             this.playHpSound(2);
           } else {
-            slot.used = Math.min(slot.max, pipIdx + 1);
+            slot.used = Math.min(slot.max, slot.max - pipIdx);
             this.playHpSound(1);
           }
           this.saveStorage();
@@ -2831,12 +2915,14 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
 
         container.querySelector('#btn-add-slot-level')?.addEventListener('click', () => {
-          const lvl = prompt('Enter spell slot level (1 to 9):', '1');
-          if (!lvl) return;
-          const max = parseInt(prompt(`How many ${lvl}-level slots?`, '2'), 10) || 1;
-          char.spellSlots[lvl] = { max, used: 0 };
-          this.saveStorage();
-          this.renderEquipmentTab(container, char);
+          this.openSlotModal(null);
+        });
+
+        container.querySelectorAll('.btn-slot-edit').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const lvl = btn.dataset.slotLevel;
+            this.openSlotModal(lvl);
+          });
         });
 
         container.querySelectorAll('.btn-slot-inc').forEach(btn => {
