@@ -1318,8 +1318,8 @@
         <div class="char-form-row char-form-highlight-box">
           <div class="char-form-field" style="flex: 1.6; justify-content: center;">
             <label class="char-form-checkbox-label">
-              <input type="checkbox" id="atk-form-add-mod" checked />
-              <span>Add Ability to Damage (<span id="atk-form-dmg-mod-val">+0</span>)</span>
+              <input type="checkbox" id="atk-form-add-ability-dmg" checked />
+              <span>Add Ability to Damage (<span id="atk-form-ability-dmg-val">+0</span>)</span>
             </label>
           </div>
           <div class="char-form-field" style="flex: 1;">
@@ -1449,7 +1449,211 @@
     </div>
   </div>
 
-  <!-- Tactical Map Pin Filter Bar Dock (Swaps with Quick-Bar in Map Mode) -->
+  <!-- Divion / Manifestation Modal -->
+  <div id="divion-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="divion-modal-title">
+    <div class="modal__backdrop" id="divion-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">DIVION & MANIFESTATION</span>
+          <h2 id="divion-modal-title" class="modal__title">Add Manifestation</h2>
+        </div>
+        <button type="button" class="modal__close" id="divion-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="divion-modal-form" class="char-modal-form">
+        <input type="hidden" id="div-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="div-form-name">Divion / Manifest Name <span class="req">*</span></label>
+            <input type="text" id="div-form-name" class="char-form-input" placeholder="e.g. Veil of Phantasms, Temporal Rift, Kinetic Surge" required />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="div-form-type">Domain / School</label>
+            <input type="text" id="div-form-type" class="char-form-input" placeholder="e.g. Illusion, Chrono, Light" list="div-domain-presets" />
+            <datalist id="div-domain-presets">
+              <option value="Illusion"></option>
+              <option value="Light"></option>
+              <option value="Kinetic"></option>
+              <option value="Primal"></option>
+              <option value="Chrono"></option>
+              <option value="Void"></option>
+              <option value="Domain Manifest"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="div-form-rank">Tier / Rank</label>
+            <select id="div-form-rank" class="char-form-select">
+              <option value="Tier I" selected>Tier I</option>
+              <option value="Tier II">Tier II</option>
+              <option value="Tier III">Tier III</option>
+              <option value="Master">Master</option>
+              <option value="Apex">Apex</option>
+            </select>
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="div-form-cost">Flow / Aether Cost</label>
+            <input type="text" id="div-form-cost" class="char-form-input" placeholder="e.g. 1 Flow, 2 Shards, Passive" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="div-form-effect">Manifestation Effect & Lore</label>
+            <textarea id="div-form-effect" class="char-form-textarea" rows="4" placeholder="Rules, manifestation mechanics, ranges, and powers..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="divion-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="divion-modal-save">Save Divion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Feat / Trait Modal -->
+  <div id="feat-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="feat-modal-title">
+    <div class="modal__backdrop" id="feat-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">FEAT & TRAIT</span>
+          <h2 id="feat-modal-title" class="modal__title">Add Feat / Trait</h2>
+        </div>
+        <button type="button" class="modal__close" id="feat-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="feat-modal-form" class="char-modal-form">
+        <input type="hidden" id="feat-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="feat-form-name">Feat / Trait Name <span class="req">*</span></label>
+            <input type="text" id="feat-form-name" class="char-form-input" placeholder="e.g. War Caster, Alert, Fey Touched" required />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="feat-form-source">Source</label>
+            <input type="text" id="feat-form-source" class="char-form-input" placeholder="e.g. Class Feature, Racial Trait, Feat" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="feat-form-desc">Rules & Benefits</label>
+            <textarea id="feat-form-desc" class="char-form-textarea" rows="4" placeholder="Properties, bonuses, and special rules..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="feat-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="feat-modal-save">Save Feat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Boon / Blessing Modal -->
+  <div id="boon-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="boon-modal-title">
+    <div class="modal__backdrop" id="boon-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">BOON & BLESSING</span>
+          <h2 id="boon-modal-title" class="modal__title">Add Boon / Blessing</h2>
+        </div>
+        <button type="button" class="modal__close" id="boon-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="boon-modal-form" class="char-modal-form">
+        <input type="hidden" id="boon-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="boon-form-name">Boon / Blessing Title <span class="req">*</span></label>
+            <input type="text" id="boon-form-name" class="char-form-input" placeholder="e.g. Blessing of the Sovereign, Touch of Aether" required />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="boon-form-granted">Granted By</label>
+            <input type="text" id="boon-form-granted" class="char-form-input" placeholder="e.g. Azzie, The Elderwood, Dungeon Master" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="boon-form-effect">Power & Effect Details</label>
+            <textarea id="boon-form-effect" class="char-form-textarea" rows="4" placeholder="Special abilities, ongoing blessings, or divine gifts..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="boon-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="boon-modal-save">Save Boon</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Consumable Item Modal -->
+  <div id="consumable-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="consumable-modal-title">
+    <div class="modal__backdrop" id="consumable-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">CONSUMABLE & POTION</span>
+          <h2 id="consumable-modal-title" class="modal__title">Add Consumable Item</h2>
+        </div>
+        <button type="button" class="modal__close" id="consumable-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="consumable-modal-form" class="char-modal-form">
+        <input type="hidden" id="con-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="con-form-name">Item Name <span class="req">*</span></label>
+            <input type="text" id="con-form-name" class="char-form-input" placeholder="e.g. Potion of Greater Healing, Javelin, Holy Water" required />
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="con-form-type">Type</label>
+            <select id="con-form-type" class="char-form-select">
+              <option value="Potion">Potion</option>
+              <option value="Thrown Weapon">Thrown Weapon</option>
+              <option value="Consumable">Consumable</option>
+              <option value="Adventuring Gear">Adventuring Gear</option>
+            </select>
+          </div>
+          <div class="char-form-field" style="flex: 0.8;">
+            <label for="con-form-qty">Quantity</label>
+            <input type="number" id="con-form-qty" class="char-form-input" value="1" min="1" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="con-form-heal">Healing Formula (optional)</label>
+            <input type="text" id="con-form-heal" class="char-form-input" placeholder="e.g. 2d4+2, 4d4+4" />
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="con-form-dmg">Damage Formula (optional)</label>
+            <input type="text" id="con-form-dmg" class="char-form-input" placeholder="e.g. 1d6+3, 2d6" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="con-form-notes">Description / Effects</label>
+            <input type="text" id="con-form-notes" class="char-form-input" placeholder="e.g. Regains HP as an action; Range 30/120" />
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="consumable-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="consumable-modal-save">Save Consumable</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
     <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
       <span>All</span>
@@ -1620,7 +1824,7 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=6" defer></script>
-  <script src="characters.js?v=21" defer></script>
+  <script src="characters.js?v=22" defer></script>
   <script src="grimoire.js?v=1" defer></script>
   <script src="initiative-tracker.js?v=9" defer></script>
   <script src="codex-linker.js?v=1" defer></script>

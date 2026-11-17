@@ -1135,12 +1135,40 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       document.getElementById('equipment-modal-cancel')?.addEventListener('click', () => this.closeEquipmentModal());
       document.getElementById('equipment-modal-form')?.addEventListener('submit', (e) => this.saveEquipmentFromModal(e));
 
-      // Escape key listener for form modals
+      // Divion Modal
+      document.getElementById('divion-modal-close')?.addEventListener('click', () => this.closeDivionModal());
+      document.getElementById('divion-modal-backdrop')?.addEventListener('click', () => this.closeDivionModal());
+      document.getElementById('divion-modal-cancel')?.addEventListener('click', () => this.closeDivionModal());
+      document.getElementById('divion-modal-form')?.addEventListener('submit', (e) => this.saveDivionFromModal(e));
+
+      // Feat Modal
+      document.getElementById('feat-modal-close')?.addEventListener('click', () => this.closeFeatModal());
+      document.getElementById('feat-modal-backdrop')?.addEventListener('click', () => this.closeFeatModal());
+      document.getElementById('feat-modal-cancel')?.addEventListener('click', () => this.closeFeatModal());
+      document.getElementById('feat-modal-form')?.addEventListener('submit', (e) => this.saveFeatFromModal(e));
+
+      // Boon Modal
+      document.getElementById('boon-modal-close')?.addEventListener('click', () => this.closeBoonModal());
+      document.getElementById('boon-modal-backdrop')?.addEventListener('click', () => this.closeBoonModal());
+      document.getElementById('boon-modal-cancel')?.addEventListener('click', () => this.closeBoonModal());
+      document.getElementById('boon-modal-form')?.addEventListener('submit', (e) => this.saveBoonFromModal(e));
+
+      // Consumable Modal
+      document.getElementById('consumable-modal-close')?.addEventListener('click', () => this.closeConsumableModal());
+      document.getElementById('consumable-modal-backdrop')?.addEventListener('click', () => this.closeConsumableModal());
+      document.getElementById('consumable-modal-cancel')?.addEventListener('click', () => this.closeConsumableModal());
+      document.getElementById('consumable-modal-form')?.addEventListener('submit', (e) => this.saveConsumableFromModal(e));
+
+      // Escape key listener for all character form modals
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           if (!document.getElementById('attack-modal')?.classList.contains('hidden')) this.closeAttackModal();
           if (!document.getElementById('magic-item-modal')?.classList.contains('hidden')) this.closeMagicItemModal();
           if (!document.getElementById('equipment-modal')?.classList.contains('hidden')) this.closeEquipmentModal();
+          if (!document.getElementById('divion-modal')?.classList.contains('hidden')) this.closeDivionModal();
+          if (!document.getElementById('feat-modal')?.classList.contains('hidden')) this.closeFeatModal();
+          if (!document.getElementById('boon-modal')?.classList.contains('hidden')) this.closeBoonModal();
+          if (!document.getElementById('consumable-modal')?.classList.contains('hidden')) this.closeConsumableModal();
         }
       });
     }
@@ -1260,24 +1288,28 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const presetSelect = document.getElementById('atk-form-preset-select');
       if (!modal || !form) return;
 
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
+
       const profVal = char.vitals?.profBonus || 2;
       const profLabelEl = document.getElementById('atk-form-prof-val');
       if (profLabelEl) profLabelEl.textContent = `+${profVal}`;
 
-      document.getElementById('atk-form-edit-index').value = (index !== null && index !== undefined) ? index : '';
+      setVal('atk-form-edit-index', (index !== null && index !== undefined) ? index : '');
 
       if (index !== null && index !== undefined && char.attacks && char.attacks[index]) {
         const atk = char.attacks[index];
-        title.textContent = 'Edit Weapon / Action';
-        document.getElementById('atk-form-name').value = atk.name || '';
-        document.getElementById('atk-form-ability').value = atk.ability || 'dex';
-        document.getElementById('atk-form-proficient').checked = atk.isProficient !== false;
-        document.getElementById('atk-form-extra-hit').value = atk.extraHitBonus || 0;
-        document.getElementById('atk-form-dmg-dice').value = atk.damageDice || (atk.damageFormula ? atk.damageFormula.split('+')[0].trim() : '1d8');
-        document.getElementById('atk-form-dmg-type').value = atk.damageType || '';
-        document.getElementById('atk-form-add-ability-dmg').checked = atk.addAbilityToDamage !== false;
-        document.getElementById('atk-form-extra-dmg').value = atk.extraDamageBonus || 0;
-        document.getElementById('atk-form-notes').value = atk.notes || '';
+        if (title) title.textContent = 'Edit Weapon / Action';
+        setVal('atk-form-name', atk.name || '');
+        setVal('atk-form-ability', atk.ability || 'dex');
+        setCheck('atk-form-proficient', atk.isProficient !== false);
+        setVal('atk-form-extra-hit', atk.extraHitBonus || 0);
+        setVal('atk-form-dmg-dice', atk.damageDice || (atk.damageFormula ? atk.damageFormula.split('+')[0].trim() : '1d8'));
+        setVal('atk-form-dmg-type', atk.damageType || '');
+        setCheck('atk-form-add-ability-dmg', atk.addAbilityToDamage !== false);
+        setCheck('atk-form-add-mod', atk.addAbilityToDamage !== false);
+        setVal('atk-form-extra-dmg', atk.extraDamageBonus || 0);
+        setVal('atk-form-notes', atk.notes || '');
 
         if (presetSelect) {
           const matched = SRD_WEAPONS.find(w => 
@@ -1287,21 +1319,22 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           presetSelect.value = matched ? matched.name : '';
         }
       } else {
-        title.textContent = 'Add Weapon / Action';
+        if (title) title.textContent = 'Add Weapon / Action';
         form.reset();
-        document.getElementById('atk-form-edit-index').value = '';
+        setVal('atk-form-edit-index', '');
         if (presetSelect) presetSelect.value = '';
 
         const dexMod = this.getStatMod(char.stats?.dex);
         const strMod = this.getStatMod(char.stats?.str);
-        document.getElementById('atk-form-ability').value = (strMod > dexMod) ? 'str' : 'dex';
-        document.getElementById('atk-form-proficient').checked = true;
-        document.getElementById('atk-form-extra-hit').value = '0';
-        document.getElementById('atk-form-dmg-dice').value = '1d8';
-        document.getElementById('atk-form-dmg-type').value = 'Slashing';
-        document.getElementById('atk-form-add-ability-dmg').checked = true;
-        document.getElementById('atk-form-extra-dmg').value = '0';
-        document.getElementById('atk-form-notes').value = '';
+        setVal('atk-form-ability', (strMod > dexMod) ? 'str' : 'dex');
+        setCheck('atk-form-proficient', true);
+        setVal('atk-form-extra-hit', '0');
+        setVal('atk-form-dmg-dice', '1d8');
+        setVal('atk-form-dmg-type', 'Slashing');
+        setCheck('atk-form-add-ability-dmg', true);
+        setCheck('atk-form-add-mod', true);
+        setVal('atk-form-extra-dmg', '0');
+        setVal('atk-form-notes', '');
       }
 
       this.updateAttackModalPreview();
@@ -1322,7 +1355,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const extraHit = parseInt(document.getElementById('atk-form-extra-hit')?.value, 10) || 0;
       const dmgDice = (document.getElementById('atk-form-dmg-dice')?.value || '1d8').trim();
       const dmgType = (document.getElementById('atk-form-dmg-type')?.value || '').trim();
-      const addAbilityDmg = document.getElementById('atk-form-add-ability-dmg')?.checked;
+      const addAbilityEl = document.getElementById('atk-form-add-ability-dmg') || document.getElementById('atk-form-add-mod');
+      const addAbilityDmg = addAbilityEl ? addAbilityEl.checked : true;
       const extraDmg = parseInt(document.getElementById('atk-form-extra-dmg')?.value, 10) || 0;
 
       const abilityMod = ability !== 'none' ? this.getStatMod(char.stats?.[ability]) : 0;
@@ -1330,7 +1364,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const totalHit = abilityMod + profBonus + extraHit;
       const hitPreview = totalHit >= 0 ? `+${totalHit} to hit` : `${totalHit} to hit`;
 
-      const abilityDmgLabel = document.getElementById('atk-form-ability-dmg-val');
+      const abilityDmgLabel = document.getElementById('atk-form-ability-dmg-val') || document.getElementById('atk-form-dmg-mod-val');
       if (abilityDmgLabel) {
         if (ability !== 'none') {
           abilityDmgLabel.textContent = `+${ability.toUpperCase()} (${abilityMod >= 0 ? `+${abilityMod}` : abilityMod})`;
@@ -1366,7 +1400,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const extraHitBonus = parseInt(document.getElementById('atk-form-extra-hit')?.value, 10) || 0;
       const damageDice = (document.getElementById('atk-form-dmg-dice')?.value || '1d8').trim();
       const damageType = (document.getElementById('atk-form-dmg-type')?.value || '').trim();
-      const addAbilityToDamage = document.getElementById('atk-form-add-ability-dmg')?.checked !== false;
+      const addAbilityEl = document.getElementById('atk-form-add-ability-dmg') || document.getElementById('atk-form-add-mod');
+      const addAbilityToDamage = addAbilityEl ? addAbilityEl.checked !== false : true;
       const extraDamageBonus = parseInt(document.getElementById('atk-form-extra-dmg')?.value, 10) || 0;
       const notes = (document.getElementById('atk-form-notes')?.value || '').trim();
 
@@ -1520,6 +1555,275 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
       this.saveStorage();
       this.closeEquipmentModal();
+      this.renderTabContent();
+    }
+
+    // DIVION MODAL
+    openDivionModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('divion-modal');
+      const form = document.getElementById('divion-modal-form');
+      const title = document.getElementById('divion-modal-title');
+      if (!modal || !form) return;
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      setVal('div-form-edit-index', (index !== null && index !== undefined) ? index : '');
+
+      if (index !== null && index !== undefined && char.divions && char.divions[index]) {
+        const div = char.divions[index];
+        if (title) title.textContent = 'Edit Manifestation';
+        setVal('div-form-name', div.name || '');
+        setVal('div-form-type', div.type || '');
+        setVal('div-form-rank', div.rank || 'Tier I');
+        setVal('div-form-cost', div.cost || '');
+        setVal('div-form-effect', div.manifestEffect || '');
+      } else {
+        if (title) title.textContent = 'Add Manifestation';
+        form.reset();
+        setVal('div-form-edit-index', '');
+        setVal('div-form-rank', 'Tier I');
+        setVal('div-form-cost', '1 Flow');
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('div-form-name')?.focus();
+    }
+
+    closeDivionModal() {
+      document.getElementById('divion-modal')?.classList.add('hidden');
+    }
+
+    saveDivionFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.divions)) char.divions = [];
+
+      const indexStr = document.getElementById('div-form-edit-index')?.value;
+      const name = (document.getElementById('div-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const type = (document.getElementById('div-form-type')?.value || '').trim();
+      const rank = (document.getElementById('div-form-rank')?.value || 'Tier I').trim();
+      const cost = (document.getElementById('div-form-cost')?.value || '').trim();
+      const manifestEffect = (document.getElementById('div-form-effect')?.value || '').trim();
+
+      const divData = { name, type, rank, cost, manifestEffect };
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        divData.id = char.divions[idx]?.id || `div_${Date.now()}`;
+        char.divions[idx] = divData;
+      } else {
+        divData.id = `div_${Date.now()}`;
+        char.divions.push(divData);
+      }
+
+      this.saveStorage();
+      this.closeDivionModal();
+      this.renderTabContent();
+    }
+
+    // FEAT MODAL
+    openFeatModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('feat-modal');
+      const form = document.getElementById('feat-modal-form');
+      const title = document.getElementById('feat-modal-title');
+      if (!modal || !form) return;
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      setVal('feat-form-edit-index', (index !== null && index !== undefined) ? index : '');
+
+      if (index !== null && index !== undefined && char.feats && char.feats[index]) {
+        const feat = char.feats[index];
+        if (title) title.textContent = 'Edit Feat / Trait';
+        setVal('feat-form-name', feat.name || '');
+        setVal('feat-form-source', feat.source || '');
+        setVal('feat-form-desc', feat.description || '');
+      } else {
+        if (title) title.textContent = 'Add Feat / Trait';
+        form.reset();
+        setVal('feat-form-edit-index', '');
+        setVal('feat-form-source', 'Class Feature');
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('feat-form-name')?.focus();
+    }
+
+    closeFeatModal() {
+      document.getElementById('feat-modal')?.classList.add('hidden');
+    }
+
+    saveFeatFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.feats)) char.feats = [];
+
+      const indexStr = document.getElementById('feat-form-edit-index')?.value;
+      const name = (document.getElementById('feat-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const source = (document.getElementById('feat-form-source')?.value || 'Feat').trim();
+      const description = (document.getElementById('feat-form-desc')?.value || '').trim();
+
+      const featData = { name, source, description };
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        featData.id = char.feats[idx]?.id || `feat_${Date.now()}`;
+        char.feats[idx] = featData;
+      } else {
+        featData.id = `feat_${Date.now()}`;
+        char.feats.push(featData);
+      }
+
+      this.saveStorage();
+      this.closeFeatModal();
+      this.renderTabContent();
+    }
+
+    // BOON MODAL
+    openBoonModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('boon-modal');
+      const form = document.getElementById('boon-modal-form');
+      const title = document.getElementById('boon-modal-title');
+      if (!modal || !form) return;
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      setVal('boon-form-edit-index', (index !== null && index !== undefined) ? index : '');
+
+      if (index !== null && index !== undefined && char.boons && char.boons[index]) {
+        const boon = char.boons[index];
+        if (title) title.textContent = 'Edit Boon / Blessing';
+        setVal('boon-form-name', boon.name || '');
+        setVal('boon-form-granted', boon.grantedBy || '');
+        setVal('boon-form-effect', boon.effect || '');
+      } else {
+        if (title) title.textContent = 'Add Boon / Blessing';
+        form.reset();
+        setVal('boon-form-edit-index', '');
+        setVal('boon-form-granted', 'Dungeon Master');
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('boon-form-name')?.focus();
+    }
+
+    closeBoonModal() {
+      document.getElementById('boon-modal')?.classList.add('hidden');
+    }
+
+    saveBoonFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.boons)) char.boons = [];
+
+      const indexStr = document.getElementById('boon-form-edit-index')?.value;
+      const name = (document.getElementById('boon-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const grantedBy = (document.getElementById('boon-form-granted')?.value || 'Dungeon Master').trim();
+      const effect = (document.getElementById('boon-form-effect')?.value || '').trim();
+
+      const boonData = { name, grantedBy, effect };
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        boonData.id = char.boons[idx]?.id || `boon_${Date.now()}`;
+        char.boons[idx] = boonData;
+      } else {
+        boonData.id = `boon_${Date.now()}`;
+        char.boons.push(boonData);
+      }
+
+      this.saveStorage();
+      this.closeBoonModal();
+      this.renderTabContent();
+    }
+
+    // CONSUMABLE MODAL
+    openConsumableModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('consumable-modal');
+      const form = document.getElementById('consumable-modal-form');
+      const title = document.getElementById('consumable-modal-title');
+      if (!modal || !form) return;
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      setVal('con-form-edit-index', (index !== null && index !== undefined) ? index : '');
+
+      if (index !== null && index !== undefined && char.consumables && char.consumables[index]) {
+        const con = char.consumables[index];
+        if (title) title.textContent = 'Edit Consumable Item';
+        setVal('con-form-name', con.name || '');
+        setVal('con-form-type', con.type || 'Potion');
+        setVal('con-form-qty', con.qty || 1);
+        setVal('con-form-heal', con.healFormula || '');
+        setVal('con-form-dmg', con.damageFormula || '');
+        setVal('con-form-notes', con.notes || '');
+      } else {
+        if (title) title.textContent = 'Add Consumable Item';
+        form.reset();
+        setVal('con-form-edit-index', '');
+        setVal('con-form-type', 'Potion');
+        setVal('con-form-qty', 1);
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('con-form-name')?.focus();
+    }
+
+    closeConsumableModal() {
+      document.getElementById('consumable-modal')?.classList.add('hidden');
+    }
+
+    saveConsumableFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.consumables)) char.consumables = [];
+
+      const indexStr = document.getElementById('con-form-edit-index')?.value;
+      const name = (document.getElementById('con-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const type = (document.getElementById('con-form-type')?.value || 'Potion').trim();
+      const qty = parseInt(document.getElementById('con-form-qty')?.value, 10) || 1;
+      const healFormula = (document.getElementById('con-form-heal')?.value || '').trim();
+      const damageFormula = (document.getElementById('con-form-dmg')?.value || '').trim();
+      const notes = (document.getElementById('con-form-notes')?.value || '').trim();
+
+      const conData = { name, type, qty, notes };
+      if (healFormula) conData.healFormula = healFormula;
+      if (damageFormula) conData.damageFormula = damageFormula;
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        conData.id = char.consumables[idx]?.id || `con_${Date.now()}`;
+        if (char.consumables[idx]?.bonus !== undefined) {
+          conData.bonus = char.consumables[idx].bonus;
+        }
+        char.consumables[idx] = conData;
+      } else {
+        conData.id = `con_${Date.now()}`;
+        char.consumables.push(conData);
+      }
+
+      this.saveStorage();
+      this.closeConsumableModal();
       this.renderTabContent();
     }
 
@@ -2181,7 +2485,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             No spells currently inscribed in ${escapeHtml(char.name)}'s spellbook.
             <div style="margin-top: 0.6rem;">
               <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-grimoire-empty">
-                ✨ Browse Grimoire to Inscribe Spells
+                Browse Grimoire to Inscribe Spells
               </button>
             </div>
           </div>
@@ -2229,7 +2533,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             <div class="item-card-header">
               <div>
                 <strong class="item-card-title item-shareable-title" data-share-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Click to share spell details to party Roll Log">
-                  ${escapeHtml(sp.name)} <span class="share-hint-icon" aria-hidden="true">📜</span>
+                  ${escapeHtml(sp.name)}
                 </strong>
                 <span class="spell-level-badge">${sp.levelLabel} ${escapeHtml(sp.school || '')}</span>
                 ${sp.concentration ? '<span class="spell-tag-badge spell-tag--conc" title="Requires Concentration">C</span>' : ''}
@@ -2617,12 +2921,13 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-divion-card">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="divion" data-index="${index}" title="Click to share manifestation lore to party Roll Log">${escapeHtml(div.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="divion" data-index="${index}" title="Click to share manifestation lore to party Roll Log">${escapeHtml(div.name)}</strong>
                 <span class="divion-badge-type">${escapeHtml(div.type || 'Manifest')}</span>
                 <span class="divion-badge-rank">${escapeHtml(div.rank || 'Tier I')}</span>
               </div>
               <div style="display: flex; gap: 0.35rem; align-items: center;">
-                <button type="button" class="btn btn-secondary btn-xs divion-channel-btn" data-index="${index}" title="Channel Flow and announce to party">✨ Channel</button>
+                <button type="button" class="btn btn-secondary btn-xs divion-channel-btn" data-index="${index}" title="Channel Flow and announce to party">Channel</button>
+                <button type="button" class="char-item-edit-btn" data-type="divion" data-index="${index}" title="Edit Divion">Edit</button>
                 ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="divion" data-index="${index}" title="Remove Divion">✕</button>` : ''}
               </div>
             </div>
@@ -2641,10 +2946,13 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card" data-index="${index}">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="feat" data-index="${index}" title="Click to share feat info to party Roll Log">${escapeHtml(feat.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="feat" data-index="${index}" title="Click to share feat info to party Roll Log">${escapeHtml(feat.name)}</strong>
                 <span class="feat-source-badge">${escapeHtml(feat.source || 'Feat')}</span>
               </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}" title="Remove Feat">✕</button>` : ''}
+              <div style="display: flex; gap: 0.35rem; align-items: center;">
+                <button type="button" class="char-item-edit-btn" data-type="feat" data-index="${index}" title="Edit Feat">Edit</button>
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="feat" data-index="${index}" title="Remove Feat">✕</button>` : ''}
+              </div>
             </div>
             <div class="feat-desc">${escapeHtml(feat.description || '')}</div>
           </div>
@@ -2660,10 +2968,13 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-boon-card" data-index="${index}">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="boon" data-index="${index}" title="Click to share boon to party Roll Log">${escapeHtml(boon.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="boon" data-index="${index}" title="Click to share boon to party Roll Log">${escapeHtml(boon.name)}</strong>
                 <span class="boon-granted-by">Granted by: <em>${escapeHtml(boon.grantedBy || 'Dungeon Master')}</em></span>
               </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
+              <div style="display: flex; gap: 0.35rem; align-items: center;">
+                <button type="button" class="char-item-edit-btn" data-type="boon" data-index="${index}" title="Edit Boon">Edit</button>
+                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="boon" data-index="${index}" title="Remove Boon">✕</button>` : ''}
+              </div>
             </div>
             <div class="boon-effect">${escapeHtml(boon.effect || '')}</div>
           </div>
@@ -2679,7 +2990,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>🔮 Divions & Flow Manifestations</h3>
+              <h3>Divions & Flow Manifestations</h3>
               <p class="section-subtitle">Canon Magic System: Channeling Flow through divine domains and personal manifests</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-divion">+ Add Divion</button>` : ''}
@@ -2691,7 +3002,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>📜 Feats, Class Features & Traits</h3>
+              <h3>Feats, Class Features & Traits</h3>
               <p class="section-subtitle">Passive benefits, racial abilities, specializations, and prepared spells</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-feat">+ Add Feat / Feature</button>` : ''}
@@ -2703,7 +3014,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>🎁 DM Boons & Divine Blessings</h3>
+              <h3>DM Boons & Divine Blessings</h3>
               <p class="section-subtitle">Special campaign rewards, patron blessings, and narrative miracles bestowed by the DM</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-boon">+ Add Boon / Blessing</button>` : ''}
@@ -2725,41 +3036,29 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Item Edit button listeners (Available in both play and edit modes)
+      container.querySelectorAll('.char-item-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const type = btn.dataset.type;
+          const idx = parseInt(btn.dataset.index, 10);
+          if (type === 'divion') this.openDivionModal(idx);
+          else if (type === 'feat') this.openFeatModal(idx);
+          else if (type === 'boon') this.openBoonModal(idx);
+        });
+      });
+
       // Edit Mode handlers
       if (this.isEditMode) {
         container.querySelector('#btn-add-divion')?.addEventListener('click', () => {
-          const name = prompt('Divion / Manifest Name:');
-          if (!name) return;
-          const type = prompt('Domain / School (e.g. Illusion, Light, Kinetic, Primal):', 'Domain Manifest') || '';
-          const rank = prompt('Tier / Rank (e.g. Tier I, Tier II, Master):', 'Tier I') || '';
-          const cost = prompt('Flow / Aether Cost (e.g. 1 Flow, 2 Shards):', '1 Flow') || '';
-          const manifestEffect = prompt('Manifestation Effect & Lore:') || '';
-
-          char.divions.push({ id: `div_${Date.now()}`, name, type, rank, cost, manifestEffect });
-          this.saveStorage();
-          this.renderDivionsTab(container, char);
+          this.openDivionModal(null);
         });
 
         container.querySelector('#btn-add-feat')?.addEventListener('click', () => {
-          const name = prompt('Feat / Trait Name:');
-          if (!name) return;
-          const source = prompt('Source (e.g. Class Feature, Racial Trait, Feat):', 'Class Feature') || 'Feat';
-          const description = prompt('Feat Rules & Benefits:') || '';
-
-          char.feats.push({ id: `feat_${Date.now()}`, name, source, description });
-          this.saveStorage();
-          this.renderDivionsTab(container, char);
+          this.openFeatModal(null);
         });
 
         container.querySelector('#btn-add-boon')?.addEventListener('click', () => {
-          const name = prompt('Boon / Blessing Title:');
-          if (!name) return;
-          const grantedBy = prompt('Granted By (e.g. Azzie, The High Sovereign):', 'Dungeon Master') || 'Dungeon Master';
-          const effect = prompt('Boon Effect / Power details:') || '';
-
-          char.boons.push({ id: `boon_${Date.now()}`, name, grantedBy, effect });
-          this.saveStorage();
-          this.renderDivionsTab(container, char);
+          this.openBoonModal(null);
         });
 
         container.querySelectorAll('.char-item-del-btn').forEach(btn => {
@@ -2829,7 +3128,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <div class="item-card-header">
                 <div>
                   <strong class="item-card-title item-shareable-title" data-share-type="consumable" data-index="${index}" title="Click to share item to party Roll Log">
-                    ${escapeHtml(con.name)} <span class="share-hint-icon" aria-hidden="true">📜</span>
+                    ${escapeHtml(con.name)}
                   </strong>
                   <span class="consumable-badge-type consumable-badge--${typeCls}">${escapeHtml(con.type || 'Consumable')}</span>
                 </div>
@@ -2839,6 +3138,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
                     <span class="con-qty-display">${con.qty > 0 ? `x${con.qty}` : '<em class="con-depleted-text">Out</em>'}</span>
                     <button type="button" class="con-step-btn con-step-plus" data-index="${index}" title="Add / Restock quantity">+</button>
                   </div>
+                  <button type="button" class="char-item-edit-btn" data-type="consumable" data-index="${index}" title="Edit Item">Edit</button>
                   ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="consumable" data-index="${index}" title="Remove Item">✕</button>` : ''}
                 </div>
               </div>
@@ -2856,23 +3156,23 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <div class="con-action-buttons">
                 ${isHealing ? `
                   <button type="button" class="btn btn-secondary btn-sm con-drink-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Drink potion, roll healing, and decrement quantity">
-                    🧪 Drink / Heal (${con.healFormula || '2d4+2'})
+                    Drink / Heal (${con.healFormula || '2d4+2'})
                   </button>
                 ` : ''}
                 ${hasDamage ? `
                   <button type="button" class="btn btn-secondary btn-sm con-throw-atk-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''}>
-                    🎲 Throw Atk (${hasBonus ? (con.bonus >= 0 ? '+' + con.bonus : con.bonus) : '+0'})
+                    Throw Atk (${hasBonus ? (con.bonus >= 0 ? '+' + con.bonus : con.bonus) : '+0'})
                   </button>
                   <button type="button" class="btn btn-secondary btn-sm con-throw-dmg-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''}>
-                    💥 Throw Dmg (${escapeHtml(con.damageFormula)})
+                    Throw Dmg (${escapeHtml(con.damageFormula)})
                   </button>
                   <button type="button" class="btn btn-secondary btn-sm con-throw-expend-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Expend 1 thrown weapon">
-                    🎯 Throw (-1)
+                    Throw (-1)
                   </button>
                 ` : ''}
                 ${(!isHealing && !hasDamage) ? `
                   <button type="button" class="btn btn-secondary btn-sm con-use-btn" data-index="${index}" ${con.qty <= 0 ? 'disabled' : ''} title="Use item and decrease quantity by 1">
-                    ✨ Use Item (-1)
+                    Use Item (-1)
                   </button>
                 ` : ''}
               </div>
@@ -2890,7 +3190,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>💰 Campaign Wealth & Currencies</h3>
+              <h3>Campaign Wealth & Currencies</h3>
               <p class="section-subtitle">Live purse steppers with instant audio feedback and cloud sync</p>
             </div>
           </div>
@@ -2903,7 +3203,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>🧪 Potions, Throwing Weapons & Consumables</h3>
+              <h3>Potions, Throwing Weapons & Consumables</h3>
               <p class="section-subtitle">Potions, thrown javelins/daggers, adventuring rations, and one-time glyphs</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-consumable">+ Add Consumable Item</button>` : ''}
@@ -3053,37 +3353,18 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Item Edit button listeners (Available in both play and edit modes)
+      container.querySelectorAll('.char-item-edit-btn[data-type="consumable"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          this.openConsumableModal(idx);
+        });
+      });
+
       // Edit Mode Add / Delete Consumables
       if (this.isEditMode) {
         container.querySelector('#btn-add-consumable')?.addEventListener('click', () => {
-          const name = prompt('Consumable Item Name (e.g. Potion of Greater Healing, Javelin):');
-          if (!name) return;
-          const type = prompt('Type (Potion, Thrown Weapon, Consumable, Adventuring Gear):', 'Potion') || 'Consumable';
-          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
-          const healFormula = prompt('Healing Formula (optional, e.g. 2d4+2, 4d4+4; leave blank if none):', '') || '';
-          const damageFormula = prompt('Damage Formula (optional, e.g. 1d6+3; leave blank if none):', '') || '';
-          let bonus = undefined;
-          if (damageFormula) {
-            bonus = parseInt(prompt('Attack Bonus (e.g. 6 for +6):', '0'), 10) || 0;
-          }
-          const notes = prompt('Description / Effects:', '') || '';
-
-          const newCon = {
-            id: `con_${Date.now()}`,
-            name,
-            type,
-            qty,
-            notes
-          };
-          if (healFormula) newCon.healFormula = healFormula;
-          if (damageFormula) {
-            newCon.damageFormula = damageFormula;
-            newCon.bonus = bonus;
-          }
-
-          char.consumables.push(newCon);
-          this.saveStorage();
-          this.renderItemsTab(container, char);
+          this.openConsumableModal(null);
         });
 
         container.querySelectorAll('.char-item-del-btn[data-type="consumable"]').forEach(btn => {
@@ -3109,7 +3390,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           </div>
           <div class="char-sub-section">
             <div class="char-section-head">
-              <h3>📝 Character Lore & Session Notes</h3>
+              <h3>Character Lore & Session Notes</h3>
             </div>
             <div class="char-notes-box char-notes-view">
               <div class="notes-rendered-text">${text}</div>
@@ -3123,7 +3404,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           </div>
           <div class="char-sub-section">
             <div class="char-section-head">
-              <h3>📝 Character Lore & Session Notes</h3>
+              <h3>Character Lore & Session Notes</h3>
             </div>
             <div class="char-notes-box">
               <textarea id="char-notes-textarea" class="char-notes-input" placeholder="Write backstory details, campaign reminders, personal goals, and session highlights...">${escapeHtml(char.notes || '')}</textarea>
