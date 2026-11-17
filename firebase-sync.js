@@ -194,6 +194,7 @@
 
             // 4. Sync Characters Roster (only if party actually changed, was not sent by self, and no pending local changes)
             if (Array.isArray(data.party)) {
+              data.party = data.party.filter(c => c && c.name && !String(c.name).toLowerCase().includes('awd'));
               const partyJson = JSON.stringify(data.party);
               const isFromSelf = Boolean(data.partySenderId && data.partySenderId === this.clientId);
               const isDifferent = partyJson !== this.lastPartyJson;

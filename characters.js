@@ -735,6 +735,15 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.loadStorage();
     }
 
+    sanitizeCharacters(list) {
+      if (!Array.isArray(list)) return [];
+      return list.filter(c => {
+        if (!c || !c.name) return false;
+        const n = String(c.name).trim().toLowerCase();
+        return n !== 'awd' && !n.includes('awd');
+      });
+    }
+
     loadStorage() {
       try {
         const rosterVersion = localStorage.getItem(ROSTER_VERSION_KEY);
@@ -743,7 +752,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           this.characters = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
           this.activeCharId = 'char_valorie';
           localStorage.setItem(ROSTER_VERSION_KEY, CURRENT_ROSTER_VERSION);
-          this.saveStorage(false);
+          this.saveStorage(true);
           return;
         }
 
@@ -765,9 +774,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       if (Array.isArray(this.characters)) {
         // Clean up test characters (e.g. 'awd')
         const initCount = this.characters.length;
-        this.characters = this.characters.filter(c => c && c.name && c.name.trim().toLowerCase() !== 'awd');
+        this.characters = this.sanitizeCharacters(this.characters);
         if (this.characters.length !== initCount) {
-          this.saveStorage(false);
+          this.saveStorage(true);
         }
 
         this.characters.forEach(c => {
@@ -826,12 +835,19 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
     onRemoteCharacters(remoteParty, broadcast = false) {
       if (!Array.isArray(remoteParty) || remoteParty.length === 0) return;
 
+      const initLen = remoteParty.length;
+      remoteParty = this.sanitizeCharacters(remoteParty);
+      const hadTestChars = remoteParty.length !== initLen;
+
       if (this.debounceTimer) {
         console.warn('[CharacterSheet] Ignoring remote characters update due to pending local modifications.');
         return;
       }
 
       if (JSON.stringify(remoteParty) === JSON.stringify(this.characters)) {
+        if (hadTestChars) {
+          this.saveStorage(true);
+        }
         return;
       }
 
@@ -847,6 +863,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.renderRollTracker();
       if (window.InitiativeTracker && typeof window.InitiativeTracker.render === 'function') {
         window.InitiativeTracker.render();
+      }
+
+      if (hadTestChars) {
+        this.saveStorage(true);
       }
     }
 
@@ -1914,6 +1934,12 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const rosterContainer = document.getElementById('char-roster-list');
       if (!rosterContainer) return;
 
+      const beforeLen = this.characters.length;
+      this.characters = this.sanitizeCharacters(this.characters);
+      if (this.characters.length !== beforeLen) {
+        this.saveStorage(true);
+      }
+
       rosterContainer.innerHTML = '';
       this.characters.forEach(char => {
         const btn = document.createElement('button');
@@ -1995,15 +2021,20 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <input type="text" id="char-player-input" class="persona-input" value="${escapeHtml(char.player || '')}" placeholder="Player or DM" />
             </div>
           </div>
-          <div class="persona-row persona-row-secondary">
-            <div class="persona-field">
-              <label for="char-heritage-input">Race</label>
-              <input type="text" id="char-heritage-input" class="persona-input" value="${escapeHtml(char.heritage || '')}" placeholder="e.g. Human" />
+          <div class="persona-row persona-row-secondary" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div style="display: flex; gap: 1rem; flex: 1;">
+              <div class="persona-field">
+                <label for="char-heritage-input">Race</label>
+                <input type="text" id="char-heritage-input" class="persona-input" value="${escapeHtml(char.heritage || '')}" placeholder="e.g. Human" />
+              </div>
+              <div class="persona-field">
+                <label for="char-align-input">Alignment</label>
+                <input type="text" id="char-align-input" class="persona-input" value="${escapeHtml(char.alignment || '')}" placeholder="e.g. Chaotic Good" />
+              </div>
             </div>
-            <div class="persona-field">
-              <label for="char-align-input">Alignment</label>
-              <input type="text" id="char-align-input" class="persona-input" value="${escapeHtml(char.alignment || '')}" placeholder="e.g. Chaotic Good" />
-            </div>
+            ${this.characters.length > 1 ? `
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-delete-active-char" style="color: #f87171; border-color: rgba(248,113,113,0.3); margin-bottom: 2px;" title="Permanently remove this character">Delete Character</button>
+            ` : ''}
           </div>
         `;
 
@@ -2021,6 +2052,17 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         bind('char-class-input', 'classLevel');
         bind('char-heritage-input', 'heritage');
         bind('char-align-input', 'alignment');
+
+        container.querySelector('#btn-delete-active-char')?.addEventListener('click', () => {
+          if (confirm(`Are you sure you want to delete "${char.name}" from the party roster?`)) {
+            this.characters = this.characters.filter(c => c.id !== char.id);
+            this.activeCharId = this.characters[0] ? this.characters[0].id : null;
+            this.saveStorage(true);
+            this.renderRosterBar();
+            this.renderCurrentSheet();
+            window.showToast?.(`Deleted "${char.name}"`, 'info', 2000);
+          }
+        });
       }
     }
 
