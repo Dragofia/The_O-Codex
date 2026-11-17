@@ -999,6 +999,367 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       window.addEventListener('diceroller:new-roll', () => {
         this.renderRollTracker();
       });
+
+      // Character Form Modals (Attacks, Magic Items, Equipment)
+      document.getElementById('attack-modal-close')?.addEventListener('click', () => this.closeAttackModal());
+      document.getElementById('attack-modal-backdrop')?.addEventListener('click', () => this.closeAttackModal());
+      document.getElementById('attack-modal-cancel')?.addEventListener('click', () => this.closeAttackModal());
+      document.getElementById('attack-modal-form')?.addEventListener('submit', (e) => this.saveAttackFromModal(e));
+
+      // Quick dice pills in attack modal
+      document.querySelectorAll('.char-dice-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const dice = pill.dataset.dice;
+          const input = document.getElementById('atk-form-dmg-dice');
+          if (input && dice) {
+            input.value = dice;
+            this.updateAttackModalPreview();
+          }
+        });
+      });
+
+      // Quick type pills in attack modal
+      document.querySelectorAll('.char-type-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const type = pill.dataset.type;
+          const input = document.getElementById('atk-form-dmg-type');
+          if (input && type) {
+            input.value = type;
+            this.updateAttackModalPreview();
+          }
+        });
+      });
+
+      // Attack modal inputs dynamic preview listeners
+      ['atk-form-ability', 'atk-form-proficient', 'atk-form-extra-hit', 'atk-form-dmg-dice', 'atk-form-dmg-type', 'atk-form-add-ability-dmg', 'atk-form-extra-dmg'].forEach(id => {
+        const el = document.getElementById(id);
+        el?.addEventListener('input', () => this.updateAttackModalPreview());
+        el?.addEventListener('change', () => this.updateAttackModalPreview());
+      });
+
+      // Magic Item Modal
+      document.getElementById('magic-item-modal-close')?.addEventListener('click', () => this.closeMagicItemModal());
+      document.getElementById('magic-item-modal-backdrop')?.addEventListener('click', () => this.closeMagicItemModal());
+      document.getElementById('magic-item-modal-cancel')?.addEventListener('click', () => this.closeMagicItemModal());
+      document.getElementById('magic-item-modal-form')?.addEventListener('submit', (e) => this.saveMagicItemFromModal(e));
+
+      // Equipment Modal
+      document.getElementById('equipment-modal-close')?.addEventListener('click', () => this.closeEquipmentModal());
+      document.getElementById('equipment-modal-backdrop')?.addEventListener('click', () => this.closeEquipmentModal());
+      document.getElementById('equipment-modal-cancel')?.addEventListener('click', () => this.closeEquipmentModal());
+      document.getElementById('equipment-modal-form')?.addEventListener('submit', (e) => this.saveEquipmentFromModal(e));
+
+      // Escape key listener for form modals
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (!document.getElementById('attack-modal')?.classList.contains('hidden')) this.closeAttackModal();
+          if (!document.getElementById('magic-item-modal')?.classList.contains('hidden')) this.closeMagicItemModal();
+          if (!document.getElementById('equipment-modal')?.classList.contains('hidden')) this.closeEquipmentModal();
+        }
+      });
+    }
+
+    // STAT MOD & DYNAMIC COMBAT HELPERS
+    getStatMod(score) {
+      const s = parseInt(score, 10);
+      return Math.floor(((isNaN(s) ? 10 : s) - 10) / 2);
+    }
+
+    computeAttackBonus(char, atk) {
+      if (!atk) return 0;
+      if (atk.ability && atk.ability !== 'none') {
+        const mod = this.getStatMod(char?.stats?.[atk.ability]);
+        const prof = (atk.isProficient !== false) ? (char?.vitals?.profBonus || 2) : 0;
+        const extra = parseInt(atk.extraHitBonus, 10) || 0;
+        return mod + prof + extra;
+      }
+      if (typeof atk.bonus === 'number') return atk.bonus;
+      const parsed = parseInt(atk.bonus, 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    computeDamageFormula(char, atk) {
+      if (!atk) return '1d8';
+      if (atk.damageDice) {
+        let mod = 0;
+        if (atk.ability && atk.ability !== 'none' && atk.addAbilityToDamage !== false) {
+          mod = this.getStatMod(char?.stats?.[atk.ability]);
+        }
+        const extra = parseInt(atk.extraDamageBonus, 10) || 0;
+        const total = mod + extra;
+        if (total > 0) return `${atk.damageDice} + ${total}`;
+        if (total < 0) return `${atk.damageDice} - ${Math.abs(total)}`;
+        return `${atk.damageDice}`;
+      }
+      if (atk.damageFormula) {
+        return atk.damageFormula.replace(/\b(STR|DEX|CON|INT|WIS|CHA)\b/gi, (match) => {
+          const m = this.getStatMod(char?.stats?.[match.toLowerCase()]);
+          return m >= 0 ? `+ ${m}` : `- ${Math.abs(m)}`;
+        }).replace(/\+\s*\+/g, '+').replace(/\+\s*\-/g, '-');
+      }
+      return '1d8';
+    }
+
+    // MODAL CONTROLLERS
+    openAttackModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('attack-modal');
+      const form = document.getElementById('attack-modal-form');
+      const title = document.getElementById('attack-modal-title');
+      if (!modal || !form) return;
+
+      const profVal = char.vitals?.profBonus || 2;
+      const profLabelEl = document.getElementById('atk-form-prof-val');
+      if (profLabelEl) profLabelEl.textContent = `+${profVal}`;
+
+      document.getElementById('atk-form-edit-index').value = (index !== null && index !== undefined) ? index : '';
+
+      if (index !== null && index !== undefined && char.attacks && char.attacks[index]) {
+        const atk = char.attacks[index];
+        title.textContent = 'Edit Weapon / Action';
+        document.getElementById('atk-form-name').value = atk.name || '';
+        document.getElementById('atk-form-ability').value = atk.ability || 'dex';
+        document.getElementById('atk-form-proficient').checked = atk.isProficient !== false;
+        document.getElementById('atk-form-extra-hit').value = atk.extraHitBonus || 0;
+        document.getElementById('atk-form-dmg-dice').value = atk.damageDice || (atk.damageFormula ? atk.damageFormula.split('+')[0].trim() : '1d8');
+        document.getElementById('atk-form-dmg-type').value = atk.damageType || '';
+        document.getElementById('atk-form-add-ability-dmg').checked = atk.addAbilityToDamage !== false;
+        document.getElementById('atk-form-extra-dmg').value = atk.extraDamageBonus || 0;
+        document.getElementById('atk-form-notes').value = atk.notes || '';
+      } else {
+        title.textContent = 'Add Weapon / Action';
+        form.reset();
+        document.getElementById('atk-form-edit-index').value = '';
+        const dexMod = this.getStatMod(char.stats?.dex);
+        const strMod = this.getStatMod(char.stats?.str);
+        document.getElementById('atk-form-ability').value = (strMod > dexMod) ? 'str' : 'dex';
+        document.getElementById('atk-form-proficient').checked = true;
+        document.getElementById('atk-form-extra-hit').value = '0';
+        document.getElementById('atk-form-dmg-dice').value = '1d8';
+        document.getElementById('atk-form-dmg-type').value = 'Slashing';
+        document.getElementById('atk-form-add-ability-dmg').checked = true;
+        document.getElementById('atk-form-extra-dmg').value = '0';
+        document.getElementById('atk-form-notes').value = '';
+      }
+
+      this.updateAttackModalPreview();
+      modal.classList.remove('hidden');
+      document.getElementById('atk-form-name')?.focus();
+    }
+
+    closeAttackModal() {
+      document.getElementById('attack-modal')?.classList.add('hidden');
+    }
+
+    updateAttackModalPreview() {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+
+      const ability = document.getElementById('atk-form-ability')?.value || 'dex';
+      const isProf = document.getElementById('atk-form-proficient')?.checked;
+      const extraHit = parseInt(document.getElementById('atk-form-extra-hit')?.value, 10) || 0;
+      const dmgDice = (document.getElementById('atk-form-dmg-dice')?.value || '1d8').trim();
+      const dmgType = (document.getElementById('atk-form-dmg-type')?.value || '').trim();
+      const addAbilityDmg = document.getElementById('atk-form-add-ability-dmg')?.checked;
+      const extraDmg = parseInt(document.getElementById('atk-form-extra-dmg')?.value, 10) || 0;
+
+      const abilityMod = ability !== 'none' ? this.getStatMod(char.stats?.[ability]) : 0;
+      const profBonus = isProf ? (char.vitals?.profBonus || 2) : 0;
+      const totalHit = abilityMod + profBonus + extraHit;
+      const hitPreview = totalHit >= 0 ? `+${totalHit} to hit` : `${totalHit} to hit`;
+
+      const abilityDmgLabel = document.getElementById('atk-form-ability-dmg-val');
+      if (abilityDmgLabel) {
+        if (ability !== 'none') {
+          abilityDmgLabel.textContent = `+${ability.toUpperCase()} (${abilityMod >= 0 ? `+${abilityMod}` : abilityMod})`;
+        } else {
+          abilityDmgLabel.textContent = `+0`;
+        }
+      }
+
+      const totalDmgMod = (addAbilityDmg && ability !== 'none' ? abilityMod : 0) + extraDmg;
+      let dmgPreview = dmgDice;
+      if (totalDmgMod > 0) dmgPreview += ` + ${totalDmgMod}`;
+      else if (totalDmgMod < 0) dmgPreview += ` - ${Math.abs(totalDmgMod)}`;
+      if (dmgType) dmgPreview += ` ${dmgType}`;
+
+      const hitPreviewEl = document.getElementById('atk-form-hit-preview');
+      const dmgPreviewEl = document.getElementById('atk-form-dmg-preview');
+      if (hitPreviewEl) hitPreviewEl.textContent = hitPreview;
+      if (dmgPreviewEl) dmgPreviewEl.textContent = dmgPreview;
+    }
+
+    saveAttackFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.attacks)) char.attacks = [];
+
+      const indexStr = document.getElementById('atk-form-edit-index')?.value;
+      const name = (document.getElementById('atk-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const ability = document.getElementById('atk-form-ability')?.value || 'none';
+      const isProficient = document.getElementById('atk-form-proficient')?.checked !== false;
+      const extraHitBonus = parseInt(document.getElementById('atk-form-extra-hit')?.value, 10) || 0;
+      const damageDice = (document.getElementById('atk-form-dmg-dice')?.value || '1d8').trim();
+      const damageType = (document.getElementById('atk-form-dmg-type')?.value || '').trim();
+      const addAbilityToDamage = document.getElementById('atk-form-add-ability-dmg')?.checked !== false;
+      const extraDamageBonus = parseInt(document.getElementById('atk-form-extra-dmg')?.value, 10) || 0;
+      const notes = (document.getElementById('atk-form-notes')?.value || '').trim();
+
+      const atkData = {
+        name,
+        ability,
+        isProficient,
+        extraHitBonus,
+        damageDice,
+        damageType,
+        addAbilityToDamage,
+        extraDamageBonus,
+        notes
+      };
+
+      atkData.bonus = this.computeAttackBonus(char, atkData);
+      atkData.damageFormula = this.computeDamageFormula(char, atkData);
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        atkData.id = char.attacks[idx]?.id || `atk_${Date.now()}`;
+        char.attacks[idx] = atkData;
+      } else {
+        atkData.id = `atk_${Date.now()}`;
+        char.attacks.push(atkData);
+      }
+
+      this.saveStorage();
+      this.closeAttackModal();
+      this.renderTabContent();
+    }
+
+    openMagicItemModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('magic-item-modal');
+      const form = document.getElementById('magic-item-modal-form');
+      const title = document.getElementById('magic-item-modal-title');
+      if (!modal || !form) return;
+
+      document.getElementById('magic-form-edit-index').value = (index !== null && index !== undefined) ? index : '';
+
+      if (index !== null && index !== undefined && char.magicItems && char.magicItems[index]) {
+        const item = char.magicItems[index];
+        title.textContent = 'Edit Magic Item / Relic';
+        document.getElementById('magic-form-name').value = item.name || '';
+        document.getElementById('magic-form-rarity').value = item.rarity || 'Rare';
+        document.getElementById('magic-form-charges').value = item.charges || '';
+        document.getElementById('magic-form-attuned').checked = !!item.attuned;
+        document.getElementById('magic-form-desc').value = item.description || '';
+      } else {
+        title.textContent = 'Add Magic Item / Relic';
+        form.reset();
+        document.getElementById('magic-form-edit-index').value = '';
+        document.getElementById('magic-form-rarity').value = 'Rare';
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('magic-form-name')?.focus();
+    }
+
+    closeMagicItemModal() {
+      document.getElementById('magic-item-modal')?.classList.add('hidden');
+    }
+
+    saveMagicItemFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.magicItems)) char.magicItems = [];
+
+      const indexStr = document.getElementById('magic-form-edit-index')?.value;
+      const name = (document.getElementById('magic-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const rarity = document.getElementById('magic-form-rarity')?.value || 'Rare';
+      const charges = (document.getElementById('magic-form-charges')?.value || '').trim();
+      const attuned = !!document.getElementById('magic-form-attuned')?.checked;
+      const description = (document.getElementById('magic-form-desc')?.value || '').trim();
+
+      const itemData = { name, rarity, charges, attuned, description };
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        itemData.id = char.magicItems[idx]?.id || `item_${Date.now()}`;
+        char.magicItems[idx] = itemData;
+      } else {
+        itemData.id = `item_${Date.now()}`;
+        char.magicItems.push(itemData);
+      }
+
+      this.saveStorage();
+      this.closeMagicItemModal();
+      this.renderTabContent();
+    }
+
+    openEquipmentModal(index = null) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('equipment-modal');
+      const form = document.getElementById('equipment-modal-form');
+      const title = document.getElementById('equipment-modal-title');
+      if (!modal || !form) return;
+
+      document.getElementById('eq-form-edit-index').value = (index !== null && index !== undefined) ? index : '';
+
+      if (index !== null && index !== undefined && char.equipment && char.equipment[index]) {
+        const eq = char.equipment[index];
+        title.textContent = 'Edit Equipment / Gear';
+        document.getElementById('eq-form-name').value = eq.name || '';
+        document.getElementById('eq-form-qty').value = eq.qty || 1;
+        document.getElementById('eq-form-notes').value = eq.notes || '';
+      } else {
+        title.textContent = 'Add Equipment / Gear';
+        form.reset();
+        document.getElementById('eq-form-edit-index').value = '';
+        document.getElementById('eq-form-qty').value = '1';
+      }
+
+      modal.classList.remove('hidden');
+      document.getElementById('eq-form-name')?.focus();
+    }
+
+    closeEquipmentModal() {
+      document.getElementById('equipment-modal')?.classList.add('hidden');
+    }
+
+    saveEquipmentFromModal(e) {
+      if (e) e.preventDefault();
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      if (!Array.isArray(char.equipment)) char.equipment = [];
+
+      const indexStr = document.getElementById('eq-form-edit-index')?.value;
+      const name = (document.getElementById('eq-form-name')?.value || '').trim();
+      if (!name) return;
+
+      const qty = parseInt(document.getElementById('eq-form-qty')?.value, 10) || 1;
+      const notes = (document.getElementById('eq-form-notes')?.value || '').trim();
+
+      const eqData = { name, qty, notes };
+
+      if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
+        const idx = parseInt(indexStr, 10);
+        eqData.id = char.equipment[idx]?.id || `eq_${Date.now()}`;
+        char.equipment[idx] = eqData;
+      } else {
+        eqData.id = `eq_${Date.now()}`;
+        char.equipment.push(eqData);
+      }
+
+      this.saveStorage();
+      this.closeEquipmentModal();
+      this.renderTabContent();
     }
 
     renderRosterBar() {
@@ -1011,9 +1372,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         btn.type = 'button';
         btn.className = `char-roster-pill ${char.id === this.activeCharId ? 'is-active' : ''}`;
         btn.innerHTML = `
-          <span class="char-pill-avatar">🧙</span>
           <span class="char-pill-name">${escapeHtml(char.name)}</span>
-          <span class="char-pill-class">Lv.${char.level || 1}</span>
         `;
         btn.addEventListener('click', () => this.setActiveCharacter(char.id));
         rosterContainer.appendChild(btn);
@@ -1026,7 +1385,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
       const editBtn = document.getElementById('char-edit-toggle-btn');
       if (editBtn) {
-        editBtn.textContent = this.isEditMode ? '✓ Done Editing' : '✏️ Edit Sheet';
+        editBtn.textContent = this.isEditMode ? 'Done Editing' : 'Edit Sheet';
         editBtn.classList.toggle('is-editing-active', this.isEditMode);
       }
 
@@ -1169,7 +1528,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="vital-card vital-card-compact">
             <span class="vital-label">Initiative</span>
             <div class="vital-big-static">${initModStr}</div>
-            <button type="button" class="btn btn-secondary btn-xs" id="char-roll-init-btn">🎲 Roll Init</button>
+            <button type="button" class="btn btn-secondary btn-xs" id="char-roll-init-btn">Roll Init</button>
           </div>
 
           <!-- Speed -->
@@ -1201,7 +1560,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
               <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
             </div>
-            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">🎲 Roll d20</button>
+            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">Roll d20</button>
           </div>
         `;
       } else {
@@ -1266,7 +1625,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <input type="checkbox" id="death-fail-2" class="death-box death-fail" ${vitals.deathSaves.failures >= 2 ? 'checked' : ''} />
               <input type="checkbox" id="death-fail-3" class="death-box death-fail" ${vitals.deathSaves.failures >= 3 ? 'checked' : ''} />
             </div>
-            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">🎲 Roll d20</button>
+            <button type="button" class="btn btn-secondary btn-xs death-roll-btn" id="char-roll-death-save-btn" title="Roll raw 1d20 Death Saving Throw">Roll d20</button>
           </div>
         `;
 
@@ -1303,6 +1662,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         container.querySelector('#prof-edit-input')?.addEventListener('change', (e) => {
           vitals.profBonus = parseInt(e.target.value, 10) || 2;
           this.saveStorage();
+          this.renderTabContent();
         });
       }
 
@@ -1475,6 +1835,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             stats[ab] = parseInt(e.target.value, 10) || 10;
             this.saveStorage();
             this.renderAbilityScores(char);
+            this.renderTabContent();
           });
 
           const profCheck = card.querySelector('.stat-save-prof-check');
@@ -1531,33 +1892,44 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       // 1. Attacks & Combat Weapons
       let attacksHtml = '';
       if (char.attacks.length === 0) {
-        attacksHtml = `<div class="char-empty-msg">No weapons or combat actions registered.${this.isEditMode ? ' Click "Add Weapon / Strike" to register!' : ''}</div>`;
+        attacksHtml = `<div class="char-empty-msg">No weapons or combat actions registered.${this.isEditMode ? ' Click "Add Weapon / Action" to register!' : ''}</div>`;
       } else {
-        attacksHtml = char.attacks.map((atk, index) => `
+        attacksHtml = char.attacks.map((atk, index) => {
+          const atkBonus = this.computeAttackBonus(char, atk);
+          const bonusStr = atkBonus >= 0 ? `+${atkBonus}` : `${atkBonus}`;
+          const dmgFormula = this.computeDamageFormula(char, atk);
+          const abilityBadge = (atk.ability && atk.ability !== 'none') ? `<span class="atk-stat-pill">+${atk.ability.toUpperCase()}</span>` : '';
+
+          return `
           <div class="char-item-card char-atk-card" data-index="${index}">
             <div class="item-card-header">
-              <strong class="item-card-title item-shareable-title" data-share-type="attack" data-index="${index}" title="Click to share action to party Roll Log">${escapeHtml(atk.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+              <div>
+                <strong class="item-card-title item-shareable-title" data-share-type="attack" data-index="${index}" title="Click to share action to party Roll Log">${escapeHtml(atk.name)}</strong>
+                ${abilityBadge}
+              </div>
               ${this.isEditMode ? `
                 <div class="item-card-controls">
+                  <button type="button" class="char-item-edit-btn" data-type="attack" data-index="${index}" title="Edit Weapon / Action">Edit</button>
                   <button type="button" class="char-item-del-btn" data-type="attack" data-index="${index}" title="Remove Weapon / Action">✕</button>
                 </div>
               ` : ''}
             </div>
             <div class="atk-card-details">
-              <span class="atk-bonus-badge">Atk: ${atk.bonus >= 0 ? `+${atk.bonus}` : atk.bonus}</span>
-              <span class="atk-damage-badge">${escapeHtml(atk.damageFormula)} ${escapeHtml(atk.damageType || '')}</span>
+              <span class="atk-bonus-badge">Atk: ${bonusStr}</span>
+              <span class="atk-damage-badge">${escapeHtml(dmgFormula)} ${escapeHtml(atk.damageType || '')}</span>
             </div>
             ${atk.notes ? `<p class="item-card-notes">${escapeHtml(atk.notes)}</p>` : ''}
             <div class="atk-roll-buttons">
               <button type="button" class="btn btn-secondary btn-sm atk-roll-atk-btn" data-index="${index}">
-                🎲 Roll Attack (${atk.bonus >= 0 ? `+${atk.bonus}` : atk.bonus})
+                Roll Attack (${bonusStr})
               </button>
               <button type="button" class="btn btn-secondary btn-sm atk-roll-dmg-btn" data-index="${index}">
-                💥 Roll Damage (${escapeHtml(atk.damageFormula)})
+                Roll Damage (${escapeHtml(dmgFormula)})
               </button>
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       // 2. Magic Items & Relics
@@ -1569,11 +1941,16 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="char-item-card char-magic-card" data-index="${index}">
             <div class="item-card-header">
               <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="magic" data-index="${index}" title="Click to share relic details to party Roll Log">${escapeHtml(item.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></strong>
+                <strong class="item-card-title item-shareable-title" data-share-type="magic" data-index="${index}" title="Click to share relic details to party Roll Log">${escapeHtml(item.name)}</strong>
                 <span class="magic-rarity-badge">${escapeHtml(item.rarity || 'Uncommon')}</span>
-                ${item.attuned ? '<span class="magic-attuned-badge">✓ Attuned</span>' : ''}
+                ${item.attuned ? '<span class="magic-attuned-badge">Attuned</span>' : ''}
               </div>
-              ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>` : ''}
+              ${this.isEditMode ? `
+                <div class="item-card-controls">
+                  <button type="button" class="char-item-edit-btn" data-type="magic" data-index="${index}" title="Edit Magic Item">Edit</button>
+                  <button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>
+                </div>
+              ` : ''}
             </div>
             ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
             <div class="magic-desc">${escapeHtml(item.description || '')}</div>
@@ -1589,9 +1966,14 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         eqHtml = char.equipment.map((eq, index) => `
           <div class="char-eq-row">
             <span class="eq-qty">x${eq.qty || 1}</span>
-            <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)} <span class="share-hint-icon" aria-hidden="true">📜</span></span>
+            <span class="eq-name item-shareable-title" data-share-type="equipment" data-index="${index}" title="Click to share item to party Roll Log">${escapeHtml(eq.name)}</span>
             <span class="eq-notes">${escapeHtml(eq.notes || '')}</span>
-            ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}" title="Remove Gear">✕</button>` : ''}
+            ${this.isEditMode ? `
+              <div class="item-card-controls" style="display:inline-flex; align-items:center;">
+                <button type="button" class="char-item-edit-btn" data-type="equipment" data-index="${index}" title="Edit Gear">Edit</button>
+                <button type="button" class="char-item-del-btn" data-type="equipment" data-index="${index}" title="Remove Gear">✕</button>
+              </div>
+            ` : ''}
           </div>
         `).join('');
       }
@@ -1716,11 +2098,11 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             ${sp.description ? `<p class="item-card-notes spell-short-desc">${escapeHtml(sp.description.slice(0, 140))}${sp.description.length > 140 ? '...' : ''}</p>` : ''}
             <div class="atk-roll-buttons spell-card-actions">
               <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}">
-                🎲 Cast Spell
+                Cast Spell
               </button>
               ${sp.damageFormula ? `
                 <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(sp.damageFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}">
-                  💥 Roll Damage (${escapeHtml(sp.damageFormula)})
+                  Roll Damage (${escapeHtml(sp.damageFormula)})
                 </button>
               ` : ''}
             </div>
@@ -1737,10 +2119,10 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>⚔️ Weapons & Combat Strikes</h3>
+              <h3>Weapons & Combat Strikes</h3>
               <p class="section-subtitle">Weapons, unarmed strikes, smites, and physical actions ready to roll</p>
             </div>
-            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Weapon / Strike</button>` : ''}
+            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-attack">+ Add Weapon / Action</button>` : ''}
           </div>
           <div class="char-cards-grid">${attacksHtml}</div>
         </div>
@@ -1749,15 +2131,15 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>✨ Arcane Grimoire & Spell Slots</h3>
+              <h3>Arcane Grimoire & Spell Slots</h3>
               <p class="section-subtitle">Expendable spell slot pools, daily prepared spells, and castable cantrips</p>
             </div>
             <div class="char-section-actions">
               <button type="button" class="btn btn-secondary btn-sm" id="btn-long-rest-slots" title="Restore all expended spell slots">
-                🌙 Long Rest (Restore Slots)
+                Long Rest (Restore Slots)
               </button>
               <button type="button" class="btn btn-primary btn-sm" id="btn-browse-grimoire" title="Browse Grimoire Compendium">
-                ✨ Browse Grimoire
+                Browse Grimoire
               </button>
               ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-slot-level">+ Add Slot Level</button>` : ''}
             </div>
@@ -1776,7 +2158,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>✨ Magic Items & Relics</h3>
+              <h3>Magic Items & Relics</h3>
               <p class="section-subtitle">Attuned artifacts, enchanted armor, foci, and wondrous gear</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
@@ -1788,7 +2170,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         <div class="char-sub-section">
           <div class="char-section-head">
             <div>
-              <h3>🛡️ Worn Armor & Carried Gear</h3>
+              <h3>Worn Armor & Carried Gear</h3>
               <p class="section-subtitle">Armor, shields, tools, apparel, and durable non-consumables</p>
             </div>
             ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-eq">+ Add Equipment / Gear</button>` : ''}
@@ -1805,30 +2187,46 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const atk = char.attacks[idx];
           if (!atk || !window.DiceRoller) return;
 
+          const bonus = this.computeAttackBonus(char, atk);
+
           if (clickTimer) {
             // Double click: bypass targeting
             clearTimeout(clickTimer);
             clickTimer = null;
-            window.DiceRoller.roll('1d20', `${atk.name} Attack (Untargeted)`, char.name, 'normal', atk.bonus);
+            window.DiceRoller.roll('1d20', `${atk.name} Attack (Untargeted)`, char.name, 'normal', bonus);
           } else {
             clickTimer = setTimeout(() => {
               clickTimer = null;
               const target = window.InitiativeTracker?.getSelectedTarget?.();
-              const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
-              window.DiceRoller.roll('1d20', `${atk.name} Attack${targetSuffix}`, char.name, 'normal', atk.bonus);
+              const targetSuffix = target ? ` vs ${target.name}` : '';
+              window.DiceRoller.roll('1d20', `${atk.name} Attack${targetSuffix}`, char.name, 'normal', bonus);
             }, 260);
           }
         });
       });
 
       container.querySelectorAll('.atk-roll-dmg-btn').forEach(btn => {
+        let clickTimer = null;
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index, 10);
           const atk = char.attacks[idx];
-          if (atk && window.DiceRoller) {
-            const target = window.InitiativeTracker?.getSelectedTarget?.();
-            const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
-            window.DiceRoller.roll(atk.damageFormula, `${atk.name} Damage${targetSuffix}`, char.name, 'normal', 0);
+          if (!atk || !window.DiceRoller) return;
+
+          const formula = this.computeDamageFormula(char, atk);
+          const name = atk.name || 'Weapon';
+          const dmgType = atk.damageType || '';
+
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'}) (Untargeted)`, char.name, 'normal', 0);
+          } else {
+            clickTimer = setTimeout(() => {
+              clickTimer = null;
+              const target = window.InitiativeTracker?.getSelectedTarget?.();
+              const targetSuffix = target ? ` vs ${target.name}` : '';
+              window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
+            }, 260);
           }
         });
       });
@@ -1860,7 +2258,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           char.spellSlots[lvl].used = 0;
         });
         this.playHpSound(3);
-        window.showToast?.(`🌙 Long Rest completed! ${restored} spell slot(s) restored.`, 'success', 2200);
+        window.showToast?.(`Long Rest completed! ${restored} spell slot(s) restored.`, 'success', 2200);
         this.saveStorage();
         this.renderEquipmentTab(container, char);
       });
@@ -1929,7 +2327,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           }
 
           this.playHpSound(2);
-          window.showToast?.(`✨ Cast ${spellName}!${slotExpendedMsg}`, 'info', 2200);
+          window.showToast?.(`Cast ${spellName}!${slotExpendedMsg}`, 'info', 2200);
           this.renderEquipmentTab(container, char);
         });
       });
@@ -1941,7 +2339,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const dmgType = btn.dataset.damageType;
           const name = btn.dataset.spellName;
           const target = window.InitiativeTracker?.getSelectedTarget?.();
-          const targetSuffix = target ? ` vs 🎯 ${target.name}` : '';
+          const targetSuffix = target ? ` vs ${target.name}` : '';
           if (window.DiceRoller) {
             window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
           }
@@ -1951,40 +2349,25 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       // Edit Mode handlers
       if (this.isEditMode) {
         container.querySelector('#btn-add-attack')?.addEventListener('click', () => {
-          const name = prompt('Weapon / Attack Name (e.g. Longsword, Fire Bolt):');
-          if (!name) return;
-          const bonus = parseInt(prompt('Attack Bonus (e.g. 5 for +5):', '5'), 10) || 0;
-          const damageFormula = prompt('Damage Formula (e.g., 1d8+3, 2d6):', '1d8+3') || '1d8';
-          const damageType = prompt('Damage Type (e.g. Slashing, Radiant):', 'Slashing') || '';
-          const notes = prompt('Additional Notes / Properties (optional):', '') || '';
-
-          char.attacks.push({ id: `atk_${Date.now()}`, name, bonus, damageFormula, damageType, notes });
-          this.saveStorage();
-          this.renderEquipmentTab(container, char);
+          this.openAttackModal(null);
         });
 
         container.querySelector('#btn-add-magic')?.addEventListener('click', () => {
-          const name = prompt('Magic Item Name:');
-          if (!name) return;
-          const rarity = prompt('Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact):', 'Rare') || 'Uncommon';
-          const attuned = confirm('Is this item Attuned to your character?');
-          const charges = prompt('Charges / Uses (e.g. 3 / 3 daily, Passive):', 'Passive') || '';
-          const description = prompt('Item Description & Powers:') || '';
-
-          char.magicItems.push({ id: `item_${Date.now()}`, name, rarity, attuned, charges, description });
-          this.saveStorage();
-          this.renderEquipmentTab(container, char);
+          this.openMagicItemModal(null);
         });
 
         container.querySelector('#btn-add-eq')?.addEventListener('click', () => {
-          const name = prompt('Equipment Item Name:');
-          if (!name) return;
-          const qty = parseInt(prompt('Quantity:', '1'), 10) || 1;
-          const notes = prompt('Notes / Details:') || '';
+          this.openEquipmentModal(null);
+        });
 
-          char.equipment.push({ id: `eq_${Date.now()}`, name, qty, notes });
-          this.saveStorage();
-          this.renderEquipmentTab(container, char);
+        container.querySelectorAll('.char-item-edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            const idx = parseInt(btn.dataset.index, 10);
+            if (type === 'attack') this.openAttackModal(idx);
+            else if (type === 'magic') this.openMagicItemModal(idx);
+            else if (type === 'equipment') this.openEquipmentModal(idx);
+          });
         });
 
         container.querySelector('#btn-add-slot-level')?.addEventListener('click', () => {

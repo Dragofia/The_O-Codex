@@ -9,7 +9,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=44">
+  <link rel="stylesheet" href="styles.css?v=45">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -1168,6 +1168,221 @@
     </div>
   </div>
 
+  <!-- Attack / Combat Action Modal -->
+  <div id="attack-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="attack-modal-title">
+    <div class="modal__backdrop" id="attack-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">COMBAT ACTION & WEAPON</span>
+          <h2 id="attack-modal-title" class="modal__title">Add Weapon / Action</h2>
+        </div>
+        <button type="button" class="modal__close" id="attack-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="attack-modal-form" class="char-modal-form">
+        <input type="hidden" id="atk-form-edit-index" value="" />
+
+        <!-- Row 1: Attack Name & Scaling Ability -->
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="atk-form-name">Action / Weapon Name <span class="req">*</span></label>
+            <input type="text" id="atk-form-name" class="char-form-input" placeholder="e.g. Rapier, Longsword, Eldritch Blast, Dagger" required />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="atk-form-ability">Ability Scaling</label>
+            <select id="atk-form-ability" class="char-form-select">
+              <option value="dex">DEX (Dexterity)</option>
+              <option value="str">STR (Strength)</option>
+              <option value="con">CON (Constitution)</option>
+              <option value="int">INT (Intelligence)</option>
+              <option value="wis">WIS (Wisdom)</option>
+              <option value="cha">CHA (Charisma)</option>
+              <option value="none">None / Flat Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: To-Hit Options -->
+        <div class="char-form-row char-form-highlight-box">
+          <div class="char-form-field" style="flex: 1.6; justify-content: center;">
+            <label class="char-form-checkbox-label">
+              <input type="checkbox" id="atk-form-proficient" checked />
+              <span>Proficient in Attack (<span id="atk-form-prof-val">+2</span>)</span>
+            </label>
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="atk-form-extra-hit">Extra Attack Bonus</label>
+            <input type="number" id="atk-form-extra-hit" class="char-form-input" value="0" placeholder="+0" />
+          </div>
+          <div class="char-form-field char-form-preview-pill-box" style="flex: 1;">
+            <span class="char-form-sublabel">Total To-Hit</span>
+            <strong id="atk-form-hit-preview" class="char-form-preview-val">+0 to hit</strong>
+          </div>
+        </div>
+
+        <!-- Row 3: Damage Dice & Type -->
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1.5;">
+            <label for="atk-form-dmg-dice">Damage Dice <span class="req">*</span></label>
+            <input type="text" id="atk-form-dmg-dice" class="char-form-input" placeholder="e.g. 1d8, 2d6, 1d10" required />
+            <div class="char-form-dice-pills">
+              <button type="button" class="char-dice-pill" data-dice="1d4">1d4</button>
+              <button type="button" class="char-dice-pill" data-dice="1d6">1d6</button>
+              <button type="button" class="char-dice-pill" data-dice="1d8">1d8</button>
+              <button type="button" class="char-dice-pill" data-dice="1d10">1d10</button>
+              <button type="button" class="char-dice-pill" data-dice="1d12">1d12</button>
+              <button type="button" class="char-dice-pill" data-dice="2d6">2d6</button>
+            </div>
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="atk-form-dmg-type">Damage Type</label>
+            <input type="text" id="atk-form-dmg-type" class="char-form-input" placeholder="e.g. Slashing, Piercing, Fire" />
+            <div class="char-form-dice-pills">
+              <button type="button" class="char-type-pill" data-type="Slashing">Slashing</button>
+              <button type="button" class="char-type-pill" data-type="Piercing">Piercing</button>
+              <button type="button" class="char-type-pill" data-type="Bludgeoning">Bludgeoning</button>
+              <button type="button" class="char-type-pill" data-type="Fire">Fire</button>
+              <button type="button" class="char-type-pill" data-type="Radiant">Radiant</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Damage Calculation Options -->
+        <div class="char-form-row char-form-highlight-box">
+          <div class="char-form-field" style="flex: 1.6; justify-content: center;">
+            <label class="char-form-checkbox-label">
+              <input type="checkbox" id="atk-form-add-mod" checked />
+              <span>Add Ability to Damage (<span id="atk-form-dmg-mod-val">+0</span>)</span>
+            </label>
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="atk-form-extra-dmg">Extra Damage Bonus</label>
+            <input type="number" id="atk-form-extra-dmg" class="char-form-input" value="0" placeholder="+0" />
+          </div>
+          <div class="char-form-field char-form-preview-pill-box" style="flex: 1;">
+            <span class="char-form-sublabel">Total Damage</span>
+            <strong id="atk-form-dmg-preview" class="char-form-preview-val">1d8</strong>
+          </div>
+        </div>
+
+        <!-- Row 5: Notes & Properties -->
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="atk-form-notes">Properties & Tactical Notes</label>
+            <input type="text" id="atk-form-notes" class="char-form-input" placeholder="e.g. Finesse, Range 80/320, Versatile, Light" />
+          </div>
+        </div>
+
+        <!-- Modal Action Buttons -->
+        <div class="modal__form-actions" style="margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="attack-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="attack-modal-save">Save Attack Action</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Magic Item Modal -->
+  <div id="magic-item-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="magic-item-modal-title">
+    <div class="modal__backdrop" id="magic-item-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">MAGIC ITEM & ARTIFACT</span>
+          <h2 id="magic-item-modal-title" class="modal__title">Add Magic Item</h2>
+        </div>
+        <button type="button" class="modal__close" id="magic-item-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="magic-item-modal-form" class="char-modal-form">
+        <input type="hidden" id="magic-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="magic-form-name">Item Name <span class="req">*</span></label>
+            <input type="text" id="magic-form-name" class="char-form-input" placeholder="e.g. Ring of Protection, Moonblade" required />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="magic-form-rarity">Rarity</label>
+            <select id="magic-form-rarity" class="char-form-select">
+              <option value="Common">Common</option>
+              <option value="Uncommon">Uncommon</option>
+              <option value="Rare" selected>Rare</option>
+              <option value="Very Rare">Very Rare</option>
+              <option value="Legendary">Legendary</option>
+              <option value="Artifact">Artifact</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="magic-form-charges">Charges / Uses</label>
+            <input type="text" id="magic-form-charges" class="char-form-input" placeholder="e.g. 3 / 3 Daily, 1 / Long Rest, Passive" />
+          </div>
+          <div class="char-form-field" style="flex: 1; justify-content: center;">
+            <label class="char-form-checkbox-label" style="margin-top: 1.3rem;">
+              <input type="checkbox" id="magic-form-attuned" />
+              <span>Attuned to Character</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="magic-form-desc">Description & Powers</label>
+            <textarea id="magic-form-desc" class="char-form-textarea" rows="4" placeholder="Properties, spell effects, passive bonuses, or lore..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="magic-item-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="magic-item-modal-save">Save Magic Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Equipment / Gear Modal -->
+  <div id="equipment-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="equipment-modal-title">
+    <div class="modal__backdrop" id="equipment-modal-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category">INVENTORY & GEAR</span>
+          <h2 id="equipment-modal-title" class="modal__title">Add Equipment / Gear</h2>
+        </div>
+        <button type="button" class="modal__close" id="equipment-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="equipment-modal-form" class="char-modal-form">
+        <input type="hidden" id="eq-form-edit-index" value="" />
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 2;">
+            <label for="eq-form-name">Item Name <span class="req">*</span></label>
+            <input type="text" id="eq-form-name" class="char-form-input" placeholder="e.g. Breastplate, Explorer's Pack, 50ft Rope" required />
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="eq-form-qty">Quantity</label>
+            <input type="number" id="eq-form-qty" class="char-form-input" value="1" min="1" />
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="eq-form-notes">Notes / Details</label>
+            <input type="text" id="eq-form-notes" class="char-form-input" placeholder="e.g. Worn, AC 14 + DEX (max 2), In pouch" />
+          </div>
+        </div>
+
+        <div class="modal__form-actions" style="margin-top: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="equipment-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="equipment-modal-save">Save Equipment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Tactical Map Pin Filter Bar Dock (Swaps with Quick-Bar in Map Mode) -->
   <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
     <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
@@ -1339,7 +1554,7 @@
   <script src="firebase-sync.js?v=9" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=6" defer></script>
-  <script src="characters.js?v=18" defer></script>
+  <script src="characters.js?v=20" defer></script>
   <script src="grimoire.js?v=1" defer></script>
   <script src="initiative-tracker.js?v=9" defer></script>
   <script src="codex-linker.js?v=1" defer></script>
