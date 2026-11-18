@@ -12,7 +12,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=56">
+  <link rel="stylesheet" href="styles.css?v=57">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -372,22 +372,11 @@
                 <!-- Dynamically rendered vitals strip -->
               </section>
 
-              <!-- Core Ability Scores Grid -->
+              <!-- Core Ability Scores & Skills Grid -->
               <section class="char-abilities-section">
-                <h3 class="char-subhead">Ability Scores & Modifiers</h3>
+                <h3 class="char-subhead">Ability Scores, Modifiers & Skills</h3>
                 <div id="char-ability-grid" class="char-ability-grid">
-                  <!-- Dynamically populated 6 stat cards with Check / Save roll triggers -->
-                </div>
-              </section>
-
-              <!-- Skill Proficiencies Section -->
-              <section class="char-skills-section">
-                <div class="char-skills-header">
-                  <h3 class="char-subhead">Skill Proficiencies</h3>
-                  <span class="char-skills-note">Click any skill to roll. Modifiers include ability modifier + proficiency bonus when proficient.</span>
-                </div>
-                <div id="char-skills-grid" class="char-skills-grid">
-                  <!-- Dynamically populated 18 standard 5e skills -->
+                  <!-- Dynamically populated 6 stat columns with main box and skill list -->
                 </div>
               </section>
 
@@ -1903,7 +1892,7 @@
   <script src="firebase-sync.js?v=15" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=10" defer></script>
-  <script src="characters.js?v=36" defer></script>
+  <script src="characters.js?v=37" defer></script>
   <script src="grimoire.js?v=5" defer></script>
   <script src="initiative-tracker.js?v=12" defer></script>
   <script src="codex-linker.js?v=2" defer></script>
