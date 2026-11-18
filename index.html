@@ -12,7 +12,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=61">
+  <link rel="stylesheet" href="styles.css?v=62">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -1769,6 +1769,7 @@
 
       <div class="modal__form-actions" style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
         <button type="button" class="btn btn-secondary" id="spell-upcast-cancel">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="spell-upcast-roll-only-btn" style="display: none;">Roll Damage</button>
         <button type="button" class="btn btn-secondary" id="spell-upcast-cast-btn">Cast Spell</button>
         <button type="button" class="btn btn-primary" id="spell-upcast-roll-btn">Cast & Roll Damage</button>
       </div>
@@ -1945,7 +1946,7 @@
   <script src="firebase-sync.js?v=17" defer></script>
   <!-- Core Scripts -->
   <script src="dice-roller.js?v=13" defer></script>
-  <script src="characters.js?v=40" defer></script>
+  <script src="characters.js?v=41" defer></script>
   <script src="grimoire.js?v=6" defer></script>
   <script src="initiative-tracker.js?v=12" defer></script>
   <script src="codex-linker.js?v=2" defer></script>

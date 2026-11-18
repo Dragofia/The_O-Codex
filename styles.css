@@ -9543,4 +9543,52 @@ body.characters-mode-active .dice-tray-toggle {
   color: #fca5a5;
 }
 
+/* =========================================================================
+   SPELL CARD INLINE UPCAST BAR
+   ========================================================================= */
+.spell-upcast-quick-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.4rem 0 0.2rem 0;
+  padding: 0.35rem 0.55rem;
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px dashed rgba(168, 85, 247, 0.32);
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+.spell-upcast-quick-label {
+  font-weight: 700;
+  color: #c084fc;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spell-card-slot-select {
+  padding: 0.18rem 0.45rem;
+  font-size: 0.78rem;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #e2e8f0;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 140px;
+}
+
+.spell-card-slot-select:focus {
+  border-color: #a855f7;
+  outline: none;
+}
+
+.spell-card-upcast-hint {
+  font-size: 0.74rem;
+  color: #38bdf8;
+  font-weight: 600;
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 

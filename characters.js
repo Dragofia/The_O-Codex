@@ -983,6 +983,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
     init() {
       this.initDOM();
+      this.preloadSpells();
       const active = this.getActiveCharacter();
       if (active && active.name) {
         localStorage.setItem('o_codex_active_char_name', active.name);
@@ -1279,6 +1280,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       document.getElementById('spell-upcast-close')?.addEventListener('click', () => this.closeSpellUpcastModal());
       document.getElementById('spell-upcast-backdrop')?.addEventListener('click', () => this.closeSpellUpcastModal());
       document.getElementById('spell-upcast-cancel')?.addEventListener('click', () => this.closeSpellUpcastModal());
+      document.getElementById('spell-upcast-roll-only-btn')?.addEventListener('click', () => this.rollSpellUpcastDamageOnly());
       document.getElementById('spell-upcast-cast-btn')?.addEventListener('click', () => this.executeSpellUpcast(false));
       document.getElementById('spell-upcast-roll-btn')?.addEventListener('click', () => this.executeSpellUpcast(true));
 
@@ -2057,15 +2059,79 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
     // =========================================================================
     // SPELL UPCASTING & SCALING ENGINE
     // =========================================================================
-    getSpellDetails(spellName) {
-      const g = window.Grimoire;
-      if (g && typeof g.normalizeSpellKey === 'function') {
-        const key = g.normalizeSpellKey(spellName);
-        if (g.allSpells && g.allSpells.length > 0) {
-          const found = g.allSpells.find(s => g.normalizeSpellKey(s.name) === key);
-          if (found) return found;
+    async preloadSpells() {
+      if (this.srdSpells && this.srdSpells.length > 0) return this.srdSpells;
+      try {
+        const res = await fetch('spells-srd.json?v=1');
+        if (res.ok) {
+          this.srdSpells = await res.json();
+          // If the equipment/spells tab is currently visible, re-render to attach damage formulas and upcast data
+          if (this.activeTab === 'equipment') {
+            const container = document.getElementById('char-tab-view');
+            const char = this.getActiveCharacter();
+            if (container && char) {
+              this.renderEquipmentTab(container, char);
+            }
+          }
         }
+      } catch (e) {
+        console.warn('[Characters] Could not preload spells-srd.json:', e);
       }
+      return this.srdSpells || [];
+    }
+
+    normalizeSpellNameKey(name) {
+      if (!name) return '';
+      return String(name)
+        .toLowerCase()
+        .replace(/^(tasha's|leomund's|mordenkainen's|bigby's|otto's|drawmij's|rary's|aganazzar's|snilloc's|evard's|otiluke's|nystul's)\s+/i, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    getSpellDetails(spellName) {
+      if (!spellName) return null;
+      const key = this.normalizeSpellNameKey(spellName);
+      const g = window.Grimoire;
+      let found = null;
+
+      // 1. Check Grimoire.allSpells
+      if (g && g.allSpells && g.allSpells.length > 0) {
+        found = g.allSpells.find(s => this.normalizeSpellNameKey(s.name) === key);
+      }
+
+      // 2. Check preloaded srdSpells
+      if (!found && this.srdSpells && this.srdSpells.length > 0) {
+        found = this.srdSpells.find(s => this.normalizeSpellNameKey(s.name) === key);
+      }
+
+      // 3. Check Grimoire.srdSpells
+      if (!found && g && g.srdSpells && g.srdSpells.length > 0) {
+        found = g.srdSpells.find(s => this.normalizeSpellNameKey(s.name) === key);
+      }
+
+      if (found) {
+        const item = { ...found };
+        // Fallback: If spell has damage in its description but damageFormula is missing
+        if (!item.damageFormula && item.description) {
+          const mDmg = item.description.match(/(?:takes|taking|deals|deal)\s+(\d+d\d+)(?:\s+([a-zA-Z]+))?\s+damage/i) ||
+                       item.description.match(/(\d+d\d+)(?:\s+([a-zA-Z]+))?\s+damage/i);
+          if (mDmg) {
+            item.damageFormula = mDmg[1];
+            if (mDmg[2] && !item.damageType) {
+              item.damageType = mDmg[2].charAt(0).toUpperCase() + mDmg[2].slice(1).toLowerCase();
+            }
+          } else {
+            const mHeal = item.description.match(/regains\s+(?:hit\s+points\s+equal\s+to\s+)?(\d+d\d+)\s+hit\s+points/i) ||
+                          item.description.match(/regains\s+(\d+d\d+)\s+hit\s+points/i);
+            if (mHeal) {
+              item.damageFormula = mHeal[1];
+              if (!item.damageType) item.damageType = 'Healing';
+            }
+          }
+        }
+        return item;
+      }
+
       return null;
     }
 
@@ -2095,14 +2161,21 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const levelDiff = castLvl - baseLvl;
       const hl = (spell && (spell.higherLevel || spell.higher_level)) ? String(spell.higherLevel || spell.higher_level) : '';
       const baseDmg = (spell && spell.damageFormula) ? String(spell.damageFormula).trim() : '';
+      const dmgType = (spell && spell.damageType) ? String(spell.damageType).trim() : '';
+      const isHealing = dmgType.toLowerCase() === 'healing';
+      const kindWord = isHealing ? 'healing' : 'damage';
 
       if (levelDiff <= 0) {
         return {
+          levelDiff: 0,
           addedFormula: '',
           scaledFormula: baseDmg,
-          description: 'Base spell slot'
+          tagText: 'Base Level',
+          description: 'Base level spell slot'
         };
       }
+
+      const levelText = levelDiff === 1 ? '+1 level' : `+${levelDiff} levels`;
 
       // 1. Standard: "increases by (\d+d\d+) ... for each slot level above"
       const matchEach = hl.match(/(?:increases by|extra|additional)\s+(\d+)d(\d+)(?:\s+damage|\s+healing)?\s+for each slot level above/i);
@@ -2112,9 +2185,11 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         const addedFormula = `${count}d${sides}`;
         const scaledFormula = this.combineDamageFormulas(baseDmg, addedFormula);
         return {
+          levelDiff,
           addedFormula: `+${addedFormula}`,
           scaledFormula,
-          description: `Damage/healing increases by +${addedFormula} (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+          tagText: `(${levelText}, +${addedFormula} ${kindWord})`,
+          description: `${levelText}: +${addedFormula} ${kindWord}`
         };
       }
 
@@ -2128,14 +2203,18 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const addedFormula = `${count}d${sides}`;
           const scaledFormula = this.combineDamageFormulas(baseDmg, addedFormula);
           return {
+            levelDiff,
             addedFormula: `+${addedFormula}`,
             scaledFormula,
-            description: `Damage increases by +${addedFormula} (+${steps * 2} levels above base)`
+            tagText: `(${levelText}, +${addedFormula} ${kindWord})`,
+            description: `${levelText}: +${addedFormula} ${kindWord}`
           };
         } else {
           return {
+            levelDiff,
             addedFormula: '',
             scaledFormula: baseDmg,
+            tagText: `(${levelText}, no extra ${kindWord})`,
             description: `Requires 2 slot levels above base for +${matchTwo[1]}d${matchTwo[2]}`
           };
         }
@@ -2147,31 +2226,55 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         if (mDarts) {
           const totalDarts = parseInt(mDarts[1], 10) + levelDiff;
           const scaledFormula = `${totalDarts}x(${mDarts[2]})`;
+          const dartWord = levelDiff === 1 ? 'dart' : 'darts';
           return {
-            addedFormula: `+${levelDiff} darts`,
+            levelDiff,
+            addedFormula: `+${levelDiff} ${dartWord}`,
             scaledFormula,
-            description: `Creates ${totalDarts} darts total (+${levelDiff} from upcasting)`
+            tagText: `(${levelText}, +${levelDiff} ${dartWord})`,
+            description: `${levelText}: creates ${totalDarts} darts total`
           };
         }
       }
 
-      // 4. Flat HP / bonuses like Aid
+      // 4. Rays like Scorching Ray: "creates one additional ray for each slot level above"
+      if (/creates one additional ray for each slot level above/i.test(hl)) {
+        const rayWord = levelDiff === 1 ? 'ray' : 'rays';
+        return {
+          levelDiff,
+          addedFormula: `+${levelDiff} ${rayWord}`,
+          scaledFormula: baseDmg,
+          tagText: `(${levelText}, +${levelDiff} ${rayWord})`,
+          description: `${levelText}: +${levelDiff} ${rayWord}`
+        };
+      }
+
+      // 5. Flat HP / bonuses like Aid
       const matchFlat = hl.match(/(?:hit points increase by an additional|increases by)\s+(\d+)\s+for each slot level above/i);
       if (matchFlat) {
         const bonus = parseInt(matchFlat[1], 10) * levelDiff;
         const scaledFormula = baseDmg ? `${baseDmg}+${bonus}` : `+${bonus}`;
         return {
-          addedFormula: `+${bonus}`,
+          levelDiff,
+          addedFormula: `+${bonus} HP`,
           scaledFormula,
-          description: `Effect increases by +${bonus} (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+          tagText: `(${levelText}, +${bonus} HP)`,
+          description: `${levelText}: effect increases by +${bonus} HP`
         };
       }
 
-      // 5. Generic upcast
+      // 6. Generic upcast
+      let briefRule = '';
+      const mTarget = hl.match(/target (?:one additional|two additional|\d+ additional) [a-zA-Z]+/i);
+      if (mTarget) {
+        briefRule = `, ${mTarget[0]}`;
+      }
       return {
+        levelDiff,
         addedFormula: '',
         scaledFormula: baseDmg,
-        description: `Upcast to ${castLvl}${this.getOrdinal(castLvl)} level (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+        tagText: `(${levelText}${briefRule})`,
+        description: `Upcast to ${castLvl}${this.getOrdinal(castLvl)} level (${levelText})`
       };
     }
 
@@ -2202,12 +2305,16 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         allPossibleLevels.push(l);
       }
 
-      let defaultLvl = baseLvl;
-      for (const l of allPossibleLevels) {
-        const slot = char.spellSlots && char.spellSlots[l];
-        if (slot && (slot.used || 0) < (slot.max || 0)) {
-          defaultLvl = l;
-          break;
+      // Prefer currently active chosen level for this spell if valid
+      let defaultLvl = (this.spellUpcastLevels && this.spellUpcastLevels[spell.name]) || baseLvl;
+      if (!allPossibleLevels.includes(defaultLvl)) {
+        defaultLvl = baseLvl;
+        for (const l of allPossibleLevels) {
+          const slot = char.spellSlots && char.spellSlots[l];
+          if (slot && (slot.used || 0) < (slot.max || 0)) {
+            defaultLvl = l;
+            break;
+          }
         }
       }
 
@@ -2249,7 +2356,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           <div class="upcast-slot-card ${isSelected ? 'is-selected' : ''} ${isDepleted ? 'is-depleted' : ''} ${!hasSlotConfigured ? 'not-configured' : ''}" data-slot-level="${lvl}">
             <div class="slot-card-left">
               <div class="slot-card-level-title">
-                ${lvl}${this.getOrdinal(lvl)} Level Slot ${isBase ? '<span class="upcast-base-tag">(Base)</span>' : `<span class="upcast-bonus-tag">(+${lvl - baseLvl} Upcast)</span>`}
+                ${lvl}${this.getOrdinal(lvl)} Level Slot ${isBase ? '<span class="upcast-base-tag">(Base Level)</span>' : `<span class="upcast-bonus-tag">${escapeHtml(scaling.tagText)}</span>`}
               </div>
               <div class="slot-card-scaling-desc">
                 ${escapeHtml(scaling.description)}
@@ -2284,26 +2391,36 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         card.addEventListener('click', () => {
           const lvl = parseInt(card.dataset.slotLevel, 10);
           this.activeUpcast.chosenLvl = lvl;
+          this.spellUpcastLevels = this.spellUpcastLevels || {};
+          this.spellUpcastLevels[spell.name] = lvl;
           this.renderSpellUpcastModalContent();
         });
       });
 
       const castBtn = document.getElementById('spell-upcast-cast-btn');
       const rollBtn = document.getElementById('spell-upcast-roll-btn');
+      const rollOnlyBtn = document.getElementById('spell-upcast-roll-only-btn');
       const chosenScaling = this.computeUpcastScaling(spell, baseLvl, chosenLvl);
       const chosenLabel = `${chosenLvl}${this.getOrdinal(chosenLvl)} Level`;
+      const isHealing = (spell.damageType || '').toLowerCase() === 'healing';
+      const kindWord = isHealing ? 'Healing' : 'Damage';
 
       if (castBtn) {
         castBtn.textContent = `Cast at ${chosenLabel}`;
       }
 
-      if (rollBtn) {
-        if (chosenScaling.scaledFormula) {
-          rollBtn.style.display = 'inline-flex';
-          rollBtn.textContent = `Cast & Roll Damage (${chosenScaling.scaledFormula})`;
-        } else {
-          rollBtn.style.display = 'none';
+      if (chosenScaling.scaledFormula) {
+        if (rollOnlyBtn) {
+          rollOnlyBtn.style.display = 'inline-flex';
+          rollOnlyBtn.textContent = `Roll ${kindWord} (${chosenScaling.scaledFormula})`;
         }
+        if (rollBtn) {
+          rollBtn.style.display = 'inline-flex';
+          rollBtn.textContent = `Cast & Roll ${kindWord} (${chosenScaling.scaledFormula})`;
+        }
+      } else {
+        if (rollOnlyBtn) rollOnlyBtn.style.display = 'none';
+        if (rollBtn) rollBtn.style.display = 'none';
       }
     }
 
@@ -2312,12 +2429,37 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.activeUpcast = null;
     }
 
+    rollSpellUpcastDamageOnly() {
+      if (!this.activeUpcast) return;
+      const { char, spell, baseLvl, chosenLvl } = this.activeUpcast;
+      const scaling = this.computeUpcastScaling(spell, baseLvl, chosenLvl);
+      const chosenLabel = `${chosenLvl}${this.getOrdinal(chosenLvl)} Level`;
+      const isHealing = (spell.damageType || '').toLowerCase() === 'healing';
+      const kindWord = isHealing ? 'Healing' : 'Damage';
+
+      if (scaling.scaledFormula && window.DiceRoller) {
+        const target = window.InitiativeTracker?.getSelectedTarget?.();
+        const targetSuffix = target ? ` vs ${target.name}` : '';
+        const dmgLabel = chosenLvl > baseLvl ? `${spell.name} (${chosenLabel} Upcast) ${kindWord}` : `${spell.name} ${kindWord}`;
+        window.DiceRoller.roll(scaling.scaledFormula, `${dmgLabel} (${spell.damageType || kindWord})${targetSuffix}`, char.name, 'normal', 0);
+      }
+      this.closeSpellUpcastModal();
+      const container = document.getElementById('char-tab-view');
+      if (container) this.renderEquipmentTab(container, char);
+    }
+
     executeSpellUpcast(castWithDamage = false) {
       if (!this.activeUpcast) return;
       const { char, spell, baseLvl, chosenLvl } = this.activeUpcast;
       const scaling = this.computeUpcastScaling(spell, baseLvl, chosenLvl);
       const chosenLabel = `${chosenLvl}${this.getOrdinal(chosenLvl)} Level`;
       const slot = char.spellSlots && char.spellSlots[chosenLvl];
+      const isHealing = (spell.damageType || '').toLowerCase() === 'healing';
+      const kindWord = isHealing ? 'Healing' : 'Damage';
+
+      // Keep this chosen level active on sheet
+      this.spellUpcastLevels = this.spellUpcastLevels || {};
+      this.spellUpcastLevels[spell.name] = chosenLvl;
 
       let slotExpendedMsg = '';
       if (slot) {
@@ -2336,8 +2478,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       if (castWithDamage && scaling.scaledFormula && window.DiceRoller) {
         const target = window.InitiativeTracker?.getSelectedTarget?.();
         const targetSuffix = target ? ` vs ${target.name}` : '';
-        const dmgLabel = chosenLvl > baseLvl ? `${spell.name} (Upcast ${chosenLabel}) Damage` : `${spell.name} Damage`;
-        window.DiceRoller.roll(scaling.scaledFormula, `${dmgLabel} (${spell.damageType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
+        const dmgLabel = chosenLvl > baseLvl ? `${spell.name} (${chosenLabel} Upcast) ${kindWord}` : `${spell.name} ${kindWord}`;
+        window.DiceRoller.roll(scaling.scaledFormula, `${dmgLabel} (${spell.damageType || kindWord})${targetSuffix}`, char.name, 'normal', 0);
       }
 
       const badges = [
@@ -3166,22 +3308,27 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         `;
       } else {
         const spellCards = allKnown.map(name => {
-          const normKey = grimoire ? grimoire.normalizeSpellKey(name) : name.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const found = grimoire && grimoire.allSpells ? grimoire.allSpells.find(s => grimoire.normalizeSpellKey(s.name) === normKey) : null;
-          const isPrep = char.spellsPrepared.some(p => (grimoire ? grimoire.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '')) === normKey);
+          const found = this.getSpellDetails(name);
+          const isPrep = char.spellsPrepared.some(p => {
+            const g = window.Grimoire;
+            const normKey = g ? g.normalizeSpellKey(p) : p.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const targetKey = g ? g.normalizeSpellKey(name) : name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return normKey === targetKey;
+          });
           const level = found ? found.level : 1;
           const school = found ? found.school : 'Arcane';
           const isCantrip = level === 0;
           const castingTime = found ? found.castingTime : '1 action';
           const range = found ? found.range : '60 feet';
           const duration = found ? found.duration : 'Instantaneous';
-          const damageFormula = found ? found.damageFormula : '';
-          const damageType = found ? found.damageType : '';
+          const damageFormula = found ? (found.damageFormula || '') : '';
+          const damageType = found ? (found.damageType || '') : '';
           const concentration = found ? !!found.concentration : false;
           const ritual = found ? !!found.ritual : false;
           const description = found ? (found.description || found.desc || '') : '';
           const higherLevel = found ? (found.higherLevel || found.higher_level || '') : '';
-          const levelLabel = isCantrip ? 'Cantrip' : `${level}${level === 1 ? 'st' : level === 2 ? 'nd' : level === 3 ? 'rd' : 'th'} Level`;
+          const levelLabel = isCantrip ? 'Cantrip' : `${level}${this.getOrdinal(level)} Level`;
+          const isUpcastable = !isCantrip && level < 9 && Boolean(higherLevel && higherLevel.trim().length > 0);
 
           return {
             name,
@@ -3198,6 +3345,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             description,
             higherLevel,
             levelLabel,
+            isUpcastable,
             isPrep: isCantrip ? true : isPrep
           };
         });
@@ -3272,7 +3420,45 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         if (filteredCards.length === 0) {
           spellsHtml = filterToolbarHtml + `<div class="char-empty-msg" style="margin-top: 0.5rem;">No spells match the active filters. Uncheck "Hide Unprepared" or switch the level filter to see other spells.</div>`;
         } else {
-          spellsHtml = filterToolbarHtml + `<div class="char-cards-grid">` + filteredCards.map(sp => `
+          spellsHtml = filterToolbarHtml + `<div class="char-cards-grid">` + filteredCards.map((sp, spIdx) => {
+            this.spellUpcastLevels = this.spellUpcastLevels || {};
+            const activeCastLvl = (sp.isUpcastable && this.spellUpcastLevels && this.spellUpcastLevels[sp.name]) ? this.spellUpcastLevels[sp.name] : sp.level;
+            const scaling = sp.isUpcastable ? this.computeUpcastScaling(sp, sp.level, activeCastLvl) : null;
+            const activeFormula = (scaling && scaling.scaledFormula) ? scaling.scaledFormula : sp.damageFormula;
+            const isHealing = (sp.damageType || '').toLowerCase() === 'healing';
+            const damageBtnLabel = isHealing ? `Roll Healing (${escapeHtml(activeFormula)})` : `Roll Damage (${escapeHtml(activeFormula)})`;
+            const upcastHint = (scaling && scaling.levelDiff > 0) ? scaling.tagText : '';
+
+            // Build slot level dropdown options if upcastable
+            let upcastQuickHtml = '';
+            if (sp.isUpcastable) {
+              const configuredLevels = Object.keys(char.spellSlots || {}).map(Number).filter(l => l >= sp.level).sort((a, b) => a - b);
+              const maxLvl = Math.max(sp.level, ...(configuredLevels.length > 0 ? configuredLevels : [sp.level]), Math.min(9, sp.level + 2));
+              let slotOpts = '';
+              for (let l = sp.level; l <= Math.min(9, maxLvl); l++) {
+                const sc = this.computeUpcastScaling(sp, sp.level, l);
+                const isSel = l === activeCastLvl;
+                const optLabel = l === sp.level
+                  ? `${l}${this.getOrdinal(l)} Level (Base${sp.damageFormula ? ` - ${sp.damageFormula}` : ''})`
+                  : `${l}${this.getOrdinal(l)} Level ${sc.tagText}${sc.scaledFormula ? ` -> ${sc.scaledFormula}` : ''}`;
+                slotOpts += `<option value="${l}" ${isSel ? 'selected' : ''}>${escapeHtml(optLabel)}</option>`;
+              }
+
+              upcastQuickHtml = `
+                <div class="spell-upcast-quick-bar">
+                  <span class="spell-upcast-quick-label">Cast Level:</span>
+                  <select class="char-form-select char-form-select-sm spell-card-slot-select" data-spell-name="${escapeHtml(sp.name)}">
+                    ${slotOpts}
+                  </select>
+                  <button type="button" class="btn btn-ghost btn-xs char-spell-upcast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}" title="View higher level rules and slot breakdown">
+                    Upcast Details ⇡
+                  </button>
+                  ${upcastHint ? `<span class="spell-card-upcast-hint">${escapeHtml(upcastHint)}</span>` : ''}
+                </div>
+              `;
+            }
+
+            return `
             <div class="char-item-card char-spell-card ${sp.isPrep ? 'is-prepared' : ''}" data-spell-name="${escapeHtml(sp.name)}">
               <div class="item-card-header">
                 <div>
@@ -3282,7 +3468,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
                   <span class="spell-level-badge">${sp.levelLabel} ${escapeHtml(sp.school || '')}</span>
                   ${sp.concentration ? '<span class="spell-tag-badge spell-tag--conc" title="Requires Concentration">C</span>' : ''}
                   ${sp.ritual ? '<span class="spell-tag-badge spell-tag--ritual" title="Ritual Castable">R</span>' : ''}
-                  ${sp.higherLevel ? '<span class="spell-tag-badge spell-tag--upcast" title="Can be upcast using higher spell slots">Upcastable</span>' : ''}
+                  ${sp.isUpcastable ? '<span class="spell-tag-badge spell-tag--upcast" title="Can be upcast using higher spell slots">Upcastable</span>' : ''}
                 </div>
                 <div class="spell-prep-toggle-group">
                   ${sp.isCantrip ? '<span class="spell-cantrip-badge">Cantrip</span>' : `
@@ -3301,23 +3487,20 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               </div>
               ${sp.description ? `<p class="item-card-notes spell-short-desc">${escapeHtml(sp.description.slice(0, 140))}${sp.description.length > 140 ? '...' : ''}</p>` : ''}
               ${sp.higherLevel ? `<div class="spell-higher-level-preview"><strong>At Higher Levels:</strong> ${escapeHtml(sp.higherLevel.slice(0, 140))}${sp.higherLevel.length > 140 ? '...' : ''}</div>` : ''}
+              ${upcastQuickHtml}
               <div class="atk-roll-buttons spell-card-actions">
-                <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}">
-                  Cast Spell
+                <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}" data-cast-level="${activeCastLvl}">
+                  ${sp.isCantrip ? 'Cast Cantrip' : (activeCastLvl > sp.level ? `Cast (${activeCastLvl}${this.getOrdinal(activeCastLvl)} Slot)` : 'Cast Spell')}
                 </button>
-                ${sp.level > 0 ? `
-                  <button type="button" class="btn btn-secondary btn-sm char-spell-upcast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}" title="Upcast spell at higher slot level">
-                    Upcast ⇡
-                  </button>
-                ` : ''}
-                ${sp.damageFormula ? `
-                  <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(sp.damageFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}">
-                    Roll Damage (${escapeHtml(sp.damageFormula)})
+                ${activeFormula ? `
+                  <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(activeFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}" data-cast-level="${activeCastLvl}">
+                    ${damageBtnLabel}
                   </button>
                 ` : ''}
               </div>
             </div>
-          `).join('') + `</div>`;
+          `;
+          }).join('') + `</div>`;
         }
       }
 
@@ -3534,36 +3717,52 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Inline Spell Slot Select (Upcast slot selection directly on card)
+      container.querySelectorAll('.spell-card-slot-select').forEach(sel => {
+        sel.addEventListener('change', () => {
+          const spellName = sel.dataset.spellName;
+          const chosenLvl = parseInt(sel.value, 10);
+          if (!this.spellUpcastLevels) this.spellUpcastLevels = {};
+          this.spellUpcastLevels[spellName] = chosenLvl;
+          this.renderEquipmentTab(container, char);
+        });
+      });
+
       // Spell Cast button listener
       container.querySelectorAll('.char-spell-cast-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const spellName = btn.dataset.spellName;
-          const lvl = parseInt(btn.dataset.spellLevel, 10) || 0;
+          const baseLvl = parseInt(btn.dataset.spellLevel, 10) || 0;
+          const castLvl = parseInt(btn.dataset.castLevel, 10) || baseLvl;
           const g = window.Grimoire;
-          const normKey = g ? g.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const spell = g && g.allSpells ? g.allSpells.find(s => g.normalizeSpellKey(s.name) === normKey) : null;
+          const spell = this.getSpellDetails(spellName);
 
-          if (lvl > 0) {
-            const baseSlot = char.spellSlots && char.spellSlots[lvl];
-            const hasBaseSlot = baseSlot && (baseSlot.used || 0) < (baseSlot.max || 0);
+          if (castLvl > 0) {
+            const castSlot = char.spellSlots && char.spellSlots[castLvl];
+            const hasCastSlot = castSlot && (castSlot.used || 0) < (castSlot.max || 0);
 
-            // If base slot has 0 remaining, automatically open Upcast modal if higher slots exist
-            if (!hasBaseSlot) {
-              const anyHigherSlot = Object.keys(char.spellSlots || {}).some(l => parseInt(l, 10) > lvl && (char.spellSlots[l].used || 0) < (char.spellSlots[l].max || 0));
+            // If selected slot has 0 remaining, prompt or open Upcast modal
+            if (!hasCastSlot) {
+              const anyHigherSlot = Object.keys(char.spellSlots || {}).some(l => parseInt(l, 10) > castLvl && (char.spellSlots[l].used || 0) < (char.spellSlots[l].max || 0));
               if (anyHigherSlot) {
-                this.openSpellUpcastModal(spellName, lvl);
+                this.openSpellUpcastModal(spellName, baseLvl);
                 return;
               }
-              if (!confirm(`You have no ${lvl}${this.getOrdinal(lvl)} level spell slots remaining! Cast ${spellName} anyway?`)) {
+              if (!confirm(`You have no ${castLvl}${this.getOrdinal(castLvl)} level spell slots remaining! Cast ${spellName} anyway?`)) {
                 return;
               }
             } else {
-              baseSlot.used++;
+              castSlot.used++;
               this.saveStorage();
             }
           }
 
-          const slotExpendedMsg = lvl > 0 ? ` (Expended ${lvl}${this.getOrdinal(lvl)} level slot, ${char.spellSlots[lvl] ? (char.spellSlots[lvl].max - char.spellSlots[lvl].used) : 0} left)` : '';
+          const isUpcast = castLvl > baseLvl;
+          const slotExpendedMsg = castLvl > 0
+            ? (isUpcast
+                ? ` (Expended ${castLvl}${this.getOrdinal(castLvl)} level slot [Upcast from ${baseLvl}${this.getOrdinal(baseLvl)}], ${char.spellSlots[castLvl] ? (char.spellSlots[castLvl].max - char.spellSlots[castLvl].used) : 0} left)`
+                : ` (Expended ${baseLvl}${this.getOrdinal(baseLvl)} level slot, ${char.spellSlots[baseLvl] ? (char.spellSlots[baseLvl].max - char.spellSlots[baseLvl].used) : 0} left)`)
+            : '';
 
           if (spell && g) {
             g.shareSpell(spell);
@@ -3573,7 +3772,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               roller: char.name,
               category: 'SPELL CAST',
               sourceType: 'spell',
-              badges: [{ label: lvl === 0 ? 'Cantrip' : `${lvl}-Level Spell`, cls: 'prop-school' }],
+              badges: [{ label: baseLvl === 0 ? 'Cantrip' : (isUpcast ? `${castLvl}-Level Upcast` : `${baseLvl}-Level Spell`), cls: 'prop-school' }],
               description: `Cast ${spellName}${slotExpendedMsg}`
             });
           }
@@ -3682,10 +3881,18 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const formula = btn.dataset.damageFormula;
           const dmgType = btn.dataset.damageType;
           const name = btn.dataset.spellName;
+          const castLvl = parseInt(btn.dataset.castLevel, 10);
+          const spell = this.getSpellDetails(name);
+          const baseLvl = spell ? (spell.level || 0) : 0;
           const target = window.InitiativeTracker?.getSelectedTarget?.();
           const targetSuffix = target ? ` vs ${target.name}` : '';
+          const isHealing = (dmgType || '').toLowerCase().includes('heal') || /cure|heal/i.test(name);
+          const isUpcast = castLvl && baseLvl && castLvl > baseLvl;
+          const actionLabel = isHealing ? 'Healing' : (dmgType ? `${dmgType} Damage` : 'Damage');
+          const upcastLabel = isUpcast ? ` (${castLvl}${this.getOrdinal(castLvl)} Level Upcast)` : '';
+          const rollLabel = `${name}${upcastLabel} ${actionLabel}${targetSuffix}`;
           if (window.DiceRoller) {
-            window.DiceRoller.roll(formula, `${name} Damage (${dmgType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
+            window.DiceRoller.roll(formula, rollLabel, char.name, 'normal', 0);
           }
         });
       });
