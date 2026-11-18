@@ -1,0 +1,78 @@
+{
+  "_comment": "Quarantined / vaulted entries and categories held out of world-data.json so players cannot see or access them in the live O-Codex.",
+  "vaulted_categories": [
+    {
+      "id": "stories",
+      "label": "Stories",
+      "description": "Hooks and points of interest the party can follow. Rewards and newfound power await at the end of each thread."
+    },
+    {
+      "id": "divions",
+      "label": "Divions",
+      "description": "Motes of Divine power. Some are strewn about the world, others are gifted to those pursuing fierce aspirations; All of them will intertwine themselves with fate."
+    }
+  ],
+  "vaulted_entries": [
+    {
+      "id": "character-rennick-corvin",
+      "category": "characters",
+      "name": "Rennick Corvin",
+      "summary": "Droland Palace's head medical researcher, an astute scientist whose interest in eschatons and aether runs deeper than he admits.",
+      "description": "Rennick Corvin is an elven scientist at Droland Palace and the Head Researcher of its Medical Branch. At first glance he comes across as purely intellectual, measured, and highly analytical, but that academic demeanor conceals someone far more socially perceptive than he lets on. Rennick reads rooms well, understands people quickly, and often seems to know more about a conversation's shape than he should. He has recently turned much of his attention toward eschatons and the strange properties of aether, and during the party's venture into the Droland Waterways, he also seemed strangely familiar with one of the gutter lords, suggesting roots or connections he has not explained. Unknown to most, he possesses Revis, the Eschaton of Diffusion and Time.",
+      "tags": [
+        "scientist",
+        "droland",
+        "medical",
+        "aether",
+        "waterways",
+        "eschaton"
+      ],
+      "details": {
+        "Role": "Head Researcher of the Medical Branch in Droland Palace",
+        "Public Demeanor": "Astute, intellectual, and controlled",
+        "Hidden Strength": "Exceptionally skilled at reading people and social situations",
+        "Current Focus": "Researching eschatons and aether through a medical and scientific lens",
+        "Eschaton": "Possesses Revis, Eschaton of Diffusion and Time"
+      }
+    },
+    {
+      "id": "lore-aetherwell",
+      "category": "lore",
+      "name": "Aetherwell",
+      "summary": "A mysterious force tied to the creation of Manifests, seemingly shaped in part by danger, isolation, and the headspace of nearby minds.",
+      "description": "The Aetherwell is the force currently believed to create Manifests, though not in any simple or predictable way. Notes recovered from a Canthian collection suggest that its effects are partly random, but that nearby conscious beings, their significance, and their headspace can influence what form a Manifest takes. The same notes also suggest that isolation and dangerous locations are especially conducive to what they call the Aetherwell Effect. If true, then powerful items may not merely appear where danger already exists; they may be shaped by the thoughts, stakes, and pressure surrounding those places.",
+      "tags": [
+        "lore",
+        "manifests",
+        "magic",
+        "aetherwell",
+        "aether"
+      ],
+      "details": {
+        "Known For": "Creating Manifests",
+        "Influences": "Context, significance, and the headspace of nearby conscious entities",
+        "Conducive Conditions": "Isolation and dangerous areas",
+        "Related Term": "The Aetherwell Effect"
+      }
+    },
+    {
+      "id": "lore-knacks",
+      "category": "lore",
+      "name": "Knacks",
+      "summary": "Unusual talents that some people are simply born with, or else develop in ways that feel abnormal even by magical standards.",
+      "description": "Knacks are odd talents that appear in certain people without following the usual paths of study, training, or inherited magical discipline. Some seem to be born with them outright, while others develop them in ways that feel abrupt, unnatural, or difficult to explain. However they emerge, Knacks stand apart from ordinary learned magic as abilities that feel personal, instinctive, and often unsettlingly specific.",
+      "tags": [
+        "lore",
+        "talents",
+        "magic",
+        "innate",
+        "abnormal"
+      ],
+      "details": {
+        "What They Are": "Unusual personal abilities outside ordinary magical training",
+        "How They Appear": "Either innate from birth or developed in abnormal ways",
+        "Known Example": "Trish's foresight"
+      }
+    }
+  ]
+}

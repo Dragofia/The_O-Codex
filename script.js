@@ -71,7 +71,7 @@ window.resolveEntryLocation = function resolveEntryLocation(entry) {
   return { domain, location: loc };
 };
 
-const DATA_URL = "world-data.json";
+const DATA_URL = "world-data.json?v=" + Date.now();
 const COMPLETE_CODEX_PREVIEW_LIMIT = 8;
 const VIEW_TRANSITION_OUT_MS = 110;
 const VIEW_TRANSITION_IN_MS = 500;
