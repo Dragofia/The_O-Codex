@@ -9167,3 +9167,380 @@ body.characters-mode-active .dice-tray-toggle {
   color: #ffffff;
 }
 
+/* =========================================================================
+   MAGIC ITEM CHARGES & DAWN RECHARGE STYLING
+   ========================================================================= */
+.magic-charges-tracker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0.5rem 0 0.4rem 0;
+}
+
+.charges-control-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.char-charge-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #e2e8f0;
+  width: 28px;
+  height: 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.char-charge-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.28);
+  color: #38bdf8;
+}
+
+.char-charge-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.charges-pill {
+  padding: 0 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #93c5fd;
+  white-space: nowrap;
+}
+
+.charges-pill.charges-full {
+  color: #86efac;
+}
+
+.charges-pill.charges-empty {
+  color: #f87171;
+}
+
+.char-magic-recharge-btn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+  border-radius: 5px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.char-magic-recharge-btn:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #fbbf24;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+#btn-recharge-all-dawn {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
+#btn-recharge-all-dawn:hover {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: #fbbf24;
+  color: #ffffff;
+}
+
+/* =========================================================================
+   SPELLBOOK FILTERS & TOOLBAR
+   ========================================================================= */
+.spellbook-filter-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding: 0.65rem 0.95rem;
+  background: rgba(10, 17, 32, 0.85);
+  border: 1px solid rgba(90, 232, 255, 0.2);
+  border-radius: 8px;
+  margin: 1rem 0;
+  backdrop-filter: blur(8px);
+}
+
+.spell-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.spell-filter-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  color: #e2e8f0;
+  user-select: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.spell-filter-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+.char-form-select-sm {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.char-form-select-sm:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.spell-filter-count {
+  margin-left: auto;
+}
+
+.spell-count-badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  padding: 0.2rem 0.65rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   SPELL CARD UPCASTING BADGES & ACTIONS
+   ========================================================================= */
+.spell-tag--upcast {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #d8b4fe;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-left: 0.3rem;
+}
+
+.spell-higher-level-preview {
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  background: rgba(168, 85, 247, 0.09);
+  border-left: 3px solid #a855f7;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0 5px 5px 0;
+  margin-top: 0.45rem;
+  line-height: 1.4;
+}
+
+.spell-higher-level-preview strong {
+  color: #d8b4fe;
+}
+
+.char-spell-upcast-btn {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.char-spell-upcast-btn:hover {
+  background: rgba(168, 85, 247, 0.32);
+  border-color: #c084fc;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+/* =========================================================================
+   SPELL UPCAST MODAL STYLING
+   ========================================================================= */
+.upcast-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.upcast-spell-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.6rem;
+}
+
+.upcast-spell-name {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.upcast-spell-meta {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+.upcast-rule-box {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.32);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
+.upcast-rule-box strong {
+  color: #d8b4fe;
+}
+
+.upcast-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.2rem;
+}
+
+.upcast-slot-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 290px;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+
+.upcast-slot-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.upcast-slot-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.upcast-slot-card.is-selected {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.16);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.upcast-slot-card.is-depleted {
+  opacity: 0.62;
+}
+
+.slot-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.slot-card-level-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+}
+
+.upcast-base-tag {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: 0.4rem;
+}
+
+.upcast-bonus-tag {
+  font-size: 0.72rem;
+  color: #c084fc;
+  font-weight: 600;
+  margin-left: 0.4rem;
+}
+
+.slot-card-scaling-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.slot-card-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.slot-card-dmg-badge {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap;
+}
+
+.slot-card-avail-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.slot-card-avail-badge.avail-ok {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+.slot-card-avail-badge.avail-none {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+

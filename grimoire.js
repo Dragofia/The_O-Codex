@@ -32,6 +32,7 @@
       this.isLoaded = true;
       this.initDOM();
       this.render();
+      window.dispatchEvent(new CustomEvent('grimoire-loaded'));
     }
 
     loadFavorites() {

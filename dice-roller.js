@@ -329,6 +329,18 @@
 
       // Normalize formula: e.g. "2d4+4", "1d8+3", "2d6-1", "1d20"
       let clean = String(formula || '1d20').replace(/\s+/g, '');
+
+      // Expand multiplier formulas like "3x(1d4+1)" -> "3d4+3", "4x(1d4+1)" -> "4d4+4", "2x(1d6)" -> "2d6"
+      clean = clean.replace(/(\d+)x\((\d*)d(\d+)(?:([+-])(\d+))?\)/gi, (match, count, dcount, sides, sign, mod) => {
+        const n = parseInt(count, 10);
+        const dc = dcount ? parseInt(dcount, 10) : 1;
+        const s = parseInt(sides, 10);
+        const m = mod ? parseInt(mod, 10) : 0;
+        const totalMod = (sign === '-' ? -1 : 1) * m * n;
+        const modStr = totalMod !== 0 ? (totalMod > 0 ? `+${totalMod}` : `${totalMod}`) : '';
+        return `${n * dc}d${s}${modStr}`;
+      });
+
       if (!clean.startsWith('+') && !clean.startsWith('-')) {
         clean = '+' + clean;
       }

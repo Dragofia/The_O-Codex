@@ -12,7 +12,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=60">
+  <link rel="stylesheet" href="styles.css?v=61">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -1421,14 +1421,29 @@
 
         <div class="char-form-row">
           <div class="char-form-field" style="flex: 1;">
-            <label for="magic-form-charges">Charges / Uses</label>
-            <input type="text" id="magic-form-charges" class="char-form-input" placeholder="e.g. 3 / 3 Daily, 1 / Long Rest, Passive" />
+            <label for="magic-form-charges-current">Current Charges</label>
+            <input type="number" id="magic-form-charges-current" class="char-form-input" min="0" placeholder="e.g. 4" />
+          </div>
+          <div class="char-form-field" style="flex: 1;">
+            <label for="magic-form-charges-max">Max Charges</label>
+            <input type="number" id="magic-form-charges-max" class="char-form-input" min="0" placeholder="e.g. 4 (Blank if passive)" />
+          </div>
+          <div class="char-form-field" style="flex: 1.2;">
+            <label for="magic-form-recharge">Recharge at Dawn</label>
+            <input type="text" id="magic-form-recharge" class="char-form-input" placeholder="e.g. 1d6+1, 2d2, All" />
           </div>
           <div class="char-form-field" style="flex: 1; justify-content: center;">
             <label class="char-form-checkbox-label" style="margin-top: 1.3rem;">
               <input type="checkbox" id="magic-form-attuned" />
               <span>Attuned to Character</span>
             </label>
+          </div>
+        </div>
+
+        <div class="char-form-row">
+          <div class="char-form-field" style="flex: 1;">
+            <label for="magic-form-charges">Charges / Status Note (Optional)</label>
+            <input type="text" id="magic-form-charges" class="char-form-input" placeholder="e.g. 4 / 4 Daily at Dawn, or Passive Focus" />
           </div>
         </div>
 
@@ -1735,6 +1750,30 @@
       </form>
     </div>
   </div>
+
+  <!-- Spell Cast & Upcast Modal -->
+  <div id="spell-upcast-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="spell-upcast-title">
+    <div class="modal__backdrop" id="spell-upcast-backdrop"></div>
+    <div class="modal__dialog modal__dialog--char-form" tabindex="-1" style="max-width: 620px;">
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="modal__category" id="spell-upcast-category">SPELLCASTING & ARCANUM</span>
+          <h2 id="spell-upcast-title" class="modal__title">Cast / Upcast Spell</h2>
+        </div>
+        <button type="button" class="modal__close" id="spell-upcast-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="upcast-modal-body" id="spell-upcast-body">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div class="modal__form-actions" style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" id="spell-upcast-cancel">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="spell-upcast-cast-btn">Cast Spell</button>
+        <button type="button" class="btn btn-primary" id="spell-upcast-roll-btn">Cast & Roll Damage</button>
+      </div>
+    </div>
+  </div>
   <div id="map-filter-bar" class="map-filter-bar" role="toolbar" aria-label="Pin Category Filters">
     <button class="map-filter-pill is-active" data-category="all" type="button" title="Show All Pins">
       <span>All</span>
@@ -1905,9 +1944,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="firebase-sync.js?v=17" defer></script>
   <!-- Core Scripts -->
-  <script src="dice-roller.js?v=12" defer></script>
-  <script src="characters.js?v=39" defer></script>
-  <script src="grimoire.js?v=5" defer></script>
+  <script src="dice-roller.js?v=13" defer></script>
+  <script src="characters.js?v=40" defer></script>
+  <script src="grimoire.js?v=6" defer></script>
   <script src="initiative-tracker.js?v=12" defer></script>
   <script src="codex-linker.js?v=2" defer></script>
   <script src="codex-notes.js?v=2" defer></script>

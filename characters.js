@@ -122,6 +122,9 @@
           rarity: 'Rare',
           attuned: true,
           charges: '4 / 4',
+          chargesCurrent: 4,
+          chargesMax: 4,
+          rechargeFormula: '2d2',
           description: 'Regains 2d2 charges daily at dawn. Spells:\n• Silent Image (1 charge)\n• Disguise Self (2 charges)\n• Distort Value (2 charges)\n• Shadow Blade (3 charges)'
         },
         {
@@ -819,6 +822,19 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!Array.isArray(c.consumables)) c.consumables = [];
           if (!Array.isArray(c.attacks)) c.attacks = [];
           if (!Array.isArray(c.magicItems)) c.magicItems = [];
+          c.magicItems.forEach(item => {
+            if (item.charges && typeof item.charges === 'string') {
+              const m = item.charges.match(/^(\d+)\s*\/\s*(\d+)/);
+              if (m) {
+                if (item.chargesCurrent === undefined || item.chargesCurrent === null) item.chargesCurrent = parseInt(m[1], 10);
+                if (item.chargesMax === undefined || item.chargesMax === null) item.chargesMax = parseInt(m[2], 10);
+              }
+            }
+            if (!item.rechargeFormula && item.description) {
+              const mDawn = item.description.match(/regains\s+([0-9d+\-x()]+)\s+charges(?:\s+daily)?\s+at dawn/i);
+              if (mDawn) item.rechargeFormula = mDawn[1];
+            }
+          });
           if (!Array.isArray(c.equipment)) c.equipment = [];
           if (!Array.isArray(c.divions)) c.divions = [];
           if (!Array.isArray(c.feats)) c.feats = [];
@@ -1259,6 +1275,22 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       document.getElementById('slot-modal-cancel')?.addEventListener('click', () => this.closeSlotModal());
       document.getElementById('slot-modal-form')?.addEventListener('submit', (e) => this.saveSlotFromModal(e));
 
+      // Spell Upcast Modal
+      document.getElementById('spell-upcast-close')?.addEventListener('click', () => this.closeSpellUpcastModal());
+      document.getElementById('spell-upcast-backdrop')?.addEventListener('click', () => this.closeSpellUpcastModal());
+      document.getElementById('spell-upcast-cancel')?.addEventListener('click', () => this.closeSpellUpcastModal());
+      document.getElementById('spell-upcast-cast-btn')?.addEventListener('click', () => this.executeSpellUpcast(false));
+      document.getElementById('spell-upcast-roll-btn')?.addEventListener('click', () => this.executeSpellUpcast(true));
+
+      // Re-render spells with rich SRD data when Grimoire loads
+      window.addEventListener('grimoire-loaded', () => {
+        if (this.activeTab === 'equipment') {
+          const container = document.getElementById('char-tab-view');
+          const char = this.getActiveCharacter();
+          if (container && char) this.renderEquipmentTab(container, char);
+        }
+      });
+
       // Escape key listener for all character form modals
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -1270,6 +1302,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!document.getElementById('boon-modal')?.classList.contains('hidden')) this.closeBoonModal();
           if (!document.getElementById('consumable-modal')?.classList.contains('hidden')) this.closeConsumableModal();
           if (!document.getElementById('slot-modal')?.classList.contains('hidden')) this.closeSlotModal();
+          if (!document.getElementById('spell-upcast-modal')?.classList.contains('hidden')) this.closeSpellUpcastModal();
         }
       });
     }
@@ -1550,6 +1583,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         title.textContent = 'Edit Magic Item / Relic';
         document.getElementById('magic-form-name').value = item.name || '';
         document.getElementById('magic-form-rarity').value = item.rarity || 'Rare';
+        document.getElementById('magic-form-charges-current').value = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : '';
+        document.getElementById('magic-form-charges-max').value = (item.chargesMax !== undefined && item.chargesMax !== null) ? item.chargesMax : '';
+        document.getElementById('magic-form-recharge').value = item.rechargeFormula || '';
         document.getElementById('magic-form-charges').value = item.charges || '';
         document.getElementById('magic-form-attuned').checked = !!item.attuned;
         document.getElementById('magic-form-desc').value = item.description || '';
@@ -1579,11 +1615,22 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       if (!name) return;
 
       const rarity = document.getElementById('magic-form-rarity')?.value || 'Rare';
-      const charges = (document.getElementById('magic-form-charges')?.value || '').trim();
+      const maxRaw = (document.getElementById('magic-form-charges-max')?.value || '').trim();
+      const currRaw = (document.getElementById('magic-form-charges-current')?.value || '').trim();
+      const chargesMax = maxRaw !== '' && !isNaN(parseInt(maxRaw, 10)) ? parseInt(maxRaw, 10) : null;
+      let chargesCurrent = currRaw !== '' && !isNaN(parseInt(currRaw, 10)) ? parseInt(currRaw, 10) : (chargesMax !== null ? chargesMax : null);
+      if (chargesMax !== null && chargesCurrent !== null) {
+        chargesCurrent = Math.max(0, Math.min(chargesMax, chargesCurrent));
+      }
+      const rechargeFormula = (document.getElementById('magic-form-recharge')?.value || '').trim();
+      let charges = (document.getElementById('magic-form-charges')?.value || '').trim();
+      if (!charges && chargesMax !== null) {
+        charges = `${chargesCurrent} / ${chargesMax}`;
+      }
       const attuned = !!document.getElementById('magic-form-attuned')?.checked;
       const description = (document.getElementById('magic-form-desc')?.value || '').trim();
 
-      const itemData = { name, rarity, charges, attuned, description };
+      const itemData = { name, rarity, charges, chargesCurrent, chargesMax, rechargeFormula, attuned, description };
 
       if (indexStr !== '' && !isNaN(parseInt(indexStr, 10))) {
         const idx = parseInt(indexStr, 10);
@@ -2005,6 +2052,327 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       const container = document.getElementById('char-tab-view');
       if (container) this.renderEquipmentTab(container, char);
       window.showToast?.(`Spell slots updated for Level ${lvl}`, 'success', 2000);
+    }
+
+    // =========================================================================
+    // SPELL UPCASTING & SCALING ENGINE
+    // =========================================================================
+    getSpellDetails(spellName) {
+      const g = window.Grimoire;
+      if (g && typeof g.normalizeSpellKey === 'function') {
+        const key = g.normalizeSpellKey(spellName);
+        if (g.allSpells && g.allSpells.length > 0) {
+          const found = g.allSpells.find(s => g.normalizeSpellKey(s.name) === key);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    getOrdinal(n) {
+      const num = parseInt(n, 10);
+      if (num === 1) return 'st';
+      if (num === 2) return 'nd';
+      if (num === 3) return 'rd';
+      return 'th';
+    }
+
+    combineDamageFormulas(base, added) {
+      if (!base) return added;
+      if (!added) return base;
+      const mBase = String(base).trim().match(/^(\d+)d(\d+)(.*)$/i);
+      const mAdd = String(added).trim().match(/^(\d+)d(\d+)$/i);
+      if (mBase && mAdd && mBase[2] === mAdd[2]) {
+        const totalCount = parseInt(mBase[1], 10) + parseInt(mAdd[1], 10);
+        return `${totalCount}d${mBase[2]}${mBase[3]}`;
+      }
+      return `${base} + ${added}`;
+    }
+
+    computeUpcastScaling(spell, baseLevel, castLevel) {
+      const baseLvl = parseInt(baseLevel, 10) || 1;
+      const castLvl = parseInt(castLevel, 10) || baseLvl;
+      const levelDiff = castLvl - baseLvl;
+      const hl = (spell && (spell.higherLevel || spell.higher_level)) ? String(spell.higherLevel || spell.higher_level) : '';
+      const baseDmg = (spell && spell.damageFormula) ? String(spell.damageFormula).trim() : '';
+
+      if (levelDiff <= 0) {
+        return {
+          addedFormula: '',
+          scaledFormula: baseDmg,
+          description: 'Base spell slot'
+        };
+      }
+
+      // 1. Standard: "increases by (\d+d\d+) ... for each slot level above"
+      const matchEach = hl.match(/(?:increases by|extra|additional)\s+(\d+)d(\d+)(?:\s+damage|\s+healing)?\s+for each slot level above/i);
+      if (matchEach) {
+        const count = parseInt(matchEach[1], 10) * levelDiff;
+        const sides = matchEach[2];
+        const addedFormula = `${count}d${sides}`;
+        const scaledFormula = this.combineDamageFormulas(baseDmg, addedFormula);
+        return {
+          addedFormula: `+${addedFormula}`,
+          scaledFormula,
+          description: `Damage/healing increases by +${addedFormula} (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+        };
+      }
+
+      // 2. Every two slot levels: "increases by (\d+d\d+) ... for every two slot levels above"
+      const matchTwo = hl.match(/increases by\s+(\d+)d(\d+)(?:\s+damage)?\s+for every two slot levels above/i);
+      if (matchTwo) {
+        const steps = Math.floor(levelDiff / 2);
+        if (steps > 0) {
+          const count = parseInt(matchTwo[1], 10) * steps;
+          const sides = matchTwo[2];
+          const addedFormula = `${count}d${sides}`;
+          const scaledFormula = this.combineDamageFormulas(baseDmg, addedFormula);
+          return {
+            addedFormula: `+${addedFormula}`,
+            scaledFormula,
+            description: `Damage increases by +${addedFormula} (+${steps * 2} levels above base)`
+          };
+        } else {
+          return {
+            addedFormula: '',
+            scaledFormula: baseDmg,
+            description: `Requires 2 slot levels above base for +${matchTwo[1]}d${matchTwo[2]}`
+          };
+        }
+      }
+
+      // 3. Multiplier darts/projectiles like Magic Missile: "creates one (more|additional) (dart|projectile) for each slot level above"
+      if (/creates one (?:more|additional) (?:dart|projectile) for each slot level above/i.test(hl)) {
+        const mDarts = baseDmg.match(/^(\d+)x\(([^)]+)\)$/);
+        if (mDarts) {
+          const totalDarts = parseInt(mDarts[1], 10) + levelDiff;
+          const scaledFormula = `${totalDarts}x(${mDarts[2]})`;
+          return {
+            addedFormula: `+${levelDiff} darts`,
+            scaledFormula,
+            description: `Creates ${totalDarts} darts total (+${levelDiff} from upcasting)`
+          };
+        }
+      }
+
+      // 4. Flat HP / bonuses like Aid
+      const matchFlat = hl.match(/(?:hit points increase by an additional|increases by)\s+(\d+)\s+for each slot level above/i);
+      if (matchFlat) {
+        const bonus = parseInt(matchFlat[1], 10) * levelDiff;
+        const scaledFormula = baseDmg ? `${baseDmg}+${bonus}` : `+${bonus}`;
+        return {
+          addedFormula: `+${bonus}`,
+          scaledFormula,
+          description: `Effect increases by +${bonus} (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+        };
+      }
+
+      // 5. Generic upcast
+      return {
+        addedFormula: '',
+        scaledFormula: baseDmg,
+        description: `Upcast to ${castLvl}${this.getOrdinal(castLvl)} level (+${levelDiff} slot level${levelDiff > 1 ? 's' : ''})`
+      };
+    }
+
+    openSpellUpcastModal(spellName, baseLevel) {
+      const char = this.getActiveCharacter();
+      if (!char) return;
+      const modal = document.getElementById('spell-upcast-modal');
+      const body = document.getElementById('spell-upcast-body');
+      if (!modal || !body) return;
+
+      const spell = this.getSpellDetails(spellName) || {
+        name: spellName,
+        level: baseLevel || 1,
+        school: 'Arcane',
+        castingTime: '1 action',
+        range: '60 feet',
+        duration: 'Instantaneous',
+        damageFormula: '',
+        damageType: '',
+        higherLevel: ''
+      };
+
+      const baseLvl = parseInt(baseLevel, 10) || spell.level || 1;
+      const configuredLevels = Object.keys(char.spellSlots || {}).map(Number).filter(l => l >= baseLvl).sort((a, b) => a - b);
+      const maxLvl = Math.max(baseLvl, ...(configuredLevels.length > 0 ? configuredLevels : [baseLvl]), Math.min(9, baseLvl + 2));
+      const allPossibleLevels = [];
+      for (let l = baseLvl; l <= Math.min(9, maxLvl); l++) {
+        allPossibleLevels.push(l);
+      }
+
+      let defaultLvl = baseLvl;
+      for (const l of allPossibleLevels) {
+        const slot = char.spellSlots && char.spellSlots[l];
+        if (slot && (slot.used || 0) < (slot.max || 0)) {
+          defaultLvl = l;
+          break;
+        }
+      }
+
+      this.activeUpcast = {
+        char,
+        spell,
+        baseLvl,
+        chosenLvl: defaultLvl
+      };
+
+      this.renderSpellUpcastModalContent();
+      modal.classList.remove('hidden');
+    }
+
+    renderSpellUpcastModalContent() {
+      const body = document.getElementById('spell-upcast-body');
+      if (!body || !this.activeUpcast) return;
+
+      const { char, spell, baseLvl, chosenLvl } = this.activeUpcast;
+      const baseLabel = `${baseLvl}${this.getOrdinal(baseLvl)} Level`;
+      const metaLine = `${baseLabel} ${spell.school || ''} • Time: ${spell.castingTime || '1 action'} • Range: ${spell.range || 'Self'}`;
+
+      const configuredLevels = Object.keys(char.spellSlots || {}).map(Number).filter(l => l >= baseLvl).sort((a, b) => a - b);
+      const maxLvl = Math.max(baseLvl, ...(configuredLevels.length > 0 ? configuredLevels : [baseLvl]), Math.min(9, baseLvl + 2));
+      const levels = [];
+      for (let l = baseLvl; l <= Math.min(9, maxLvl); l++) levels.push(l);
+
+      const optionsHtml = levels.map(lvl => {
+        const isBase = lvl === baseLvl;
+        const isSelected = lvl === chosenLvl;
+        const slot = char.spellSlots && char.spellSlots[lvl];
+        const hasSlotConfigured = !!slot;
+        const remaining = slot ? Math.max(0, (slot.max || 0) - (slot.used || 0)) : 0;
+        const isDepleted = hasSlotConfigured && remaining === 0;
+        const slotStatusText = hasSlotConfigured ? `${remaining} / ${slot.max} left` : 'Not configured';
+        const scaling = this.computeUpcastScaling(spell, baseLvl, lvl);
+
+        return `
+          <div class="upcast-slot-card ${isSelected ? 'is-selected' : ''} ${isDepleted ? 'is-depleted' : ''} ${!hasSlotConfigured ? 'not-configured' : ''}" data-slot-level="${lvl}">
+            <div class="slot-card-left">
+              <div class="slot-card-level-title">
+                ${lvl}${this.getOrdinal(lvl)} Level Slot ${isBase ? '<span class="upcast-base-tag">(Base)</span>' : `<span class="upcast-bonus-tag">(+${lvl - baseLvl} Upcast)</span>`}
+              </div>
+              <div class="slot-card-scaling-desc">
+                ${escapeHtml(scaling.description)}
+              </div>
+            </div>
+            <div class="slot-card-right">
+              ${scaling.scaledFormula ? `<span class="slot-card-dmg-badge">${escapeHtml(scaling.scaledFormula)} ${escapeHtml(spell.damageType || '')}</span>` : ''}
+              <span class="slot-card-avail-badge ${remaining > 0 ? 'avail-ok' : 'avail-none'}">${slotStatusText}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      body.innerHTML = `
+        <div class="upcast-spell-header">
+          <h3 class="upcast-spell-name">${escapeHtml(spell.name)}</h3>
+          <div class="upcast-spell-meta">${escapeHtml(metaLine)}</div>
+        </div>
+
+        ${spell.higherLevel ? `
+          <div class="upcast-rule-box">
+            <strong>At Higher Levels:</strong>
+            <p style="margin: 0.25rem 0 0 0;">${escapeHtml(spell.higherLevel)}</p>
+          </div>
+        ` : ''}
+
+        <div class="upcast-section-label">Select Spell Slot Level to Expend:</div>
+        <div class="upcast-slot-options">${optionsHtml}</div>
+      `;
+
+      body.querySelectorAll('.upcast-slot-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const lvl = parseInt(card.dataset.slotLevel, 10);
+          this.activeUpcast.chosenLvl = lvl;
+          this.renderSpellUpcastModalContent();
+        });
+      });
+
+      const castBtn = document.getElementById('spell-upcast-cast-btn');
+      const rollBtn = document.getElementById('spell-upcast-roll-btn');
+      const chosenScaling = this.computeUpcastScaling(spell, baseLvl, chosenLvl);
+      const chosenLabel = `${chosenLvl}${this.getOrdinal(chosenLvl)} Level`;
+
+      if (castBtn) {
+        castBtn.textContent = `Cast at ${chosenLabel}`;
+      }
+
+      if (rollBtn) {
+        if (chosenScaling.scaledFormula) {
+          rollBtn.style.display = 'inline-flex';
+          rollBtn.textContent = `Cast & Roll Damage (${chosenScaling.scaledFormula})`;
+        } else {
+          rollBtn.style.display = 'none';
+        }
+      }
+    }
+
+    closeSpellUpcastModal() {
+      document.getElementById('spell-upcast-modal')?.classList.add('hidden');
+      this.activeUpcast = null;
+    }
+
+    executeSpellUpcast(castWithDamage = false) {
+      if (!this.activeUpcast) return;
+      const { char, spell, baseLvl, chosenLvl } = this.activeUpcast;
+      const scaling = this.computeUpcastScaling(spell, baseLvl, chosenLvl);
+      const chosenLabel = `${chosenLvl}${this.getOrdinal(chosenLvl)} Level`;
+      const slot = char.spellSlots && char.spellSlots[chosenLvl];
+
+      let slotExpendedMsg = '';
+      if (slot) {
+        if ((slot.used || 0) < (slot.max || 0)) {
+          slot.used = (slot.used || 0) + 1;
+          const left = slot.max - slot.used;
+          slotExpendedMsg = ` (Expended ${chosenLabel} slot, ${left} left)`;
+          this.saveStorage();
+        } else {
+          if (!confirm(`You have no ${chosenLabel} spell slots remaining! Cast ${spell.name} anyway?`)) {
+            return;
+          }
+        }
+      }
+
+      if (castWithDamage && scaling.scaledFormula && window.DiceRoller) {
+        const target = window.InitiativeTracker?.getSelectedTarget?.();
+        const targetSuffix = target ? ` vs ${target.name}` : '';
+        const dmgLabel = chosenLvl > baseLvl ? `${spell.name} (Upcast ${chosenLabel}) Damage` : `${spell.name} Damage`;
+        window.DiceRoller.roll(scaling.scaledFormula, `${dmgLabel} (${spell.damageType || 'Damage'})${targetSuffix}`, char.name, 'normal', 0);
+      }
+
+      const badges = [
+        { label: chosenLvl === baseLvl ? `${baseLvl}${this.getOrdinal(baseLvl)} Level` : `Upcast ${chosenLabel}`, cls: 'prop-school' },
+        { label: spell.school || 'Arcane', cls: 'prop-school' }
+      ];
+      if (scaling.scaledFormula) {
+        badges.push({ label: `${scaling.scaledFormula} ${spell.damageType || ''}`.trim(), cls: 'prop-dmg' });
+      }
+
+      let desc = `Cast ${spell.name} at ${chosenLabel}.${slotExpendedMsg}`;
+      if (chosenLvl > baseLvl && scaling.description) {
+        desc += `\n\nUpcasting Effect: ${scaling.description}`;
+      }
+      if (spell.higherLevel) {
+        desc += `\n\nAt Higher Levels: ${spell.higherLevel}`;
+      }
+
+      window.DiceRoller?.shareItem?.({
+        name: chosenLvl > baseLvl ? `${spell.name} (${chosenLabel} Slot)` : spell.name,
+        roller: char.name,
+        category: 'SPELL CAST',
+        sourceType: 'spell',
+        badges,
+        description: desc
+      });
+
+      this.playHpSound(2);
+      window.showToast?.(`Cast ${spell.name} at ${chosenLabel}!${slotExpendedMsg}`, 'success', 2400);
+      this.closeSpellUpcastModal();
+
+      const container = document.getElementById('char-tab-view');
+      if (container) {
+        this.renderEquipmentTab(container, char);
+      }
     }
 
     renderRosterBar() {
@@ -2676,7 +3044,12 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       if (char.magicItems.length === 0) {
         magicHtml = `<div class="char-empty-msg">No magic items or relics registered.${this.isEditMode ? ' Click "Add Magic Item" to register!' : ''}</div>`;
       } else {
-        magicHtml = char.magicItems.map((item, index) => `
+        magicHtml = char.magicItems.map((item, index) => {
+          const hasTrackedCharges = item.chargesMax !== null && item.chargesMax !== undefined && !isNaN(item.chargesMax) && item.chargesMax > 0;
+          const currCharges = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : (item.chargesMax || 0);
+          const maxCharges = item.chargesMax || 0;
+
+          return `
           <div class="char-item-card char-magic-card" data-index="${index}">
             <div class="item-card-header">
               <div>
@@ -2689,10 +3062,26 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
                 ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="magic" data-index="${index}" title="Remove Magic Item">✕</button>` : ''}
               </div>
             </div>
-            ${item.charges ? `<div class="magic-charges"><strong>Charges:</strong> ${escapeHtml(item.charges)}</div>` : ''}
+            ${hasTrackedCharges ? `
+              <div class="magic-charges-tracker">
+                <div class="charges-control-group">
+                  <button type="button" class="char-charge-btn charge-dec" data-index="${index}" title="Expend 1 Charge" ${currCharges <= 0 ? 'disabled' : ''}>-</button>
+                  <span class="charges-pill ${currCharges === 0 ? 'charges-empty' : currCharges === maxCharges ? 'charges-full' : ''}">
+                    <strong>${currCharges}</strong> / ${maxCharges} Charges
+                  </span>
+                  <button type="button" class="char-charge-btn charge-inc" data-index="${index}" title="Restore 1 Charge" ${currCharges >= maxCharges ? 'disabled' : ''}>+</button>
+                </div>
+                ${item.rechargeFormula ? `
+                  <button type="button" class="btn btn-secondary btn-xs char-magic-recharge-btn" data-index="${index}" title="Roll ${escapeHtml(item.rechargeFormula)} to recharge charges at Dawn">
+                    Roll Dawn Recharge (${escapeHtml(item.rechargeFormula)})
+                  </button>
+                ` : ''}
+              </div>
+            ` : (item.charges ? `<div class="magic-charges"><strong>Charges / Note:</strong> ${escapeHtml(item.charges)}</div>` : '')}
             <div class="magic-desc">${escapeHtml(item.description || '')}</div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       // 3. Worn Armor & Standard Equipment
@@ -2753,12 +3142,20 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       }
 
       // 5. Prepared Spells & Spellbook Cards
+      if (!this.spellFilters) {
+        this.spellFilters = {
+          hideUnprepared: false,
+          level: 'all',
+          sort: 'level-asc'
+        };
+      }
+
       const grimoire = window.Grimoire;
       const allKnown = Array.from(new Set([...char.spellsKnown, ...char.spellsPrepared]));
       let spellsHtml = '';
       if (allKnown.length === 0) {
         spellsHtml = `
-          <div class="char-empty-msg">
+          <div class="char-empty-msg" style="margin-top: 1rem;">
             No spells currently inscribed in ${escapeHtml(char.name)}'s spellbook.
             <div style="margin-top: 0.6rem;">
               <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-grimoire-empty">
@@ -2783,6 +3180,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const concentration = found ? !!found.concentration : false;
           const ritual = found ? !!found.ritual : false;
           const description = found ? (found.description || found.desc || '') : '';
+          const higherLevel = found ? (found.higherLevel || found.higher_level || '') : '';
           const levelLabel = isCantrip ? 'Cantrip' : `${level}${level === 1 ? 'st' : level === 2 ? 'nd' : level === 3 ? 'rd' : 'th'} Level`;
 
           return {
@@ -2798,52 +3196,129 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             concentration,
             ritual,
             description,
+            higherLevel,
             levelLabel,
             isPrep: isCantrip ? true : isPrep
           };
         });
 
-        spellCards.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+        const totalSpellCount = spellCards.length;
 
-        spellsHtml = spellCards.map(sp => `
-          <div class="char-item-card char-spell-card ${sp.isPrep ? 'is-prepared' : ''}" data-spell-name="${escapeHtml(sp.name)}">
-            <div class="item-card-header">
-              <div>
-                <strong class="item-card-title item-shareable-title" data-share-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Click to share spell details to party Roll Log">
-                  ${escapeHtml(sp.name)}
-                </strong>
-                <span class="spell-level-badge">${sp.levelLabel} ${escapeHtml(sp.school || '')}</span>
-                ${sp.concentration ? '<span class="spell-tag-badge spell-tag--conc" title="Requires Concentration">C</span>' : ''}
-                ${sp.ritual ? '<span class="spell-tag-badge spell-tag--ritual" title="Ritual Castable">R</span>' : ''}
-              </div>
-              <div class="spell-prep-toggle-group">
-                ${sp.isCantrip ? '<span class="spell-cantrip-badge">Cantrip</span>' : `
-                  <label class="spell-prep-checkbox-label" title="Toggle prepared status for this spell">
-                    <input type="checkbox" class="spell-prep-checkbox" data-spell-name="${escapeHtml(sp.name)}" ${sp.isPrep ? 'checked' : ''} />
-                    <span>Prepared</span>
-                  </label>
-                `}
-                ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Remove from Spellbook">✕</button>` : ''}
-              </div>
+        // Apply filters
+        let filteredCards = spellCards.filter(sp => {
+          if (this.spellFilters.hideUnprepared && !sp.isPrep) {
+            return false;
+          }
+          if (this.spellFilters.level !== 'all') {
+            const targetLvl = parseInt(this.spellFilters.level, 10);
+            if (sp.level !== targetLvl) return false;
+          }
+          return true;
+        });
+
+        // Apply sorting
+        filteredCards.sort((a, b) => {
+          if (this.spellFilters.sort === 'level-asc') {
+            return (a.level - b.level) || a.name.localeCompare(b.name);
+          } else if (this.spellFilters.sort === 'level-desc') {
+            return (b.level - a.level) || a.name.localeCompare(b.name);
+          } else if (this.spellFilters.sort === 'name-asc') {
+            return a.name.localeCompare(b.name);
+          } else if (this.spellFilters.sort === 'name-desc') {
+            return b.name.localeCompare(a.name);
+          }
+          return (a.level - b.level) || a.name.localeCompare(b.name);
+        });
+
+        const filterToolbarHtml = `
+          <div class="spellbook-filter-toolbar">
+            <div class="spell-filter-item">
+              <label class="spell-filter-checkbox-label" title="Hide all unprepared spells from the list">
+                <input type="checkbox" id="spell-filter-hide-unprep" ${this.spellFilters.hideUnprepared ? 'checked' : ''} />
+                <span>Hide Unprepared</span>
+              </label>
             </div>
-            <div class="spell-meta-quick">
-              <span><strong>Time:</strong> ${escapeHtml(sp.castingTime)}</span>
-              <span><strong>Range:</strong> ${escapeHtml(sp.range)}</span>
-              <span><strong>Duration:</strong> ${escapeHtml(sp.duration)}</span>
+            <div class="spell-filter-item">
+              <label for="spell-filter-level">Level:</label>
+              <select id="spell-filter-level" class="char-form-select char-form-select-sm">
+                <option value="all" ${this.spellFilters.level === 'all' ? 'selected' : ''}>All Levels</option>
+                <option value="0" ${this.spellFilters.level === '0' ? 'selected' : ''}>Cantrips (0)</option>
+                <option value="1" ${this.spellFilters.level === '1' ? 'selected' : ''}>1st Level</option>
+                <option value="2" ${this.spellFilters.level === '2' ? 'selected' : ''}>2nd Level</option>
+                <option value="3" ${this.spellFilters.level === '3' ? 'selected' : ''}>3rd Level</option>
+                <option value="4" ${this.spellFilters.level === '4' ? 'selected' : ''}>4th Level</option>
+                <option value="5" ${this.spellFilters.level === '5' ? 'selected' : ''}>5th Level</option>
+                <option value="6" ${this.spellFilters.level === '6' ? 'selected' : ''}>6th Level</option>
+                <option value="7" ${this.spellFilters.level === '7' ? 'selected' : ''}>7th Level</option>
+                <option value="8" ${this.spellFilters.level === '8' ? 'selected' : ''}>8th Level</option>
+                <option value="9" ${this.spellFilters.level === '9' ? 'selected' : ''}>9th Level</option>
+              </select>
             </div>
-            ${sp.description ? `<p class="item-card-notes spell-short-desc">${escapeHtml(sp.description.slice(0, 140))}${sp.description.length > 140 ? '...' : ''}</p>` : ''}
-            <div class="atk-roll-buttons spell-card-actions">
-              <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}">
-                Cast Spell
-              </button>
-              ${sp.damageFormula ? `
-                <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(sp.damageFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}">
-                  Roll Damage (${escapeHtml(sp.damageFormula)})
-                </button>
-              ` : ''}
+            <div class="spell-filter-item">
+              <label for="spell-filter-sort">Sort By:</label>
+              <select id="spell-filter-sort" class="char-form-select char-form-select-sm">
+                <option value="level-asc" ${this.spellFilters.sort === 'level-asc' ? 'selected' : ''}>Spell Level (Low to High)</option>
+                <option value="level-desc" ${this.spellFilters.sort === 'level-desc' ? 'selected' : ''}>Spell Level (High to Low)</option>
+                <option value="name-asc" ${this.spellFilters.sort === 'name-asc' ? 'selected' : ''}>Alphabetical (A - Z)</option>
+                <option value="name-desc" ${this.spellFilters.sort === 'name-desc' ? 'selected' : ''}>Alphabetical (Z - A)</option>
+              </select>
+            </div>
+            <div class="spell-filter-count">
+              <span class="spell-count-badge">${filteredCards.length} / ${totalSpellCount} Spells</span>
             </div>
           </div>
-        `).join('');
+        `;
+
+        if (filteredCards.length === 0) {
+          spellsHtml = filterToolbarHtml + `<div class="char-empty-msg" style="margin-top: 0.5rem;">No spells match the active filters. Uncheck "Hide Unprepared" or switch the level filter to see other spells.</div>`;
+        } else {
+          spellsHtml = filterToolbarHtml + `<div class="char-cards-grid">` + filteredCards.map(sp => `
+            <div class="char-item-card char-spell-card ${sp.isPrep ? 'is-prepared' : ''}" data-spell-name="${escapeHtml(sp.name)}">
+              <div class="item-card-header">
+                <div>
+                  <strong class="item-card-title item-shareable-title" data-share-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Click to share spell details to party Roll Log">
+                    ${escapeHtml(sp.name)}
+                  </strong>
+                  <span class="spell-level-badge">${sp.levelLabel} ${escapeHtml(sp.school || '')}</span>
+                  ${sp.concentration ? '<span class="spell-tag-badge spell-tag--conc" title="Requires Concentration">C</span>' : ''}
+                  ${sp.ritual ? '<span class="spell-tag-badge spell-tag--ritual" title="Ritual Castable">R</span>' : ''}
+                  ${sp.higherLevel ? '<span class="spell-tag-badge spell-tag--upcast" title="Can be upcast using higher spell slots">Upcastable</span>' : ''}
+                </div>
+                <div class="spell-prep-toggle-group">
+                  ${sp.isCantrip ? '<span class="spell-cantrip-badge">Cantrip</span>' : `
+                    <label class="spell-prep-checkbox-label" title="Toggle prepared status for this spell">
+                      <input type="checkbox" class="spell-prep-checkbox" data-spell-name="${escapeHtml(sp.name)}" ${sp.isPrep ? 'checked' : ''} />
+                      <span>Prepared</span>
+                    </label>
+                  `}
+                  ${this.isEditMode ? `<button type="button" class="char-item-del-btn" data-type="spell" data-spell-name="${escapeHtml(sp.name)}" title="Remove from Spellbook">✕</button>` : ''}
+                </div>
+              </div>
+              <div class="spell-meta-quick">
+                <span><strong>Time:</strong> ${escapeHtml(sp.castingTime)}</span>
+                <span><strong>Range:</strong> ${escapeHtml(sp.range)}</span>
+                <span><strong>Duration:</strong> ${escapeHtml(sp.duration)}</span>
+              </div>
+              ${sp.description ? `<p class="item-card-notes spell-short-desc">${escapeHtml(sp.description.slice(0, 140))}${sp.description.length > 140 ? '...' : ''}</p>` : ''}
+              ${sp.higherLevel ? `<div class="spell-higher-level-preview"><strong>At Higher Levels:</strong> ${escapeHtml(sp.higherLevel.slice(0, 140))}${sp.higherLevel.length > 140 ? '...' : ''}</div>` : ''}
+              <div class="atk-roll-buttons spell-card-actions">
+                <button type="button" class="btn btn-secondary btn-sm char-spell-cast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}">
+                  Cast Spell
+                </button>
+                ${sp.level > 0 ? `
+                  <button type="button" class="btn btn-secondary btn-sm char-spell-upcast-btn" data-spell-name="${escapeHtml(sp.name)}" data-spell-level="${sp.level}" title="Upcast spell at higher slot level">
+                    Upcast ⇡
+                  </button>
+                ` : ''}
+                ${sp.damageFormula ? `
+                  <button type="button" class="btn btn-secondary btn-sm char-spell-dmg-btn" data-spell-name="${escapeHtml(sp.name)}" data-damage-formula="${escapeHtml(sp.damageFormula)}" data-damage-type="${escapeHtml(sp.damageType || '')}">
+                    Roll Damage (${escapeHtml(sp.damageFormula)})
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `).join('') + `</div>`;
+        }
       }
 
       container.innerHTML = `
@@ -2886,8 +3361,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             <div class="slots-levels-grid">${slotRowsHtml}</div>
           </div>
 
-          <!-- Inscribed Spells Grid -->
-          <div class="char-cards-grid" style="margin-top: 1rem;">${spellsHtml}</div>
+          <!-- Inscribed Spells Container (Filter Toolbar + Cards Grid) -->
+          <div class="char-spells-filter-container">${spellsHtml}</div>
         </div>
 
         <!-- Section 3: Magic Items & Relics -->
@@ -2897,8 +3372,17 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               <h3>Magic Items & Relics</h3>
               <p class="section-subtitle">Attuned artifacts, enchanted armor, foci, and wondrous gear</p>
             </div>
-            ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
+            <div class="char-section-actions">
+              ${char.magicItems.some(i => i.rechargeFormula && i.chargesMax > 0) ? `
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-recharge-all-dawn" title="Roll Dawn recharge for all items with recharge formulas">
+                  Recharge All at Dawn
+                </button>
+              ` : ''}
+              ${this.isEditMode ? `<button type="button" class="btn btn-secondary btn-sm" id="btn-add-magic">+ Add Magic Item</button>` : ''}
+            </div>
           </div>
+          <div class="char-cards-grid">${magicHtml}</div>
+        </div>
           <div class="char-cards-grid">${magicHtml}</div>
         </div>
 
@@ -3025,6 +3509,31 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         });
       });
 
+      // Spellbook Filters
+      container.querySelector('#spell-filter-hide-unprep')?.addEventListener('change', (e) => {
+        this.spellFilters.hideUnprepared = !!e.target.checked;
+        this.renderEquipmentTab(container, char);
+      });
+
+      container.querySelector('#spell-filter-level')?.addEventListener('change', (e) => {
+        this.spellFilters.level = e.target.value;
+        this.renderEquipmentTab(container, char);
+      });
+
+      container.querySelector('#spell-filter-sort')?.addEventListener('change', (e) => {
+        this.spellFilters.sort = e.target.value;
+        this.renderEquipmentTab(container, char);
+      });
+
+      // Spell Upcast button listener (Opens Upcast Modal)
+      container.querySelectorAll('.char-spell-upcast-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const spellName = btn.dataset.spellName;
+          const lvl = parseInt(btn.dataset.spellLevel, 10) || 1;
+          this.openSpellUpcastModal(spellName, lvl);
+        });
+      });
+
       // Spell Cast button listener
       container.querySelectorAll('.char-spell-cast-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -3034,20 +3543,27 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           const normKey = g ? g.normalizeSpellKey(spellName) : spellName.toLowerCase().replace(/[^a-z0-9]/g, '');
           const spell = g && g.allSpells ? g.allSpells.find(s => g.normalizeSpellKey(s.name) === normKey) : null;
 
-          let slotExpendedMsg = '';
-          if (lvl > 0 && char.spellSlots && char.spellSlots[lvl]) {
-            const slot = char.spellSlots[lvl];
-            if (slot.used < slot.max) {
-              slot.used++;
-              const remaining = slot.max - slot.used;
-              slotExpendedMsg = ` (Expended ${lvl}${lvl === 1 ? 'st' : lvl === 2 ? 'nd' : lvl === 3 ? 'rd' : 'th'} level slot, ${remaining} left)`;
-              this.saveStorage();
-            } else {
-              if (!confirm(`You have no ${lvl}-level spell slots remaining! Cast ${spellName} anyway?`)) {
+          if (lvl > 0) {
+            const baseSlot = char.spellSlots && char.spellSlots[lvl];
+            const hasBaseSlot = baseSlot && (baseSlot.used || 0) < (baseSlot.max || 0);
+
+            // If base slot has 0 remaining, automatically open Upcast modal if higher slots exist
+            if (!hasBaseSlot) {
+              const anyHigherSlot = Object.keys(char.spellSlots || {}).some(l => parseInt(l, 10) > lvl && (char.spellSlots[l].used || 0) < (char.spellSlots[l].max || 0));
+              if (anyHigherSlot) {
+                this.openSpellUpcastModal(spellName, lvl);
                 return;
               }
+              if (!confirm(`You have no ${lvl}${this.getOrdinal(lvl)} level spell slots remaining! Cast ${spellName} anyway?`)) {
+                return;
+              }
+            } else {
+              baseSlot.used++;
+              this.saveStorage();
             }
           }
+
+          const slotExpendedMsg = lvl > 0 ? ` (Expended ${lvl}${this.getOrdinal(lvl)} level slot, ${char.spellSlots[lvl] ? (char.spellSlots[lvl].max - char.spellSlots[lvl].used) : 0} left)` : '';
 
           if (spell && g) {
             g.shareSpell(spell);
@@ -3066,6 +3582,98 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           window.showToast?.(`Cast ${spellName}!${slotExpendedMsg}`, 'info', 2200);
           this.renderEquipmentTab(container, char);
         });
+      });
+
+      // Magic Item Charge Steppers: [-] and [+]
+      container.querySelectorAll('.charge-dec').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const item = char.magicItems[idx];
+          if (!item) return;
+          const curr = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : (item.chargesMax || 0);
+          if (curr > 0) {
+            item.chargesCurrent = curr - 1;
+            item.charges = `${item.chargesCurrent} / ${item.chargesMax || item.chargesCurrent}`;
+            this.playHpSound(-1);
+            this.saveStorage();
+            this.renderEquipmentTab(container, char);
+          }
+        });
+      });
+
+      container.querySelectorAll('.charge-inc').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const item = char.magicItems[idx];
+          if (!item) return;
+          const max = item.chargesMax || 0;
+          const curr = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : 0;
+          if (curr < max) {
+            item.chargesCurrent = curr + 1;
+            item.charges = `${item.chargesCurrent} / ${max}`;
+            this.playHpSound(1);
+            this.saveStorage();
+            this.renderEquipmentTab(container, char);
+          }
+        });
+      });
+
+      // Individual Dawn Recharge Roll
+      container.querySelectorAll('.char-magic-recharge-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const item = char.magicItems[idx];
+          if (!item || !item.rechargeFormula) return;
+          const max = item.chargesMax || 0;
+          const prev = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : 0;
+
+          let rolled = 0;
+          if (item.rechargeFormula.toLowerCase() === 'all' || item.rechargeFormula.toLowerCase() === 'full') {
+            rolled = max - prev;
+          } else if (window.DiceRoller) {
+            const rollRes = window.DiceRoller.roll(item.rechargeFormula, `${item.name} Dawn Recharge`, char.name, 'normal', 0);
+            rolled = rollRes ? rollRes.total : 0;
+          } else {
+            rolled = 1;
+          }
+
+          item.chargesCurrent = Math.min(max, prev + rolled);
+          item.charges = `${item.chargesCurrent} / ${max}`;
+          const gained = item.chargesCurrent - prev;
+          this.playHpSound(3);
+          window.showToast?.(`${item.name} rolled ${rolled}! (+${gained} charge${gained === 1 ? '' : 's'}, now ${item.chargesCurrent}/${max})`, 'success', 2500);
+          this.saveStorage();
+          this.renderEquipmentTab(container, char);
+        });
+      });
+
+      // Bulk Dawn Recharge All Items
+      container.querySelector('#btn-recharge-all-dawn')?.addEventListener('click', () => {
+        let count = 0;
+        let totalGained = 0;
+        char.magicItems.forEach(item => {
+          if (item.rechargeFormula && item.chargesMax > 0) {
+            const max = item.chargesMax;
+            const prev = (item.chargesCurrent !== undefined && item.chargesCurrent !== null) ? item.chargesCurrent : 0;
+            let rolled = 0;
+            if (item.rechargeFormula.toLowerCase() === 'all' || item.rechargeFormula.toLowerCase() === 'full') {
+              rolled = max - prev;
+            } else if (window.DiceRoller) {
+              const rollRes = window.DiceRoller.roll(item.rechargeFormula, `${item.name} Dawn Recharge`, char.name, 'normal', 0);
+              rolled = rollRes ? rollRes.total : 0;
+            } else {
+              rolled = 1;
+            }
+            item.chargesCurrent = Math.min(max, prev + rolled);
+            item.charges = `${item.chargesCurrent} / ${max}`;
+            totalGained += (item.chargesCurrent - prev);
+            count++;
+          }
+        });
+        this.playHpSound(3);
+        window.showToast?.(`Dawn Recharge completed for ${count} item(s)! (+${totalGained} total charges)`, 'success', 2500);
+        this.saveStorage();
+        this.renderEquipmentTab(container, char);
       });
 
       // Spell Damage button listener
