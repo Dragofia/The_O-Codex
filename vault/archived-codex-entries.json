@@ -73,6 +73,25 @@
         "How They Appear": "Either innate from birth or developed in abnormal ways",
         "Known Example": "Trish's foresight"
       }
+    },
+    {
+      "id": "lore-black-shards",
+      "category": "lore",
+      "name": "Black Shards",
+      "summary": "Strange dark fragments dispensed by ancient sites, used by the Spire to enable Traversal.",
+      "description": "Black Shards are unusual objects dispensed by certain ancient settlements and trial sites. They appear to serve as a kind of destination key, allowing the Spire to recognize and connect to the place that issued them. Once brought back and properly integrated, a shard can enable Traversal, letting the party move there instantly through the Spire rather than by road, sea, or air. Their exact makeup remains strange even by magical standards, and they feel less like treasure than pieces of an older system still waiting to be reactivated.",
+      "tags": [
+        "lore",
+        "spire",
+        "traversal",
+        "ancient",
+        "shards"
+      ],
+      "details": {
+        "Source": "Dispensed by certain ancient settlements or trial sites",
+        "Primary Use": "Enable Traversal through the Spire",
+        "Importance": "Acts as a destination key for instant movement"
+      }
     }
   ]
 }
