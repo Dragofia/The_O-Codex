@@ -1033,47 +1033,24 @@
       "id": "lore-the-o-codex",
       "category": "functions",
       "name": "The O-Codex",
-      "summary": "A knowledge interface unlocked through Perifreul that the party can access anytime, anywhere, for reasons no one fully understands.",
-      "description": "The O-Codex is a strange informational system unlocked when Perifreul was inserted into the Spire. From the party's perspective, it is a living record they can access anywhere in the world, with the exact same information presented to them that the players themselves can view. Its origins remain unknown, and even more baffling is the way it seems to update on its own without any obvious mechanism. Whether it is a product of the Spire, Perifreul's domain over knowledge, or some older system layered beneath both is still unclear.",
+      "summary": "A strange knowledge interface accessed when Azzie visited the party through the Nostalgia Emblem, allowing them to consult a living record anytime, anywhere.",
+      "description": "The O-Codex is a strange informational system first accessed when Azzie visited the party through the Nostalgia Emblem. It functions as a living archive the party can consult anywhere in the world, presenting records, lore, and observations that seem to update on their own without any obvious mechanism. Its true origins remain unknown, and whether it is tied to the Spire, the power channeled through the emblem, or some older structure woven beneath both is still unclear.",
       "tags": [
         "lore",
         "knowledge",
         "spire",
-        "Perifreul",
+        "Azzie",
+        "nostalgia emblem",
         "codex"
       ],
       "aliases": [
         "O-Codex"
       ],
       "details": {
-        "Unlocked By": "Perifreul's integration with the Spire",
+        "Unlocked By": "Azzie's visitation through the Nostalgia Emblem",
         "Access": "Available to the party anytime, anywhere",
         "Strange Quality": "Updates automatically through an unknown mechanism",
         "Origin": "Unknown"
-      }
-    },
-    {
-      "id": "lore-channeling",
-      "category": "functions",
-      "name": "Channeling",
-      "summary": "A Spire-unlocked form of Divion assignment that lets the party channel divine power through certain people they have met.",
-      "description": "Channeling is the practical name for the Divion assignment capability unlocked through Perifreul. It allows party members to tap into the divine power of certain people they have encountered, effectively channeling the blessings those individuals have already received. Though the deeper rules are still uncertain, Channeling appears to be the bridge that lets the party borrow divine force without needing to be the original bearers of those blessings.",
-      "tags": [
-        "lore",
-        "divion",
-        "divine power",
-        "spire",
-        "Perifreul",
-        "channeling"
-      ],
-      "aliases": [
-        "Divion Assignment"
-      ],
-      "details": {
-        "Unlocked By": "Perifreul's integration with the Spire",
-        "What It Does": "Lets the party channel the divine powers of people they have met",
-        "Known Sources": "Dressa, Tornga, and Castro",
-        "Current Understanding": "A way to borrow divine blessings through the Spire"
       }
     },
     {

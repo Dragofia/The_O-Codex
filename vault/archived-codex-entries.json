@@ -87,6 +87,30 @@
         "Primary Use": "Enable Traversal through the Spire",
         "Importance": "Acts as a destination key for instant movement"
       }
+    },
+    {
+      "id": "lore-channeling",
+      "category": "functions",
+      "name": "Channeling",
+      "summary": "A Spire-unlocked form of Divion assignment that lets the party channel divine power through certain people they have met.",
+      "description": "Channeling is the practical name for the Divion assignment capability unlocked through Perifreul. It allows party members to tap into the divine power of certain people they have encountered, effectively channeling the blessings those individuals have already received. Though the deeper rules are still uncertain, Channeling appears to be the bridge that lets the party borrow divine force without needing to be the original bearers of those blessings.",
+      "tags": [
+        "lore",
+        "divion",
+        "divine power",
+        "spire",
+        "Perifreul",
+        "channeling"
+      ],
+      "aliases": [
+        "Divion Assignment"
+      ],
+      "details": {
+        "Unlocked By": "Perifreul's integration with the Spire",
+        "What It Does": "Lets the party channel the divine powers of people they have met",
+        "Known Sources": "Dressa, Tornga, and Castro",
+        "Current Understanding": "A way to borrow divine blessings through the Spire"
+      }
     }
   ]
 }
