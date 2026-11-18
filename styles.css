@@ -868,6 +868,13 @@ img {
   background: rgba(164, 179, 194, 0.1);
 }
 
+.entry-meta-badge--hidden {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.16);
+  font-weight: 600;
+}
+
 .entry-card__title {
   margin: 0;
   font-family: var(--heading-font);

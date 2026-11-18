@@ -247,6 +247,9 @@ window.setDmMode = function(enabled, notify = true) {
   localStorage.setItem("o_codex_dm_mode", state.isDmMode ? "true" : "false");
   updateDmModeUI();
 
+  renderViewTabs();
+  renderApp();
+
   if (window.mapEngine && typeof window.mapEngine.updateDmModeUI === "function") {
     window.mapEngine.updateDmModeUI();
   }
@@ -885,7 +888,11 @@ function renderViewTabs() {
   fragment.append(buildViewTabButton("Complete Codex", "complete-codex"));
 
   state.worldData.categories.forEach((category) => {
-    fragment.append(buildViewTabButton(category.label, category.id));
+    if (category.hidden && !state.isDmMode) {
+      return;
+    }
+    const label = (category.hidden && state.isDmMode) ? `🔒 ${category.label}` : category.label;
+    fragment.append(buildViewTabButton(label, category.id));
   });
 
   elements.viewTabs.replaceChildren(fragment);
@@ -1255,6 +1262,15 @@ function compareStoryPriority(left, right) {
 }
 
 function passesCategoryFilter(entry) {
+  if (entry.hidden && !state.isDmMode) {
+    return false;
+  }
+
+  const categoryConfig = state.worldData.categories.find((category) => category.id === entry.category);
+  if (categoryConfig && categoryConfig.hidden && !state.isDmMode) {
+    return false;
+  }
+
   return state.activeView === "complete-codex" || entry.category === state.activeView;
 }
 
@@ -1325,11 +1341,14 @@ window.searchCodexEntries = function(rawQuery, limit = 6) {
     return [];
   }
 
+  const isDm = Boolean(state.isDmMode);
+  const hiddenCats = new Set((state.worldData.categories || []).filter(c => c.hidden).map(c => c.id));
   const query = String(rawQuery ?? "").trim();
   if (!query) {
     const prioCategories = new Set(["settlements", "domains", "locations", "quests", "eschatons", "lore"]);
-    const samples = state.worldData.entries.filter(e => prioCategories.has(String(e.category || "").toLowerCase()));
-    return (samples.length > 0 ? samples : state.worldData.entries)
+    const available = state.worldData.entries.filter(e => isDm || (!e.hidden && !hiddenCats.has(e.category)));
+    const samples = available.filter(e => prioCategories.has(String(e.category || "").toLowerCase()));
+    return (samples.length > 0 ? samples : available)
       .slice(0, limit)
       .map(entry => ({
         id: entry.id,
@@ -1341,6 +1360,9 @@ window.searchCodexEntries = function(rawQuery, limit = 6) {
 
   const scored = [];
   for (const entry of state.worldData.entries) {
+    if (!isDm && (entry.hidden || hiddenCats.has(entry.category))) {
+      continue;
+    }
     const score = getSearchScore(entry, query);
     if (score > 0) {
       scored.push({
@@ -1536,6 +1558,14 @@ function getQuestStatus(entry) {
 }
 
 function appendEntryMetaBadge(container, entry) {
+  if (entry.hidden) {
+    const hiddenBadge = document.createElement("span");
+    hiddenBadge.className = "entry-meta-badge entry-meta-badge--hidden";
+    hiddenBadge.textContent = "🔒 Hidden";
+    hiddenBadge.title = "Hidden from players in Player Mode";
+    container.append(hiddenBadge);
+  }
+
   const badgeConfig = getEntryMetaBadgeConfig(entry);
 
   if (!badgeConfig) {
@@ -1962,6 +1992,11 @@ function openModal(entryId, options = {}) {
   const { syncUrl = true, pushHistory = true } = options;
   const entry = state.worldData.entries.find((item) => item.id === entryId);
   if (!entry) {
+    return;
+  }
+
+  if (entry.hidden && !state.isDmMode) {
+    window.showToast?.("This entry is sealed and not yet revealed.", "info");
     return;
   }
 
