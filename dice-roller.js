@@ -53,6 +53,29 @@
       } catch (e) {}
     }
 
+    clearHistory(scope = 'all') {
+      if (scope === 'personal') {
+        const char = window.CharacterSheet?.getActiveCharacter();
+        const cName = (char?.name || '').toLowerCase();
+        const pName = (char?.player || '').toLowerCase();
+        const myName = (localStorage.getItem('o_codex_player_name') || '').toLowerCase();
+        this.history = this.history.filter(r => {
+          if (!r || !r.roller) return false;
+          const rName = r.roller.toLowerCase();
+          const isMine = (cName && rName === cName) || (pName && rName === pName) || (myName && rName === myName);
+          return !isMine;
+        });
+      } else {
+        this.history = [];
+      }
+      this.saveStorage();
+      this.renderHistory();
+      if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
+        window.CharacterSheet.renderRollTracker();
+      }
+      window.showToast?.(scope === 'personal' ? 'Personal rolls cleared' : 'Roll log cleared', 'info', 1500);
+    }
+
     init() {
       this.initDOM();
       this.renderHistory();
@@ -126,6 +149,11 @@
           const label = e.target.value.trim() || 'General Roll';
           this.executeCurrentRoll(label);
         }
+      });
+
+      // Clear Feed History button in Dice Tray
+      document.getElementById('dice-tray-clear-history-btn')?.addEventListener('click', () => {
+        this.clearHistory('all');
       });
     }
 
