@@ -752,7 +752,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       this.activeCharId = null;
       this.activeTab = 'equipment'; // 'equipment' | 'divions' | 'items' | 'notes'
       this.isEditMode = false;   // Default: Play/View Mode (no typable boxes)
-      this.rollsTab = 'personal'; // 'personal' | 'everyone'
+      this.rollsTab = 'everyone'; // 'everyone' | 'personal' (Default to Everyone so party sees all rolls)
       this.debounceTimer = null;
       this.audioCtx = null;
       this.bc = null;

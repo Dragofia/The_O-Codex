@@ -80,6 +80,11 @@
       this.initDOM();
       this.renderHistory();
 
+      // Immediately sync cloud roll history if available
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.syncToDiceRoller === 'function') {
+        window.CampaignCloudSync.syncToDiceRoller();
+      }
+
       // Keyboard shortcut: Ctrl + R or 'D' (when not in input) opens Dice Tray
       window.addEventListener('keydown', (e) => {
         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
@@ -400,7 +405,7 @@
       const advPart = (adv === 'advantage') ? ' (ADV)' : (adv === 'disadvantage' ? ' (DIS)' : '');
       const displayFormula = `${diceFormulaPart}${modPart}${advPart}`;
 
-      // Check for active target from InitiativeTracker
+      // Check for active target from InitiativeTracker or roll label
       let targetResult = null;
       if (window.InitiativeTracker && typeof window.InitiativeTracker.getSelectedTarget === 'function') {
         const target = window.InitiativeTracker.getSelectedTarget();
@@ -446,6 +451,49 @@
               hitText: hitText,
               hitBadgeCls: hitBadgeCls,
               subText: subText
+            };
+          }
+        } else if (target && /damage|dmg/i.test(lbl)) {
+          targetResult = {
+            targetId: target.id,
+            targetName: target.name,
+            isHit: true,
+            hitText: '⚔️ DAMAGE',
+            hitBadgeCls: 'tag-hit',
+            subText: `vs ${target.name}`
+          };
+        } else if (target && /heal/i.test(lbl)) {
+          targetResult = {
+            targetId: target.id,
+            targetName: target.name,
+            isHit: true,
+            hitText: '💚 HEAL',
+            hitBadgeCls: 'tag-hit',
+            subText: `on ${target.name}`
+          };
+        } else if (target && /save|saving throw/i.test(lbl)) {
+          targetResult = {
+            targetId: target.id,
+            targetName: target.name,
+            isHit: true,
+            hitText: '🛡️ SAVE',
+            hitBadgeCls: 'tag-hit',
+            subText: `vs ${target.name}`
+          };
+        }
+      }
+
+      if (!targetResult) {
+        const vsMatch = lbl.match(/\bvs\s+([^()]+)/i);
+        if (vsMatch && vsMatch[1]) {
+          const targetName = vsMatch[1].trim();
+          if (targetName) {
+            targetResult = {
+              targetName: targetName,
+              isHit: isCrit || (!isFumble && total >= 10),
+              hitText: isCrit ? '✨ CRITICAL' : (/damage|dmg/i.test(lbl) ? '⚔️ DAMAGE' : '🎯 TARGET'),
+              hitBadgeCls: 'tag-hit',
+              subText: `vs ${targetName}`
             };
           }
         }
@@ -642,23 +690,66 @@
         return;
       }
 
-      // In Characters mode, normal rolls are live-tracked in the dedicated left panel — no top-right toast needed!
-      if (document.body.classList.contains('characters-mode-active') || (window.state && window.state.appMode === 'characters')) {
+      const isCharsMode = document.body.classList.contains('characters-mode-active') || (window.state && window.state.appMode === 'characters');
+      const isPersonalTab = window.CharacterSheet && window.CharacterSheet.rollsTab === 'personal';
+      // In Characters mode, suppress toast only if already actively watching the "Everyone" feed
+      if (isCharsMode && !isPersonalTab) {
         return;
       }
 
-      let msg = `🎲 ${roll.roller} rolled ${roll.total} for ${roll.label}`;
+      const breakdown = roll.detailsText ? ` · [${roll.detailsText}]` : (roll.formula ? ` · (${roll.formula})` : '');
+      let msg = `🎲 ${roll.roller}: ${roll.total} for ${roll.label}${breakdown}`;
       let toastType = roll.isCrit ? 'success' : (roll.isFumble ? 'warning' : 'info');
+
       if (roll.targetResult) {
-        msg = `${roll.targetResult.hitText} ${roll.roller} rolled ${roll.total} vs ${roll.targetResult.targetName} (${roll.targetResult.subText})`;
-        toastType = roll.targetResult.isHit ? 'success' : 'warning';
+        const tr = roll.targetResult;
+        msg = `${tr.hitText} ${roll.roller}: ${roll.total} vs ${tr.targetName} (${tr.subText})${breakdown}`;
+        toastType = tr.isHit ? 'success' : 'warning';
       } else if (roll.isCrit) {
         msg += ` · ✨ NAT 20!`;
       } else if (roll.isFumble) {
         msg += ` · 💀 NAT 1!`;
       }
 
-      window.showToast(msg, toastType, 3500);
+      window.showToast(msg, toastType, 4000);
+    }
+
+    syncCloudRolls(cloudRolls, latestRoll, isFromSelf) {
+      if (!Array.isArray(cloudRolls) || cloudRolls.length === 0) return;
+
+      const existingIds = new Set(this.history.map(r => r.id));
+      let hasNewRolls = false;
+      const newItems = [];
+
+      cloudRolls.forEach(cr => {
+        if (!cr || !cr.id) return;
+        if (!existingIds.has(cr.id)) {
+          newItems.push(cr);
+          hasNewRolls = true;
+        }
+      });
+
+      if (hasNewRolls) {
+        this.history = [...newItems, ...this.history]
+          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+          .slice(0, MAX_HISTORY);
+
+        this.saveStorage();
+        this.renderHistory();
+
+        const triggerRoll = latestRoll || newItems[0];
+        window.dispatchEvent(new CustomEvent('diceroller:new-roll', { detail: triggerRoll }));
+        if (window.CharacterSheet && typeof window.CharacterSheet.renderRollTracker === 'function') {
+          window.CharacterSheet.renderRollTracker(triggerRoll);
+        }
+
+        if (!isFromSelf && latestRoll && newItems.some(item => item.id === latestRoll.id)) {
+          this.showRollToast(latestRoll);
+          if (latestRoll.type !== 'share' && !latestRoll.isShare) {
+            this.playDiceSound();
+          }
+        }
+      }
     }
 
     onRemoteRoll(remoteRoll) {

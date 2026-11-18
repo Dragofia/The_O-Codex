@@ -36,6 +36,8 @@
       this.lastLocationJson = null;
       this.lastPartyUpdatedAt = 0;
       this.latestDocData = null;
+      this.recentRolls = [];
+      this.lastRecentRollsJson = null;
     }
 
     getConfig() {
@@ -187,8 +189,17 @@
               }
             }
 
-            // 2. Sync Party Dice Rolls (only if new roll and not sent by self)
-            if (data.latestRoll && data.latestRoll.id && data.latestRoll.id !== this.lastRollId && data.rollSenderId !== this.clientId) {
+            // 2. Sync Party Dice Rolls
+            if (Array.isArray(data.recentRolls) && data.recentRolls.length > 0) {
+              const recentJson = JSON.stringify(data.recentRolls);
+              if (recentJson !== this.lastRecentRollsJson) {
+                this.lastRecentRollsJson = recentJson;
+                this.recentRolls = data.recentRolls;
+                if (window.DiceRoller && typeof window.DiceRoller.syncCloudRolls === 'function') {
+                  window.DiceRoller.syncCloudRolls(data.recentRolls, data.latestRoll, data.rollSenderId === this.clientId);
+                }
+              }
+            } else if (data.latestRoll && data.latestRoll.id && data.latestRoll.id !== this.lastRollId && data.rollSenderId !== this.clientId) {
               this.lastRollId = data.latestRoll.id;
               if (window.DiceRoller && typeof window.DiceRoller.onRemoteRoll === 'function') {
                 window.DiceRoller.onRemoteRoll(data.latestRoll);
@@ -434,10 +445,20 @@
       if (!this.isReady || !this.db || !rollData) return false;
       try {
         this.lastRollId = rollData.id;
+
+        // Maintain up to 30 recent rolls in rolling array
+        if (!Array.isArray(this.recentRolls)) this.recentRolls = [];
+        this.recentRolls = this.recentRolls.filter(r => r && r.id !== rollData.id);
+        this.recentRolls.unshift(rollData);
+        if (this.recentRolls.length > 30) {
+          this.recentRolls = this.recentRolls.slice(0, 30);
+        }
+
         // Write to world_pins (verified authorized Firestore document)
         const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
         await pinsRef.set({
           latestRoll: rollData,
+          recentRolls: this.recentRolls,
           rollSenderId: this.clientId,
           rollUpdatedAt: Date.now(),
           updatedAt: Date.now(),
@@ -449,6 +470,7 @@
           const docRef = this.db.collection('codex_campaign').doc('dice_rolls');
           docRef.set({
             latestRoll: rollData,
+            recentRolls: this.recentRolls,
             rollSenderId: this.clientId,
             updatedAt: Date.now(),
             updatedBy: rollData.roller || localStorage.getItem('o_codex_player_name') || 'Adventurer'
@@ -550,7 +572,9 @@
     }
 
     syncToMapEngine() {
-      if (!this.latestDocData || !window.mapEngine) return;
+      if (!this.latestDocData) return;
+      this.syncToDiceRoller();
+      if (!window.mapEngine) return;
       const data = this.latestDocData;
       if (Array.isArray(data.playerPins) && typeof window.mapEngine.syncCloudPins === 'function') {
         window.mapEngine.syncCloudPins(data.playerPins);
@@ -560,6 +584,16 @@
       }
       if (data.shroudedRegions && typeof window.mapEngine.onRemoteShroudedRegions === 'function') {
         window.mapEngine.onRemoteShroudedRegions(data.shroudedRegions, data.mapRegions);
+      }
+    }
+
+    syncToDiceRoller() {
+      if (!this.latestDocData || !window.DiceRoller) return;
+      const data = this.latestDocData;
+      if (Array.isArray(data.recentRolls) && typeof window.DiceRoller.syncCloudRolls === 'function') {
+        window.DiceRoller.syncCloudRolls(data.recentRolls, data.latestRoll, true);
+      } else if (data.latestRoll && typeof window.DiceRoller.onRemoteRoll === 'function') {
+        window.DiceRoller.onRemoteRoll(data.latestRoll);
       }
     }
 
