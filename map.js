@@ -986,6 +986,11 @@
       this.setupDOM();
       this.renderAll();
       this.updateDmModeUI();
+
+      // Immediately sync from cloud if Firebase has already received campaign data
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.syncToMapEngine === 'function') {
+        window.CampaignCloudSync.syncToMapEngine();
+      }
     }
 
     isDmMode() {
@@ -1124,10 +1129,18 @@
 
       // Auto-upgrade default map to high-res Inkarnate Maladen.jpg and 3x3 layout with Fog of War
       if (this.maps[0] && this.maps[0].isDefault) {
-        if (!this.maps[0].imageSource.includes('Maladen.jpg') || (this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40) {
+        if (!this.maps[0].imageSource.includes('Maladen.jpg') || (this.maps[0].regions || []).length < 9 || (this.maps[0].officialLocations || []).length < 30) {
           const existingPlayerPins = this.maps[0].playerPins || [];
+          const existingShrouds = {};
+          (this.maps[0].regions || []).forEach(r => { existingShrouds[r.id] = r.shrouded; });
+
           this.maps[0] = JSON.parse(JSON.stringify(DEFAULT_MAPS[0]));
           this.maps[0].playerPins = existingPlayerPins;
+          (this.maps[0].regions || []).forEach(r => {
+            if (existingShrouds[r.id] !== undefined) {
+              r.shrouded = existingShrouds[r.id];
+            }
+          });
           this.saveStorage();
         } else {
           // Ensure all regions have the shrouded property initialized if missing
@@ -1173,6 +1186,9 @@
         zoomDelta: 0.5,
         attributionControl: false
       });
+
+      // High-padding SVG renderer ensures zooming out and panning never clips the Fog of War SVG canvas
+      this.fogRenderer = L.svg({ padding: 2.5 });
 
       const activeMap = this.getActiveMap();
       this.imageOverlay = L.imageOverlay(activeMap.imageSource, [[0, 0], [1000, 1000]]).addTo(this.map);
@@ -1531,6 +1547,10 @@
       const activeMap = this.getActiveMap();
       if (!activeMap.regions) return;
 
+      if (!this.fogRenderer && this.map) {
+        this.fogRenderer = L.svg({ padding: 2.5 });
+      }
+
       const isDm = this.isDmMode();
       const isPlayerView = !isDm || Boolean(this.dmPreviewPlayerFog);
 
@@ -1541,12 +1561,13 @@
         if (isShrouded) {
           if (isPlayerView) {
             polyStyle = {
-              color: '#080d1a',
+              color: '#050a12',
               weight: 2,
-              fillColor: '#050811',
-              fillOpacity: 0.98,
+              fillColor: '#050a12',
+              fillOpacity: 1.0,
               className: 'fog-shroud-polygon is-player',
-              interactive: true
+              interactive: true,
+              renderer: this.fogRenderer
             };
           } else {
             polyStyle = {
@@ -1556,7 +1577,8 @@
               fillColor: '#030712',
               fillOpacity: 0.44,
               className: 'fog-shroud-polygon is-dm',
-              interactive: true
+              interactive: true,
+              renderer: this.fogRenderer
             };
           }
         } else {
@@ -1567,7 +1589,8 @@
             fillOpacity: this.bordersVisible ? 0.15 : 0,
             dashArray: '3, 4',
             className: 'explored-region-polygon',
-            interactive: true
+            interactive: true,
+            renderer: this.fogRenderer
           };
         }
 
@@ -1886,7 +1909,13 @@
       targetPin.x = newX;
       targetPin.y = newY;
       this.saveStorage();
-      if (window.CampaignCloudSync && !targetPin.isOfficial) window.CampaignCloudSync.pushPins(activeMap.playerPins || []);
+      if (window.CampaignCloudSync) {
+        if (targetPin.isOfficial) {
+          window.CampaignCloudSync.pushOfficialLocations(activeMap.officialLocations || []);
+        } else {
+          window.CampaignCloudSync.pushPins(activeMap.playerPins || []);
+        }
+      }
 
       // If drawer is currently open for this pin, update coordinates readout
       if (this.currentHighlightedPinId === (targetPin.codexId || targetPin.id)) {
@@ -2268,6 +2297,9 @@
         if (reg) {
           reg.points = [...this.drawingPoints];
           this.saveStorage();
+          if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+            window.CampaignCloudSync.pushRegions(activeMap.regions);
+          }
           this.exitTerritoryDrawMode();
           this.drawingPoints = [];
           this.isRedrawingRegionId = null;
@@ -2346,6 +2378,9 @@
 
       activeMap.regions.push(newRegion);
       this.saveStorage();
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
 
       if (this.tempDrawingLayer) {
         this.map.removeLayer(this.tempDrawingLayer);
@@ -2493,6 +2528,9 @@
       reg.desc = document.getElementById('edit-territory-desc').value.trim();
 
       this.saveStorage();
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
       this.renderRegions();
       this.renderHeaderUI();
       this.closeModal('edit-territory-modal');
@@ -2513,6 +2551,9 @@
 
       activeMap.regions = activeMap.regions.filter(r => r.id !== targetId);
       this.saveStorage();
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
       this.renderRegions();
       this.renderHeaderUI();
       this.closeModal('edit-territory-modal');
@@ -2576,6 +2617,10 @@
 
     finishMovingVertices() {
       this.saveStorage();
+      const activeMap = this.getActiveMap();
+      if (activeMap && window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
       this.clearVertexMarkers();
       this.isEditingVertices = false;
       this.setMarkerDraggingEnabled(true);
@@ -2992,10 +3037,31 @@
       window.showToast?.(shouldShroud ? 'All domains shrouded in Fog of War.' : 'All domains revealed to players!', 'info', 2500);
     }
 
-    onRemoteShroudedRegions(shroudStates) {
+    onRemoteShroudedRegions(shroudStates, cloudRegions) {
       const activeMap = this.getActiveMap();
       if (!activeMap || !activeMap.regions || !shroudStates) return;
       let changed = false;
+
+      // Sync custom territories and points if provided
+      if (Array.isArray(cloudRegions) && cloudRegions.length > 0) {
+        cloudRegions.forEach(cr => {
+          const existing = activeMap.regions.find(r => r.id === cr.id);
+          if (existing) {
+            if (existing.shrouded !== cr.shrouded) {
+              existing.shrouded = cr.shrouded;
+              changed = true;
+            }
+            if (cr.points && JSON.stringify(existing.points) !== JSON.stringify(cr.points)) {
+              existing.points = cr.points;
+              changed = true;
+            }
+          } else {
+            activeMap.regions.push(cr);
+            changed = true;
+          }
+        });
+      }
+
       activeMap.regions.forEach(reg => {
         if (shroudStates[reg.id] !== undefined && reg.shrouded !== shroudStates[reg.id]) {
           reg.shrouded = shroudStates[reg.id];
@@ -3007,6 +3073,24 @@
         this.renderRegions();
         this.renderPins();
         this.renderTerritoriesManagerList();
+      }
+    }
+
+    onRemoteOfficialLocations(cloudLocations) {
+      const activeMap = this.getActiveMap();
+      if (!activeMap || !Array.isArray(cloudLocations) || !activeMap.officialLocations) return;
+      let changed = false;
+      cloudLocations.forEach(cloudLoc => {
+        const loc = activeMap.officialLocations.find(l => l.id === cloudLoc.id);
+        if (loc && (loc.x !== cloudLoc.x || loc.y !== cloudLoc.y)) {
+          loc.x = cloudLoc.x;
+          loc.y = cloudLoc.y;
+          changed = true;
+        }
+      });
+      if (changed) {
+        this.saveStorage();
+        this.renderPins();
       }
     }
 

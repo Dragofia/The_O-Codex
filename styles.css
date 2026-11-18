@@ -2755,9 +2755,10 @@ html, body {
 
 /* Fog of War & Territory Veiling */
 .fog-shroud-polygon.is-player {
-  filter: drop-shadow(0 0 16px rgba(4, 7, 15, 0.98));
   cursor: default;
-  transition: fill-opacity 0.4s ease;
+  transition: none !important;
+  filter: none !important;
+  pointer-events: auto;
 }
 
 .fog-shroud-polygon.is-dm {

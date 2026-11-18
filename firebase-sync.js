@@ -32,8 +32,10 @@
       this.lastRollId = null;
       this.lastPartyJson = null;
       this.lastPinsJson = null;
+      this.lastOfficialLocationsJson = null;
       this.lastLocationJson = null;
       this.lastPartyUpdatedAt = 0;
+      this.latestDocData = null;
     }
 
     getConfig() {
@@ -161,6 +163,7 @@
         this.unsubscribe = docRef.onSnapshot(doc => {
           if (doc && doc.exists) {
             const data = doc.data();
+            this.latestDocData = data;
 
             // 1. Sync custom player pins (only if pins changed and not sent by self)
             if (Array.isArray(data.playerPins)) {
@@ -169,6 +172,17 @@
                 this.lastPinsJson = pinsJson;
                 if (window.mapEngine && typeof window.mapEngine.syncCloudPins === 'function') {
                   window.mapEngine.syncCloudPins(data.playerPins);
+                }
+              }
+            }
+
+            // 1B. Sync official locations if changed and not sent by self
+            if (Array.isArray(data.officialLocations)) {
+              const offJson = JSON.stringify(data.officialLocations);
+              if (offJson !== this.lastOfficialLocationsJson && data.officialLocationsSenderId !== this.clientId) {
+                this.lastOfficialLocationsJson = offJson;
+                if (window.mapEngine && typeof window.mapEngine.onRemoteOfficialLocations === 'function') {
+                  window.mapEngine.onRemoteOfficialLocations(data.officialLocations);
                 }
               }
             }
@@ -226,7 +240,7 @@
               if (fogJson !== this.lastFogJson) {
                 this.lastFogJson = fogJson;
                 if (window.mapEngine && typeof window.mapEngine.onRemoteShroudedRegions === 'function') {
-                  window.mapEngine.onRemoteShroudedRegions(data.shroudedRegions);
+                  window.mapEngine.onRemoteShroudedRegions(data.shroudedRegions, data.mapRegions);
                 }
               }
             }
@@ -340,6 +354,25 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push pins to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushOfficialLocations(locations) {
+      if (!this.isReady || !this.db || !Array.isArray(locations)) return false;
+      try {
+        const docRef = this.db.collection('codex_campaign').doc('world_pins');
+        this.lastOfficialLocationsJson = JSON.stringify(locations);
+        await docRef.set({
+          officialLocations: locations,
+          officialLocationsSenderId: this.clientId,
+          officialLocationsUpdatedAt: Date.now(),
+          updatedAt: Date.now(),
+          updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
+        }, { merge: true });
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push official locations to Firebase:', e);
         return false;
       }
     }
@@ -502,6 +535,7 @@
         const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
         await pinsRef.set({
           shroudedRegions: shroudStates,
+          mapRegions: regionsList,
           regionsSenderId: this.clientId,
           regionsUpdatedAt: now,
           updatedAt: now,
@@ -512,6 +546,20 @@
       } catch (e) {
         console.error('[CloudSync] Failed to push regions to Firebase:', e);
         return false;
+      }
+    }
+
+    syncToMapEngine() {
+      if (!this.latestDocData || !window.mapEngine) return;
+      const data = this.latestDocData;
+      if (Array.isArray(data.playerPins) && typeof window.mapEngine.syncCloudPins === 'function') {
+        window.mapEngine.syncCloudPins(data.playerPins);
+      }
+      if (Array.isArray(data.officialLocations) && typeof window.mapEngine.onRemoteOfficialLocations === 'function') {
+        window.mapEngine.onRemoteOfficialLocations(data.officialLocations);
+      }
+      if (data.shroudedRegions && typeof window.mapEngine.onRemoteShroudedRegions === 'function') {
+        window.mapEngine.onRemoteShroudedRegions(data.shroudedRegions, data.mapRegions);
       }
     }
 
