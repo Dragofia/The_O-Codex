@@ -219,6 +219,17 @@
                 }
               }
             }
+
+            // 6. Sync Shrouded Regions / Fog of War
+            if (data.shroudedRegions && typeof data.shroudedRegions === 'object' && data.regionsSenderId !== this.clientId) {
+              const fogJson = JSON.stringify(data.shroudedRegions);
+              if (fogJson !== this.lastFogJson) {
+                this.lastFogJson = fogJson;
+                if (window.mapEngine && typeof window.mapEngine.onRemoteShroudedRegions === 'function') {
+                  window.mapEngine.onRemoteShroudedRegions(data.shroudedRegions);
+                }
+              }
+            }
           }
         }, err => {
           console.warn('[CloudSync] Realtime sync listener warning:', err);
@@ -473,6 +484,33 @@
         return true;
       } catch (e) {
         console.error('[CloudSync] Failed to push initiative to Firebase:', e);
+        return false;
+      }
+    }
+
+    async pushRegions(regionsList) {
+      if (!this.isReady || !this.db || !Array.isArray(regionsList)) return false;
+      try {
+        const shroudStates = {};
+        regionsList.forEach(r => {
+          shroudStates[r.id] = Boolean(r.shrouded);
+        });
+        const fogJson = JSON.stringify(shroudStates);
+        this.lastFogJson = fogJson;
+        const now = Date.now();
+
+        const pinsRef = this.db.collection('codex_campaign').doc('world_pins');
+        await pinsRef.set({
+          shroudedRegions: shroudStates,
+          regionsSenderId: this.clientId,
+          regionsUpdatedAt: now,
+          updatedAt: now,
+          updatedBy: localStorage.getItem('o_codex_player_name') || 'Dungeon Master'
+        }, { merge: true });
+
+        return true;
+      } catch (e) {
+        console.error('[CloudSync] Failed to push regions to Firebase:', e);
         return false;
       }
     }

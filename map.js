@@ -421,7 +421,7 @@
       id: 'map_surface_default',
       title: 'Maladen — The Surface World',
       subtitle: 'Domains, Settlements & Relic Locations',
-      imageSource: 'assets/maps/maladen_composite.svg',
+      imageSource: 'assets/maps/Maladen.jpg',
       isDefault: true,
       regions: [
         // ROW 1: North (Leaflet y: 670 - 1000)
@@ -430,6 +430,7 @@
           name: 'Domain of Alden',
           color: '#5ae8ff',
           desc: 'Arid northern empire of builders, inventors, and metalworking, anchored by Laregola.',
+          shrouded: true,
           points: [
             [1000, 0], [1000, 335], [670, 335], [670, 0]
           ]
@@ -439,6 +440,7 @@
           name: 'Klabats',
           color: '#f59e0b',
           desc: 'Warlike northern desert badlands of flow warriors, breath discipline, and combat mastery.',
+          shrouded: true,
           points: [
             [1000, 335], [1000, 665], [670, 665], [670, 335]
           ]
@@ -448,6 +450,7 @@
           name: 'Dynestea',
           color: '#10b981',
           desc: 'The lush northeast crossroads of prime magic, abundant in natural resources and reverent of nature.',
+          shrouded: true,
           points: [
             [1000, 665], [1000, 1000], [670, 1000], [670, 665]
           ]
@@ -459,6 +462,7 @@
           name: 'Giaslan',
           color: '#7a87ff',
           desc: 'Frigid mountain realm of astrologers and Chroma magic, centered on Viserion’s Peak and Chillspire.',
+          shrouded: false,
           points: [
             [670, 0], [670, 335], [335, 335], [335, 0]
           ]
@@ -468,6 +472,7 @@
           name: 'Altasar',
           color: '#eab308',
           desc: 'Wealthy central grassland democracy of soul magic, tiered waterways in Droland, and The Spire.',
+          shrouded: false,
           points: [
             [670, 335], [670, 665], [335, 665], [335, 335]
           ]
@@ -477,6 +482,7 @@
           name: 'Cirrusia',
           color: '#38bdf8',
           desc: 'Eastern cloud-ocean sky realm of floating islands, sky-vines, and shifting storms.',
+          shrouded: true,
           points: [
             [670, 665], [670, 1000], [335, 1000], [335, 665]
           ]
@@ -488,6 +494,7 @@
           name: 'Hemwood',
           color: '#f43f5e',
           desc: 'Dim forest domain under growing geothermal heat, centered on the Hell Sigil and Moonstead.',
+          shrouded: true,
           points: [
             [335, 0], [335, 335], [0, 335], [0, 0]
           ]
@@ -497,6 +504,7 @@
           name: 'Caybluff',
           color: '#a855f7',
           desc: 'Starlit high plateau of sheer cliffs, Mount Solare, the Caybluff Fissure, and the submerged capital Portale.',
+          shrouded: true,
           points: [
             [335, 335], [335, 665], [0, 665], [0, 335]
           ]
@@ -506,6 +514,7 @@
           name: 'Laytide',
           color: '#2563eb',
           desc: 'Vast aquatic ocean domain permanently transformed by the historic presence of the sea lord Aquiel.',
+          shrouded: true,
           points: [
             [335, 665], [335, 1000], [0, 1000], [0, 665]
           ]
@@ -1030,7 +1039,21 @@
         if (window.CampaignCloudSync) window.CampaignCloudSync.updateUI();
       }
 
-      // 6. Re-render pins so secret pins appear or disappear and draggability syncs
+      // 5C. Fog of War Toggle Tool (Toolbar - DM only)
+      const fogBtn = document.getElementById('map-tool-fog');
+      if (fogBtn) {
+        fogBtn.classList.toggle('hidden', !isDm);
+        fogBtn.classList.toggle('is-active', Boolean(this.dmPreviewPlayerFog));
+      }
+
+      // 5D. Manage Territories Fog Tools (DM only)
+      const manageFogTools = document.getElementById('manage-territories-fog-tools');
+      if (manageFogTools) {
+        manageFogTools.classList.toggle('hidden', !isDm);
+      }
+
+      // 6. Re-render regions and pins so fog of war, secret pins, and draggability sync
+      this.renderRegions();
       this.renderPins();
       this.setMarkerDraggingEnabled(isDm);
 
@@ -1099,12 +1122,25 @@
         this.saveStorage();
       }
 
-      // If user's stored default map has the old placeholder regions or outdated pins, auto-upgrade to 3x3 layout
-      if (this.maps[0] && this.maps[0].isDefault && (!this.maps[0].imageSource.includes('maladen_composite') || (this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40)) {
-        const existingPlayerPins = this.maps[0].playerPins || [];
-        this.maps[0] = JSON.parse(JSON.stringify(DEFAULT_MAPS[0]));
-        this.maps[0].playerPins = existingPlayerPins;
-        this.saveStorage();
+      // Auto-upgrade default map to high-res Inkarnate Maladen.jpg and 3x3 layout with Fog of War
+      if (this.maps[0] && this.maps[0].isDefault) {
+        if (!this.maps[0].imageSource.includes('Maladen.jpg') || (this.maps[0].regions || []).length !== 9 || (this.maps[0].officialLocations || []).length < 40) {
+          const existingPlayerPins = this.maps[0].playerPins || [];
+          this.maps[0] = JSON.parse(JSON.stringify(DEFAULT_MAPS[0]));
+          this.maps[0].playerPins = existingPlayerPins;
+          this.saveStorage();
+        } else {
+          // Ensure all regions have the shrouded property initialized if missing
+          let updated = false;
+          (this.maps[0].regions || []).forEach(reg => {
+            if (reg.shrouded === undefined) {
+              const def = DEFAULT_MAPS[0].regions.find(r => r.id === reg.id || r.name.toLowerCase() === reg.name.toLowerCase());
+              reg.shrouded = def ? Boolean(def.shrouded) : false;
+              updated = true;
+            }
+          });
+          if (updated) this.saveStorage();
+        }
       }
     }
 
@@ -1173,12 +1209,19 @@
         }
 
         if (matchedRegion) {
+          const isPlayerView = !this.isDmMode() || Boolean(this.dmPreviewPlayerFog);
+          const isShrouded = Boolean(matchedRegion.shrouded);
           if (hudName) {
-            hudName.textContent = matchedRegion.name;
-            hudName.style.color = matchedRegion.color || '#5ae8ff';
+            if (isShrouded && isPlayerView) {
+              hudName.textContent = 'Uncharted Realm (Veiled)';
+              hudName.style.color = '#64748b';
+            } else {
+              hudName.textContent = matchedRegion.name + (isShrouded ? ' (Fog of War)' : '');
+              hudName.style.color = isShrouded ? '#94a3b8' : (matchedRegion.color || '#5ae8ff');
+            }
           }
           if (hudDot) {
-            hudDot.style.backgroundColor = matchedRegion.color || '#5ae8ff';
+            hudDot.style.backgroundColor = (isShrouded && isPlayerView) ? '#64748b' : (matchedRegion.color || '#5ae8ff');
           }
         } else {
           if (hudName) {
@@ -1463,6 +1506,24 @@
       return { reg, center: [avgY, avgX] };
     }
 
+    isPinInShroudedRegion(pin, activeMap) {
+      if (!activeMap || !activeMap.regions) return false;
+      if (pin.region) {
+        const norm = String(pin.region).toLowerCase().trim();
+        const reg = activeMap.regions.find(r => String(r.name).toLowerCase().trim() === norm);
+        if (reg) return Boolean(reg.shrouded);
+      }
+      if (typeof pin.x === 'number' && typeof pin.y === 'number') {
+        const pt = [pin.y, pin.x];
+        for (const reg of activeMap.regions) {
+          if (reg.shrouded && Array.isArray(reg.points) && isPointInPolygon(pt, reg.points)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     renderRegions() {
       this.regionPolygonLayers.forEach(layer => this.map.removeLayer(layer));
       this.regionPolygonLayers.clear();
@@ -1470,15 +1531,66 @@
       const activeMap = this.getActiveMap();
       if (!activeMap.regions) return;
 
+      const isDm = this.isDmMode();
+      const isPlayerView = !isDm || Boolean(this.dmPreviewPlayerFog);
+
       activeMap.regions.forEach(reg => {
-        const polygon = L.polygon(reg.points, {
-          color: reg.color || '#5ae8ff',
-          weight: this.bordersVisible ? 2 : 0,
-          fillColor: reg.color || '#5ae8ff',
-          fillOpacity: this.bordersVisible ? 0.15 : 0,
-          dashArray: '3, 4',
-          interactive: true
-        });
+        const isShrouded = Boolean(reg.shrouded);
+        let polyStyle = {};
+
+        if (isShrouded) {
+          if (isPlayerView) {
+            polyStyle = {
+              color: '#080d1a',
+              weight: 2,
+              fillColor: '#050811',
+              fillOpacity: 0.98,
+              className: 'fog-shroud-polygon is-player',
+              interactive: true
+            };
+          } else {
+            polyStyle = {
+              color: '#94a3b8',
+              weight: 2.5,
+              dashArray: '6, 6',
+              fillColor: '#030712',
+              fillOpacity: 0.44,
+              className: 'fog-shroud-polygon is-dm',
+              interactive: true
+            };
+          }
+        } else {
+          polyStyle = {
+            color: reg.color || '#5ae8ff',
+            weight: this.bordersVisible ? 2 : 0,
+            fillColor: reg.color || '#5ae8ff',
+            fillOpacity: this.bordersVisible ? 0.15 : 0,
+            dashArray: '3, 4',
+            className: 'explored-region-polygon',
+            interactive: true
+          };
+        }
+
+        const polygon = L.polygon(reg.points, polyStyle);
+
+        if (isShrouded) {
+          if (isPlayerView) {
+            polygon.bindTooltip(`
+              <div class="fog-map-tooltip">
+                <strong>Unexplored Realm</strong>
+                <span>Veiled by ancient mist</span>
+              </div>
+            `, { direction: 'center', className: 'fog-map-tooltip' });
+          } else {
+            polygon.bindTooltip(`
+              <div class="fog-map-tooltip dm-fog-tooltip">
+                <strong>${escapeHtml(reg.name)}</strong>
+                <span style="color: #f59e0b;">🌫️ Shrouded from Players</span>
+                <span style="color: #94a3b8; font-size: 0.72rem; display: block; margin-top: 2px;">Click to manage or reveal</span>
+              </div>
+            `, { direction: 'center', className: 'fog-map-tooltip' });
+          }
+        }
 
         // Click to inspect territory (DM Mode: Edit modal | Player Mode: Read-only lore view)
         polygon.on('click', (e) => {
@@ -1491,25 +1603,32 @@
           if (this.isDmMode()) {
             this.openEditTerritoryModal(reg.id);
           } else {
-            this.openViewTerritoryModal(reg.id);
+            if (isShrouded) {
+              window.showToast?.(`Unexplored Realm: The domain of ${reg.name} is shrouded in dense mist.`, 'info', 3000);
+            } else {
+              this.openViewTerritoryModal(reg.id);
+            }
           }
         });
 
         polygon.on('mouseover', () => {
           if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
           if (window.MapTactics && window.MapTactics.isMeasuring) return;
-          polygon.setStyle({
-            weight: 3.5,
-            fillOpacity: 0.28
-          });
+          if (isShrouded) {
+            if (!isPlayerView) {
+              polygon.setStyle({ fillOpacity: 0.65, weight: 3.5, color: '#f59e0b' });
+            }
+          } else {
+            polygon.setStyle({
+              weight: 3.5,
+              fillOpacity: 0.28
+            });
+          }
         });
 
         polygon.on('mouseout', () => {
           if (this.isDrawingRegion || this.isDroppingPin || this.isEditingVertices) return;
-          polygon.setStyle({
-            weight: this.bordersVisible ? 2 : 0,
-            fillOpacity: this.bordersVisible ? 0.15 : 0
-          });
+          polygon.setStyle(polyStyle);
         });
 
         polygon.addTo(this.map);
@@ -1528,6 +1647,7 @@
       ];
 
       const isDm = this.isDmMode();
+      const isPlayerView = !isDm || Boolean(this.dmPreviewPlayerFog);
 
       allPins.forEach(pin => {
         // Access Control: Hide secret pins from players completely
@@ -1537,6 +1657,12 @@
 
         // Stealth / Invisible Pin: Hidden unless directly navigated from its Codex entry!
         if (pin.isStealth && this.activeTransientPinId !== pin.id) {
+          return;
+        }
+
+        // Fog of War: If pin is in a shrouded region and in player view, hide it completely!
+        const isShroudedPin = this.isPinInShroudedRegion(pin, activeMap);
+        if (isPlayerView && isShroudedPin) {
           return;
         }
 
@@ -1584,7 +1710,8 @@
           });
         }
 
-        const secretSuffix = pin.isSecret ? ' · 🔒 Secret' : '';
+        const shroudNote = (isShroudedPin && isDm && !isPlayerView) ? ' · 🌫️ Veiled from Players' : '';
+        const secretSuffix = pin.isSecret ? ' · 🔒 Secret' : shroudNote;
         // Hover tooltip
         marker.bindTooltip(`
           <div class="map-tooltip">
@@ -2253,6 +2380,26 @@
       document.getElementById('edit-territory-desc').value = reg.desc || '';
       document.getElementById('edit-territory-meta').textContent = `${(reg.points || []).length} boundary vertices · ID: ${reg.id}`;
 
+      // Update Fog of War shroud status and toggle button
+      const isShrouded = Boolean(reg.shrouded);
+      const statusEl = document.getElementById('edit-territory-shroud-status');
+      const btnLabel = document.getElementById('edit-territory-shroud-btn-label');
+      if (statusEl) {
+        statusEl.textContent = isShrouded ? 'Veiled from Players by Fog of War' : 'Revealed & Explored by Players';
+        statusEl.style.color = isShrouded ? '#f59e0b' : '#34d399';
+      }
+      if (btnLabel) {
+        btnLabel.textContent = isShrouded ? 'Reveal to Players' : 'Shroud in Fog of War';
+      }
+
+      const toggleShroudBtn = document.getElementById('edit-territory-toggle-shroud-btn');
+      if (toggleShroudBtn) {
+        toggleShroudBtn.onclick = () => {
+          this.toggleRegionShroud(reg.id);
+          this.openEditTerritoryModal(reg.id);
+        };
+      }
+
       // Reset delete confirmation button state
       const delBtn = document.getElementById('delete-territory-btn');
       if (delBtn) {
@@ -2516,8 +2663,12 @@
         const item = document.createElement('div');
         item.className = 'territory-item-card';
 
+        const isShrouded = Boolean(reg.shrouded);
         const actionsHtml = isDm ? `
           <div class="territory-item-actions">
+            <button type="button" class="territory-btn-mini btn-toggle-shroud ${isShrouded ? 'is-shrouded' : 'is-revealed'}" title="${isShrouded ? 'Click to reveal region to players' : 'Click to shroud in fog of war'}">
+              ${isShrouded ? '🌫️ Shrouded' : '☀️ Revealed'}
+            </button>
             <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-edit-reg" title="Edit territory settings">Edit</button>
             <button type="button" class="territory-btn-mini territory-btn-mini--edit btn-move-reg" title="Move & drag boundary points">Move</button>
             <button type="button" class="territory-btn-mini territory-btn-mini--delete btn-del-reg" title="Delete territory">✕</button>
@@ -2549,6 +2700,11 @@
         });
 
         if (isDm) {
+          item.querySelector('.btn-toggle-shroud')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleRegionShroud(reg.id);
+          });
+
           item.querySelector('.btn-edit-reg')?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.closeModal('manage-territories-modal');
@@ -2769,6 +2925,91 @@
       dd.classList.toggle('hidden', isHidden);
     }
 
+    toggleRegionShroud(regionId) {
+      if (!this.isDmMode()) {
+        window.showToast?.('Only the Dungeon Master can modify Fog of War.', 'warning');
+        return;
+      }
+      const activeMap = this.getActiveMap();
+      const reg = (activeMap.regions || []).find(r => r.id === regionId);
+      if (!reg) return;
+
+      reg.shrouded = !reg.shrouded;
+      this.saveStorage();
+      this.renderRegions();
+      this.renderPins();
+      this.renderTerritoriesManagerList();
+
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
+
+      window.showToast?.(
+        reg.shrouded ? `Shrouded "${reg.name}" in Fog of War.` : `Revealed "${reg.name}" to players!`,
+        'success',
+        2200
+      );
+    }
+
+    setCampaignStartFog() {
+      const activeMap = this.getActiveMap();
+      if (!activeMap || !activeMap.regions) return;
+      activeMap.regions.forEach(reg => {
+        const n = String(reg.name).toLowerCase();
+        if (n.includes('altasar') || n.includes('giaslan') || reg.id === 'reg_altasar' || reg.id === 'reg_giaslan') {
+          reg.shrouded = false;
+        } else {
+          reg.shrouded = true;
+        }
+      });
+      this.saveStorage();
+      this.renderRegions();
+      this.renderPins();
+      this.renderTerritoriesManagerList();
+
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
+
+      window.showToast?.('Fog of War reset: Altasar & Giaslan revealed, other 7 shrouded.', 'success', 2800);
+    }
+
+    setAllRegionsShroud(shouldShroud) {
+      const activeMap = this.getActiveMap();
+      if (!activeMap || !activeMap.regions) return;
+      activeMap.regions.forEach(reg => {
+        reg.shrouded = Boolean(shouldShroud);
+      });
+      this.saveStorage();
+      this.renderRegions();
+      this.renderPins();
+      this.renderTerritoriesManagerList();
+
+      if (window.CampaignCloudSync && typeof window.CampaignCloudSync.pushRegions === 'function') {
+        window.CampaignCloudSync.pushRegions(activeMap.regions);
+      }
+
+      window.showToast?.(shouldShroud ? 'All domains shrouded in Fog of War.' : 'All domains revealed to players!', 'info', 2500);
+    }
+
+    onRemoteShroudedRegions(shroudStates) {
+      const activeMap = this.getActiveMap();
+      if (!activeMap || !activeMap.regions || !shroudStates) return;
+      let changed = false;
+      activeMap.regions.forEach(reg => {
+        if (shroudStates[reg.id] !== undefined && reg.shrouded !== shroudStates[reg.id]) {
+          reg.shrouded = shroudStates[reg.id];
+          changed = true;
+        }
+      });
+      if (changed) {
+        this.saveStorage();
+        this.renderRegions();
+        this.renderPins();
+        this.renderTerritoriesManagerList();
+      }
+    }
+
     setupDOM() {
       // Wire Map Header Buttons
       document.getElementById('map-selector-btn')?.addEventListener('click', () => this.toggleMapDropdown());
@@ -2792,6 +3033,37 @@
       document.getElementById('map-tool-draw')?.addEventListener('click', () => this.startTerritoryDrawMode());
       document.getElementById('map-toggle-borders-btn')?.addEventListener('click', () => this.toggleBorders());
       document.getElementById('map-drawer-close')?.addEventListener('click', () => this.closePinDrawer());
+
+      // Fog of War view toggle (DM only)
+      document.getElementById('map-tool-fog')?.addEventListener('click', () => {
+        if (!this.isDmMode()) return;
+        this.dmPreviewPlayerFog = !this.dmPreviewPlayerFog;
+        const btn = document.getElementById('map-tool-fog');
+        if (btn) btn.classList.toggle('is-active', this.dmPreviewPlayerFog);
+        this.renderRegions();
+        this.renderPins();
+        window.showToast?.(
+          this.dmPreviewPlayerFog
+            ? 'Fog of War: Player Preview Active (Opaque Shroud)'
+            : 'Fog of War: DM Mode Active (Transparent Veil)',
+          'info',
+          2200
+        );
+      });
+
+      // Manage Territories Fog batch action buttons
+      document.getElementById('btn-fog-reset-campaign')?.addEventListener('click', () => {
+        if (!this.isDmMode()) return;
+        this.setCampaignStartFog();
+      });
+      document.getElementById('btn-fog-reveal-all')?.addEventListener('click', () => {
+        if (!this.isDmMode()) return;
+        this.setAllRegionsShroud(false);
+      });
+      document.getElementById('btn-fog-shroud-all')?.addEventListener('click', () => {
+        if (!this.isDmMode()) return;
+        this.setAllRegionsShroud(true);
+      });
 
       // Wire Drawing Banner Actions
       document.getElementById('drawing-finish-btn')?.addEventListener('click', () => this.finishTerritoryDraw());
@@ -2981,6 +3253,11 @@
         let targetPin = allPins.find(p => p.codexId === entryId || (p.name && p.name.toLowerCase() === entryName.toLowerCase()));
 
         if (targetPin) {
+          const isPlayerView = !window.mapEngine.isDmMode() || Boolean(window.mapEngine.dmPreviewPlayerFog);
+          if (isPlayerView && window.mapEngine.isPinInShroudedRegion(targetPin, activeMap)) {
+            window.showToast?.(`📍 This location is in an unexplored region veiled by mist.`, 'warning');
+            return;
+          }
           window.mapEngine.map.flyTo([targetPin.y, targetPin.x], 1.2, { duration: 1 });
           window.mapEngine.openPinDrawer(targetPin);
           return;
@@ -3001,6 +3278,11 @@
         });
 
         if (pinCandidate) {
+          const isPlayerView = !window.mapEngine.isDmMode() || Boolean(window.mapEngine.dmPreviewPlayerFog);
+          if (isPlayerView && window.mapEngine.isPinInShroudedRegion(pinCandidate, activeMap)) {
+            window.showToast?.(`📍 This location is in an unexplored region veiled by mist.`, 'warning');
+            return;
+          }
           if (pinCandidate.isStealth) {
             window.mapEngine.activeTransientPinId = pinCandidate.id;
             window.mapEngine.renderPins();

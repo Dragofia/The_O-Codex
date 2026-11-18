@@ -9,7 +9,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=46">
+  <link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -179,6 +179,10 @@
         <button id="map-toggle-borders-btn" class="map-tool-btn is-active" type="button" title="Toggle territory borders visibility">
           <span class="map-tool-icon" aria-hidden="true">👁️</span>
           <span>Borders</span>
+        </button>
+        <button id="map-tool-fog" class="map-tool-btn hidden" type="button" title="Toggle Fog of War (DM Transparent / Player Preview)">
+          <span class="map-tool-icon" aria-hidden="true">🌫️</span>
+          <span>Fog View</span>
         </button>
       </div>
 
@@ -832,6 +836,10 @@
         <p class="modal__summary">Define the realm, territory, or biome name for the enclosed polygon.</p>
       </div>
       <div class="map-form-body">
+        <label class="checkbox-field" style="margin-bottom: 0.85rem;">
+          <input type="checkbox" id="new-territory-shrouded">
+          <span>Shroud in Fog of War (Unexplored region)</span>
+        </label>
         <label class="form-field">
           <span>Territory Name</span>
           <input id="new-territory-name" type="text" placeholder="e.g., Domain of Alden, Whispering Woods" required>
@@ -873,6 +881,15 @@
         <p class="modal__summary" id="edit-territory-meta">Boundary details and settings</p>
       </div>
       <div class="map-form-body">
+        <div id="edit-territory-shroud-box" class="territory-shroud-toggle-box">
+          <div>
+            <strong id="edit-territory-shroud-title" style="display:block; font-size: 0.9rem; color: #f1f5f9;">Fog of War</strong>
+            <span class="territory-shroud-status" id="edit-territory-shroud-status">Veiled from Players</span>
+          </div>
+          <button type="button" id="edit-territory-toggle-shroud-btn" class="cta-button" style="padding: 0.45rem 1rem; font-size: 0.82rem;">
+            <span id="edit-territory-shroud-btn-label">Reveal to Players</span>
+          </button>
+        </div>
         <label class="form-field">
           <span>Territory Name</span>
           <input id="edit-territory-name" type="text" placeholder="e.g., Domain of Alden, Whispering Woods" required>
@@ -951,6 +968,20 @@
         <p class="modal__category">Campaign Realms</p>
         <h2>Domain Territories</h2>
         <p class="modal__summary">Inspect, edit, adjust boundaries, or delete realm territories on this layer.</p>
+        <div id="manage-territories-fog-tools" class="territories-fog-toolbar hidden">
+          <span style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">Fog of War Batch Actions:</span>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button type="button" id="btn-fog-reset-campaign" class="territory-action-chip" title="Reset: Altasar & Giaslan revealed, other 7 shrouded">
+              <span>Campaign Start Preset</span>
+            </button>
+            <button type="button" id="btn-fog-reveal-all" class="territory-action-chip" title="Reveal all regions to players">
+              <span>Reveal All</span>
+            </button>
+            <button type="button" id="btn-fog-shroud-all" class="territory-action-chip" title="Shroud all regions in fog of war">
+              <span>Shroud All</span>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="territories-manager-container">
         <div id="territories-manager-list" class="territories-list-grid"></div>
@@ -1865,7 +1896,7 @@
   <script src="codex-notes.js?v=1" defer></script>
   <script src="script.js?v=25" defer></script>
   <script src="quickbar.js?v=4" defer></script>
-  <script src="map.js?v=14" defer></script>
+  <script src="map.js?v=15" defer></script>
   <script src="map-tactics.js?v=2" defer></script>
 
   <!-- Custom Spell Creator Modal -->
