@@ -57,7 +57,8 @@
         int: 18,
         wis: 12,
         cha: 10,
-        saveProfs: ['con', 'int']
+        saveProfs: ['con', 'int'],
+        skillProfs: ['arcana', 'history', 'investigation', 'perception']
       },
       attacks: [
         {
@@ -258,7 +259,8 @@ ALLIES & REMINDERS:
         int: 8,
         wis: 13,
         cha: 16,
-        saveProfs: ['wis', 'cha']
+        saveProfs: ['wis', 'cha'],
+        skillProfs: ['athletics', 'insight', 'intimidation', 'perception']
       },
       attacks: [
         {
@@ -451,7 +453,8 @@ BACKSTORY & DEATH NOTE:
         int: 9,
         wis: 16,
         cha: 14,
-        saveProfs: ['wis', 'cha']
+        saveProfs: ['wis', 'cha'],
+        skillProfs: ['athletics', 'nature', 'perception', 'survival']
       },
       attacks: [
         {
@@ -653,6 +656,28 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
     }
   ];
 
+  // Standard D&D 5e Skills List & Associated Ability
+  const SKILLS_LIST = [
+    { id: 'acrobatics', name: 'Acrobatics', stat: 'dex' },
+    { id: 'animal_handling', name: 'Animal Handling', stat: 'wis' },
+    { id: 'arcana', name: 'Arcana', stat: 'int' },
+    { id: 'athletics', name: 'Athletics', stat: 'str' },
+    { id: 'deception', name: 'Deception', stat: 'cha' },
+    { id: 'history', name: 'History', stat: 'int' },
+    { id: 'insight', name: 'Insight', stat: 'wis' },
+    { id: 'intimidation', name: 'Intimidation', stat: 'cha' },
+    { id: 'investigation', name: 'Investigation', stat: 'int' },
+    { id: 'medicine', name: 'Medicine', stat: 'wis' },
+    { id: 'nature', name: 'Nature', stat: 'int' },
+    { id: 'perception', name: 'Perception', stat: 'wis' },
+    { id: 'performance', name: 'Performance', stat: 'cha' },
+    { id: 'persuasion', name: 'Persuasion', stat: 'cha' },
+    { id: 'religion', name: 'Religion', stat: 'int' },
+    { id: 'sleight_of_hand', name: 'Sleight of Hand', stat: 'dex' },
+    { id: 'stealth', name: 'Stealth', stat: 'dex' },
+    { id: 'survival', name: 'Survival', stat: 'wis' }
+  ];
+
   // Standard D&D 5e SRD Weapons & Common Combat Actions Compendium
   const SRD_WEAPONS = [
     // Simple Melee
@@ -790,6 +815,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
           if (!c.spellSlots || typeof c.spellSlots !== 'object') c.spellSlots = {};
           if (!Array.isArray(c.spellsKnown)) c.spellsKnown = [];
           if (!Array.isArray(c.spellsPrepared)) c.spellsPrepared = [];
+          if (!Array.isArray(c.skillProfs)) c.skillProfs = [];
+          if (!c.skills || typeof c.skills !== 'object') c.skills = {};
           if (!c.currency) c.currency = { cp: 0, sp: 0, gp: 0, pp: 0, aetherGems: 0 };
         });
       }
@@ -872,6 +899,35 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
 
     getActiveCharacter() {
       return this.characters.find(c => c.id === this.activeCharId) || this.characters[0];
+    }
+
+    isSkillProficient(char, skillId) {
+      if (!char) return false;
+      if (char.skills && typeof char.skills === 'object' && char.skills[skillId]) return true;
+      if (Array.isArray(char.skillProfs) && char.skillProfs.includes(skillId)) return true;
+      if (char.stats && Array.isArray(char.stats.skillProfs) && char.stats.skillProfs.includes(skillId)) return true;
+      return false;
+    }
+
+    setSkillProficient(char, skillId, enabled) {
+      if (!char) return;
+      if (!char.skills || typeof char.skills !== 'object') char.skills = {};
+      char.skills[skillId] = Boolean(enabled);
+
+      if (!Array.isArray(char.skillProfs)) char.skillProfs = [];
+      if (enabled) {
+        if (!char.skillProfs.includes(skillId)) char.skillProfs.push(skillId);
+      } else {
+        char.skillProfs = char.skillProfs.filter(s => s !== skillId);
+      }
+      if (char.stats) {
+        if (!Array.isArray(char.stats.skillProfs)) char.stats.skillProfs = [];
+        if (enabled) {
+          if (!char.stats.skillProfs.includes(skillId)) char.stats.skillProfs.push(skillId);
+        } else {
+          char.stats.skillProfs = char.stats.skillProfs.filter(s => s !== skillId);
+        }
+      }
     }
 
     setActiveCharacter(id) {
@@ -1972,6 +2028,9 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
       // Render Ability Scores
       this.renderAbilityScores(char);
 
+      // Render Skill Proficiencies
+      this.renderSkills(char);
+
       // Render Active Tab Content
       this.renderTabContent();
 
@@ -2252,6 +2311,8 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
         container.querySelector('#prof-edit-input')?.addEventListener('change', (e) => {
           vitals.profBonus = parseInt(e.target.value, 10) || 2;
           this.saveStorage();
+          this.renderAbilityScores(char);
+          this.renderSkills(char);
           this.renderTabContent();
         });
       }
@@ -2425,6 +2486,7 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
             stats[ab] = parseInt(e.target.value, 10) || 10;
             this.saveStorage();
             this.renderAbilityScores(char);
+            this.renderSkills(char);
             this.renderTabContent();
           });
 
@@ -2437,6 +2499,75 @@ Il-Fiore, the capital of Dynestea. My family had a spiritual role, and took care
               stats.saveProfs = stats.saveProfs.filter(s => s !== ab);
             }
             this.saveStorage();
+          });
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    // 3.5 SKILL PROFICIENCIES (18 Core 5e Skills with Stat Mod + Prof Bonus)
+    renderSkills(char) {
+      const container = document.getElementById('char-skills-grid');
+      if (!container) return;
+
+      const profBonus = (char.vitals && typeof char.vitals.profBonus === 'number') ? char.vitals.profBonus : 2;
+      container.innerHTML = '';
+
+      SKILLS_LIST.forEach(skill => {
+        const statScore = char.stats?.[skill.stat] ?? 10;
+        const statMod = this.getStatMod(statScore);
+        const isProf = this.isSkillProficient(char, skill.id);
+        const totalMod = statMod + (isProf ? profBonus : 0);
+        const totalModStr = totalMod >= 0 ? `+${totalMod}` : `${totalMod}`;
+        const statAbbr = skill.stat.toUpperCase();
+
+        const card = document.createElement('div');
+
+        if (!this.isEditMode) {
+          card.className = `char-skill-card char-skill-card-play ${isProf ? 'is-proficient' : ''}`;
+          card.tabIndex = 0;
+          card.setAttribute('role', 'button');
+          card.title = `Click to roll ${skill.name} Check (${statAbbr}) ${totalModStr} [${statAbbr} ${statMod >= 0 ? '+' + statMod : statMod}${isProf ? ` + PB +${profBonus}` : ''}]`;
+          card.innerHTML = `
+            <div class="skill-info">
+              <span class="skill-prof-pip" aria-hidden="true"></span>
+              <span class="skill-name">${skill.name}</span>
+              <span class="skill-stat-tag">${statAbbr}</span>
+            </div>
+            <div class="skill-total-mod">${totalModStr}</div>
+          `;
+
+          const triggerRoll = () => {
+            if (window.DiceRoller) {
+              window.DiceRoller.roll('1d20', `${skill.name} Check (${statAbbr})`, char.name, 'normal', totalMod);
+            }
+          };
+
+          card.addEventListener('click', triggerRoll);
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              triggerRoll();
+            }
+          });
+        } else {
+          // EDIT MODE: Checkbox to toggle skill proficiency
+          card.className = `char-skill-card char-skill-card-edit ${isProf ? 'is-proficient' : ''}`;
+          card.innerHTML = `
+            <label class="skill-edit-check-label">
+              <input type="checkbox" class="skill-edit-checkbox" data-skill-id="${skill.id}" ${isProf ? 'checked' : ''} />
+              <span class="skill-name">${skill.name}</span>
+              <span class="skill-stat-tag">${statAbbr}</span>
+            </label>
+            <div class="skill-total-mod">${totalModStr}</div>
+          `;
+
+          const checkbox = card.querySelector('.skill-edit-checkbox');
+          checkbox?.addEventListener('change', (e) => {
+            this.setSkillProficient(char, skill.id, e.target.checked);
+            this.saveStorage();
+            this.renderSkills(char);
           });
         }
 
