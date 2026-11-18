@@ -12,7 +12,7 @@
   <link rel="alternate icon" href="favicon.svg?v=6">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="styles.css?v=58">
+  <link rel="stylesheet" href="styles.css?v=59">
 </head>
 <body>
   <!-- Top Floating & Receding View Mode Bar -->
@@ -88,10 +88,20 @@
                 </select>
               </div>
 
+              <div id="story-type-controls" class="control-group hidden">
+                <label class="sort-label" for="story-type-select">Type</label>
+                <select id="story-type-select" class="sort-select">
+                  <option value="all">All Stories</option>
+                  <option value="thread">Threads Only</option>
+                  <option value="quest">Quests Only</option>
+                </select>
+              </div>
+
               <div id="quest-status-controls" class="control-group hidden">
                 <label class="sort-label" for="quest-status-select">Status</label>
                 <select id="quest-status-select" class="sort-select">
-                  <option value="ongoing">Ongoing</option>
+                  <option value="all">All Status</option>
+                  <option value="ongoing" selected>Ongoing</option>
                   <option value="completed">Completed</option>
                 </select>
               </div>
@@ -1901,7 +1911,7 @@
   <script src="initiative-tracker.js?v=12" defer></script>
   <script src="codex-linker.js?v=2" defer></script>
   <script src="codex-notes.js?v=2" defer></script>
-  <script src="script.js?v=35" defer></script>
+  <script src="script.js?v=36" defer></script>
   <script src="quickbar.js?v=5" defer></script>
   <script src="map.js?v=20" defer></script>
   <script src="map-tactics.js?v=3" defer></script>

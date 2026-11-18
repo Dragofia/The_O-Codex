@@ -832,6 +832,28 @@ img {
   background: rgba(5, 11, 19, 0.82);
 }
 
+.entry-meta-badge--quest-type {
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  font-weight: 700;
+}
+
+.entry-meta-badge--thread-type {
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  font-weight: 700;
+}
+
+.modal__category--quest {
+  color: #38bdf8 !important;
+}
+
+.modal__category--thread {
+  color: #f87171 !important;
+}
+
 .entry-meta-badge--quest-ongoing {
   border-color: rgba(90, 232, 255, 0.3);
   color: var(--accent);

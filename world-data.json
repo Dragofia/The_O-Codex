@@ -15,9 +15,9 @@
       "description": "Settlements, capitals, and crossroads worth remembering."
     },
     {
-      "id": "quests",
-      "label": "Quests",
-      "description": "The Spire seems to be benevolent, and requests your help in spreading this goodwill to those who need it. Much is to be gained from your assistance."
+      "id": "stories",
+      "label": "Stories",
+      "description": "Hooks, quests, and storylines the party can follow. Rewards and newfound power await at the end of each thread."
     },
     {
       "id": "manifests",
@@ -634,7 +634,7 @@
     },
     {
       "id": "quest-mirage-bay-illusionist",
-      "category": "quests",
+      "category": "stories",
       "title": "Mirage Bay Illusionist",
       "summary": "A completed Altasar thread in which a faerie illusionist hiding in Mirage Bay was expelled back to the Fey Realm.",
       "description": "A creature from a fey island in Cirrusia slipped into Altasar and took asylum in Mirage Bay. There it survived by provoking fear responses in both fauna and humanoids, filling the area with dangerous false visions and escalating panic wherever it lingered. The target could not simply be killed in the party's then-current state, but dealing enough damage would trigger a planar rejection response and cast it back to the Fey Realm. The party ultimately completed that task, turning Mirage Bay Illusionist into one of the key milestones in the evolution of Valorie's illusion-focused manifest.",
@@ -651,11 +651,12 @@
         "Threat": "It preyed on fear by making creatures and people see dangerous illusions",
         "Required End": "Deal enough damage to trigger planar rejection and send it back to the Fey Realm",
         "Outcome": "Advanced the staff into its next illusion-focused form"
-      }
+      },
+      "storyType": "thread"
     },
     {
       "id": "quest-triton-generals-plea",
-      "category": "quests",
+      "category": "stories",
       "title": "Triton General's Plea",
       "summary": "An elderly Triton general between Portale and Waveside begs worthy warriors to face him in one final proper challenge.",
       "description": "An elderly Triton general wanders the road between Portale and Waveside, spending his days beseeching passing adventurers and warriors to combat him. He seeks a worthy final challenge and calls on anyone strong enough to answer him. Put his desires for battle to rest.",
@@ -672,11 +673,12 @@
       "details": {
         "Target": "An elderly Triton general",
         "Location": "The road between Portale and Waveside"
-      }
+      },
+      "storyType": "quest"
     },
     {
       "id": "quest-shadewood-frostmother",
-      "category": "quests",
+      "category": "stories",
       "title": "Shadewood Avian Menace",
       "summary": "A frigid avian menace in the Shadewood Grove has left travelers shaken and the surrounding path unsafe.",
       "description": "A frigid avian menace resides in the Shadewood Grove. Adventurers who travel off the beaten path have reported being terrorized by this icy fiend. Prevent more harm from being caused by the creature's presence.",
@@ -694,7 +696,8 @@
         "Target": "A dangerous icy avian",
         "Location": "Shadewood Grove",
         "Initial Reports": "Travelers described repeated sightings of a dangerous icy menace"
-      }
+      },
+      "storyType": "quest"
     },
     {
       "id": "manifest-staff-of-better-illusion",
@@ -1297,7 +1300,7 @@
     },
     {
       "id": "story-fog-leviathan-johnson",
-      "category": "quests",
+      "category": "stories",
       "title": "The Fog Leviathan",
       "summary": "A newborn leviathan, jokingly dubbed Johnson, still waits in the Fog Basin with an infection and a memory too old to ignore.",
       "description": "Deep within the Caybluff Fog Basin, beyond the Canthian settlement and its trials, the party encountered a colossal newborn fog leviathan that Thiollier, for reasons known only to him, decided to call Johnson. Beneath the joke sits a very real problem. The creature is infected, isolated, and powerful enough that earning its trust could matter enormously later. It may still be waiting for the party to return, and it may behoove them to befriend and aid something that vast before the world gives it a reason to become anything else.",
@@ -1313,11 +1316,12 @@
         "Current State": "Still infected and left behind in the basin",
         "Why It Matters": "A creature that powerful could become a major ally or a major problem"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-mount-solare-with-the-twins",
-      "category": "quests",
+      "category": "stories",
       "title": "Mount Solare Expedition",
       "summary": "Clive and Joshua intend to head for Mount Solare soon, with or without the party if they wait too long.",
       "description": "The tour guide brothers Clive and Joshua offered to travel with the party to Mount Solare, a place famous for danger, profit, and the sort of stories that usually end with either treasure or disaster. They said they would wait a few weeks for the party to return, but not forever. If enough time passes, they may simply head up the mountain without them, leaving the party to decide whether they want to join the expedition, race to catch up, or let that opportunity vanish into the snow.",
@@ -1333,11 +1337,12 @@
         "Destination": "Mount Solare",
         "Time Pressure": "The twins will only wait a few weeks before going without the party"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-silas-and-the-elderwood",
-      "category": "quests",
+      "category": "stories",
       "title": "Silas and the Elderwood",
       "summary": "Thiollier's visions of Silas and the ruined Elderwood point toward a homecoming that has gone horribly wrong.",
       "description": "Thiollier's path keeps circling back to Il Fiore, Silas, and the Elderwood. His dreams and visions show a version of home overtaken by rot, metal, and corruption, with Silas standing within it as if caught between warning and silence. A doorway in the Elderwood appeared behind him, and he walked through it without answering. Whatever happened in Il Fiore did not end when Thiollier left, and the sacred tree at its heart may now be tied to the fate of both his missing friend and his broken homeland.",
@@ -1353,11 +1358,12 @@
         "Primary Mystery": "What happened to Silas and what became of the Elderwood",
         "Why It Matters": "Thiollier's home and oldest bond may both be bound up in the same corruption"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-trail-of-missing-children",
-      "category": "quests",
+      "category": "stories",
       "title": "Trail of Missing Children",
       "summary": "From Orville to Waveside, too many missing children point to a pattern that still has not been broken.",
       "description": "The disappearances scattered across Altasar and Caybluff no longer look isolated. Missing children in Orville, captives in Waveside, quiet grief in Portale, and the wider movements of the Unwound all suggest a larger trail still waiting to be followed. Even after freeing those found in Waveside, the pattern remains active enough to demand more answers. Somewhere ahead lies the rest of the chain, and likely far more victims than the party has already seen.",
@@ -1373,11 +1379,12 @@
         "Current Scope": "Spans multiple settlements across Altasar and Caybluff",
         "Urgency": "The pattern continues even after the Waveside rescue"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-johnnys-lost-son",
-      "category": "quests",
+      "category": "stories",
       "title": "Johnny's Lost Son",
       "summary": "Johnny helped the party, but his son Oliver is still missing somewhere in the same darkness he warned them about.",
       "description": "Johnny offered the party information when Portale's polished facade was hiding rot beneath it, but his help was never detached from personal loss. His child, Oliver, is still missing, and that absence remains one of the clearest human costs of everything happening around Portale and Waveside. Finding Oliver would mean more than repaying a favor. It would also mean proving that at least one child swallowed by this wider pattern can still be brought home.",
@@ -1393,11 +1400,12 @@
         "Goal": "Find Oliver",
         "Emotional Weight": "A personal thread tied directly to the wider disappearances"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-troldith-and-the-malaise",
-      "category": "quests",
+      "category": "stories",
       "title": "Troldith and the Malaise",
       "summary": "Caelum pointed toward Troldith in West Alden as a place where the party may finally learn more about the Malaise.",
       "description": "The Malaise has already touched too many lives to remain a distant theory, and Caelum explicitly named Troldith in West Alden as a place worth seeking out. If the party wants to understand why the world's magic is dispersing so abnormally, and what that means for the people already suffering under it, Troldith may be one of the most promising leads they have. Whether it offers answers, treatment, or only worse questions remains to be seen.",
@@ -1413,11 +1421,12 @@
         "Region": "West Alden",
         "Why Go": "To learn more about the Malaise and its unnatural spread"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-the-watcher-nazari",
-      "category": "quests",
+      "category": "stories",
       "title": "The Watcher, Nazari",
       "summary": "Nazari Ruya does not seem interested in merely opposing the party; he appears to be studying them.",
       "description": "Nazari Ruya's involvement has the shape of observation more than simple pursuit. His letter to Johnny reframed the rescue at Waveside as though it had been part of a successful test, not a setback, suggesting a confidence that goes beyond ordinary villainy. Whether he is measuring the party, steering them, or waiting for them to reveal something useful, Nazari feels less like an obstacle and more like a watcher whose attention will only become more dangerous with time.",
@@ -1432,11 +1441,12 @@
         "Affiliation": "The Unwound",
         "Current Concern": "He seems to view the party as part of a larger experiment or design"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-the-world-beneath-ours",
-      "category": "quests",
+      "category": "stories",
       "title": "The World Beneath Ours",
       "summary": "Bones fell beneath the Ocean Wall and glimpsed a vast hidden world below, one that may connect to the layered structure of reality itself.",
       "description": "When Bones was lost to the currents of the Ocean Wall, he did not simply drift through water. He fell into darkness and struck a fog-laden landscape far below, vast enough to feel like a world laid underneath the one everyone knows. Caelum's explanations about broader structures of the world only make that memory harder to dismiss. Whatever lies beneath is unlikely to be metaphor, and the fact that Bones survived seeing even a fragment of it suggests there may be whole layers of reality still waiting beneath the surface of the familiar world.",
@@ -1451,11 +1461,12 @@
         "Primary Witness": "Bones",
         "Why It Matters": "Suggests the world may be layered in ways the party barely understands"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "story-gifts-from-the-settlements",
-      "category": "quests",
+      "category": "stories",
       "title": "Gifts from the Settlements",
       "summary": "Opening Canthian doors keeps rewarding the party with power, tools, and knowledge that seem too useful to be coincidence.",
       "description": "Every Canthian settlement the party has reached has offered more than mystery. There have been trials, new functions, Black Shards, strange knowledge, and useful items pulled from places that should have been sealed for ages. The pattern is becoming too consistent to ignore. Whatever system the Canthians built, it seems designed to reward those capable of finding and opening their doors. If the party keeps following that trail, the next settlement may offer exactly the gift they need, or exactly the test they are not yet ready for.",
@@ -1471,7 +1482,8 @@
         "Pattern": "Canthian sites repeatedly grant tools, knowledge, or access",
         "Implication": "Finding more settlements could steadily expand the party's power and options"
       },
-      "originalCategory": "stories"
+      "originalCategory": "stories",
+      "storyType": "thread"
     },
     {
       "id": "summary-session-15",

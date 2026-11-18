@@ -110,6 +110,7 @@ const state = {
   query: "",
   activeView: "complete-codex",
   sortMode: "newest-first",
+  storyTypeFilter: "all",
   questStatusFilter: "ongoing",
   activeTags: new Set(),
   selectedEntryId: null,
@@ -315,6 +316,8 @@ function initElements() {
   elements.clearFilters = document.getElementById("clear-filters");
   elements.sortControls = document.getElementById("sort-controls");
   elements.sortSelect = document.getElementById("sort-select");
+  elements.storyTypeControls = document.getElementById("story-type-controls");
+  elements.storyTypeSelect = document.getElementById("story-type-select");
   elements.questStatusControls = document.getElementById("quest-status-controls");
   elements.questStatusSelect = document.getElementById("quest-status-select");
   elements.resultsSummary = document.getElementById("results-summary");
@@ -625,6 +628,8 @@ function bindEvents() {
   elements.clearFilters.addEventListener("click", () => {
     state.query = "";
     state.activeTags.clear();
+    state.storyTypeFilter = "all";
+    state.questStatusFilter = "ongoing";
     elements.searchInput.value = "";
     renderApp();
   });
@@ -634,7 +639,12 @@ function bindEvents() {
     renderApp();
   });
 
-  elements.questStatusSelect.addEventListener("change", (event) => {
+  elements.storyTypeSelect?.addEventListener("change", (event) => {
+    state.storyTypeFilter = event.target.value;
+    renderApp();
+  });
+
+  elements.questStatusSelect?.addEventListener("change", (event) => {
     state.questStatusFilter = event.target.value;
     renderApp();
   });
@@ -900,11 +910,13 @@ function renderViewTabs() {
 
 function renderSortControls() {
   const isCategoryView = state.activeView !== "complete-codex";
-  const isQuestView = state.activeView === "quests";
+  const isStoryView = state.activeView === "stories" || state.activeView === "quests";
   elements.sortControls.classList.toggle("hidden", !isCategoryView);
-  elements.questStatusControls.classList.toggle("hidden", !isQuestView);
+  elements.storyTypeControls?.classList.toggle("hidden", !isStoryView);
+  elements.questStatusControls?.classList.toggle("hidden", !isStoryView);
   elements.sortSelect.value = state.sortMode;
-  elements.questStatusSelect.value = state.questStatusFilter;
+  if (elements.storyTypeSelect) elements.storyTypeSelect.value = state.storyTypeFilter;
+  if (elements.questStatusSelect) elements.questStatusSelect.value = state.questStatusFilter;
 }
 
 function buildViewTabButton(label, viewId) {
@@ -1120,9 +1132,50 @@ function buildEntryCard(entry, categoryLabel) {
   const summary = cardNode.querySelector(".entry-card__summary");
   const tags = cardNode.querySelector(".entry-card__tags");
 
-  category.textContent = categoryLabel;
-  meta.replaceChildren(category);
-  appendEntryMetaBadge(meta, entry);
+  const isStories = entry.category === "stories" || entry.category === "quests";
+
+  if (isStories) {
+    meta.replaceChildren();
+
+    if (entry.hidden) {
+      const hiddenBadge = document.createElement("span");
+      hiddenBadge.className = "entry-meta-badge entry-meta-badge--hidden";
+      hiddenBadge.textContent = "🔒 Hidden";
+      hiddenBadge.title = "Hidden from players in Player Mode";
+      meta.append(hiddenBadge);
+    }
+
+    const isQuest = entry.storyType === "quest" || (entry.id.startsWith("quest-") && !entry.originalCategory && entry.storyType !== "thread");
+    if (isQuest) {
+      const questBadge = document.createElement("span");
+      questBadge.className = "entry-meta-badge entry-meta-badge--quest-type";
+      questBadge.textContent = "Quest";
+      meta.append(questBadge);
+
+      const questStatus = getQuestStatus(entry);
+      const statusBadge = document.createElement("span");
+      statusBadge.className = `entry-meta-badge entry-meta-badge--quest-${questStatus}`;
+      statusBadge.textContent = questStatus === "completed" ? "Completed" : "Ongoing";
+      meta.append(statusBadge);
+    } else {
+      const threadBadge = document.createElement("span");
+      threadBadge.className = "entry-meta-badge entry-meta-badge--thread-type";
+      threadBadge.textContent = "Threads";
+      meta.append(threadBadge);
+
+      if (getQuestStatus(entry) === "completed") {
+        const statusBadge = document.createElement("span");
+        statusBadge.className = "entry-meta-badge entry-meta-badge--quest-completed";
+        statusBadge.textContent = "Completed";
+        meta.append(statusBadge);
+      }
+    }
+  } else {
+    category.textContent = categoryLabel;
+    meta.replaceChildren(category);
+    appendEntryMetaBadge(meta, entry);
+  }
+
   title.textContent = getEntryTitle(entry);
   summary.textContent = entry.summary ?? "No summary added yet.";
   button.setAttribute("aria-label", `Open details for ${getEntryTitle(entry)}`);
@@ -1279,11 +1332,29 @@ function passesTagFilter(entry) {
 }
 
 function passesQuestStatusFilter(entry) {
-  if (state.activeView !== "quests" || entry.category !== "quests") {
+  const isStories = entry.category === "stories" || entry.category === "quests";
+  if (!isStories || (state.activeView !== "stories" && state.activeView !== "quests")) {
     return true;
   }
 
-  return getQuestStatus(entry) === state.questStatusFilter;
+  // Type Filter: All / Threads / Quests
+  if (state.storyTypeFilter && state.storyTypeFilter !== "all") {
+    const isQuest = entry.storyType === "quest" || (entry.id.startsWith("quest-") && !entry.originalCategory && entry.storyType !== "thread");
+    const entryType = isQuest ? "quest" : "thread";
+    if (entryType !== state.storyTypeFilter) {
+      return false;
+    }
+  }
+
+  // Status Filter: All / Ongoing / Completed
+  if (state.questStatusFilter && state.questStatusFilter !== "all") {
+    const status = getQuestStatus(entry);
+    if (status !== state.questStatusFilter) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function getSearchScore(entry, rawQuery) {
@@ -2017,7 +2088,20 @@ function openModal(entryId, options = {}) {
     }
   }
 
-  elements.modalCategory.textContent = category?.label ?? "Entry";
+  elements.modalCategory.classList.remove("modal__category--quest", "modal__category--thread");
+  const isStories = entry.category === "stories" || entry.category === "quests";
+  if (isStories) {
+    const isQuest = entry.storyType === "quest" || (entry.id.startsWith("quest-") && !entry.originalCategory && entry.storyType !== "thread");
+    if (isQuest) {
+      elements.modalCategory.textContent = "Quest";
+      elements.modalCategory.classList.add("modal__category--quest");
+    } else {
+      elements.modalCategory.textContent = "Threads";
+      elements.modalCategory.classList.add("modal__category--thread");
+    }
+  } else {
+    elements.modalCategory.textContent = category?.label ?? "Entry";
+  }
   elements.modalTitle.textContent = getEntryTitle(entry);
 
   if (window.CodexLinker && typeof window.CodexLinker.renderInto === "function") {

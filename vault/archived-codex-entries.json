@@ -2,11 +2,6 @@
   "_comment": "Quarantined / vaulted entries and categories held out of world-data.json so players cannot see or access them in the live O-Codex.",
   "vaulted_categories": [
     {
-      "id": "stories",
-      "label": "Stories",
-      "description": "Hooks and points of interest the party can follow. Rewards and newfound power await at the end of each thread."
-    },
-    {
       "id": "divions",
       "label": "Divions",
       "description": "Motes of Divine power. Some are strewn about the world, others are gifted to those pursuing fierce aspirations; All of them will intertwine themselves with fate."
